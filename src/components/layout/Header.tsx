@@ -81,11 +81,10 @@ export const Header = () => {
       <Box 
         overflow="hidden"
         maxHeight={isTopBannerVisible ? topBannerHeight + "px" : "2px"}
-        opacity={isTopBannerVisible ? 1 : 0}
+        opacity={1}
         transition="all 0.3s ease-in-out"
         position="relative"
         zIndex={101}
-        visibility={isTopBannerVisible ? "visible" : "hidden"}
       >
         <TopBanner />
       </Box>
