@@ -2,7 +2,8 @@
 
 import { Box, Flex, Text } from "@chakra-ui/react";
 import { ReactNode } from "react";
-import { useColorModeValue } from "@/components/ui/color-mode";
+import { useColorMode, useColorModeValue } from "@/components/ui/color-mode";
+import { useColors } from "@/styles/theme";
 
 interface SectionProps {
   title: string;
@@ -19,10 +20,15 @@ export function Section({
   children,
   footer,
 }: SectionProps) {
-  const bg = useColorModeValue("whiteAlpha.900", "#1A1A1A");
-  const borderColor = useColorModeValue("gray.100", "whiteAlpha.100");
-  const textColor = useColorModeValue("gray.700", "whiteAlpha.900");
-  const subtitleColor = useColorModeValue("gray.500", "whiteAlpha.700");
+  const colors = useColors();
+  const { colorMode } = useColorMode();
+  const isDark = colorMode === 'dark';
+  
+  // 홈페이지 스타일에 맞는 색상 적용
+  const bg = useColorModeValue(colors.cardBg, colors.cardBg);
+  const borderColor = useColorModeValue(colors.border, "whiteAlpha.100");
+  const textColor = useColorModeValue(colors.text.primary, colors.text.primary);
+  const subtitleColor = useColorModeValue(colors.text.secondary, "whiteAlpha.700");
 
   return (
     <Flex
@@ -30,11 +36,19 @@ export function Section({
       inset="0"
       direction="column"
       overflow="hidden"
-      borderRadius="md"
-      border="0"
+      borderRadius="xl"
+      border="1px solid"
+      borderColor={borderColor}
       pb="1"
       zIndex={1}
       bg={bg}
+      boxShadow={colors.shadow.sm}
+      backdropFilter="blur(8px)"
+      transition="all 0.3s ease-in-out"
+      _hover={{
+        boxShadow: colors.shadow.md,
+        borderColor: colors.primary.alpha,
+      }}
     >
       {/* Header */}
       <Box p="3" borderBottom="1px solid" borderColor={borderColor}>

@@ -2,17 +2,28 @@
 
 import { Box, Flex, IconButton } from "@chakra-ui/react";
 import { useColorMode, useColorModeValue } from "@/components/ui/color-mode";
-
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MenuItems } from "./MenuItems";
 import { Tooltip } from "@/components/ui/tooltip";
+import { useColors } from "@/styles/theme";
 
 export function Bottombar() {
   const currentPath = usePathname();
-  const borderColor = useColorModeValue("gray.200", "gray.700");
-  const bg = useColorModeValue("#0A3980", "gray.800");
+  const colors = useColors();
   const { colorMode } = useColorMode();
+  const isDark = colorMode === 'dark';
+  
+  // 홈페이지 스타일에 맞는 색상 적용
+  const borderColor = useColorModeValue(colors.border, "whiteAlpha.200");
+  const bg = useColorModeValue(
+    "rgba(255, 255, 255, 0.95)", 
+    "rgba(15, 23, 42, 0.95)"
+  );
+  const activeItemBg = useColorModeValue(colors.primary.light, "whiteAlpha.200");
+  const activeItemColor = useColorModeValue(colors.primary.default, "whiteAlpha.900");
+  const textColor = useColorModeValue(colors.text.primary, "white");
+  
   return (
     <Box
       position="fixed"
@@ -25,6 +36,8 @@ export function Bottombar() {
       display={{ base: "block", md: "none" }}
       zIndex={1000}
       h="56px"
+      backdropFilter="blur(8px)"
+      boxShadow={colors.shadow.sm}
     >
       <Flex justify="space-around" py={1}>
         {MenuItems.map((item, index) => (
@@ -51,39 +64,19 @@ export function Bottombar() {
                 aria-label={item.path}
                 as={item.icon}
                 bg="transparent"
-                color="white"
+                color={currentPath === item.path ? colors.primary.default : textColor}
                 _hover={{
-                  bg:
-                    currentPath === item.path
-                      ? colorMode === "light"
-                        ? "gray.100"
-                        : "whiteAlpha.200"
-                      : "transparent",
-                  color:
-                    currentPath === item.path
-                      ? colorMode === "light"
-                        ? "#0A3981"
-                        : "whiteAlpha.900"
-                      : "white",
+                  bg: colors.primary.alpha,
+                  color: colors.primary.default,
                 }}
                 _active={{
-                  bg:
-                    currentPath === item.path
-                      ? colorMode === "light"
-                        ? "gray.100"
-                        : "whiteAlpha.200"
-                      : "transparent",
-                  color:
-                    currentPath === item.path
-                      ? colorMode === "light"
-                        ? "#0A3981"
-                        : "whiteAlpha.900"
-                      : "white",
+                  bg: activeItemBg,
+                  color: activeItemColor,
                 }}
                 css={{
                   "&[data-active='true']": {
-                    bg: colorMode === "light" ? "gray.100" : "whiteAlpha.200",
-                    color: colorMode === "light" ? "#0A3981" : "whiteAlpha.900",
+                    bg: activeItemBg,
+                    color: activeItemColor,
                   },
                 }}
                 data-active={currentPath === item.path}

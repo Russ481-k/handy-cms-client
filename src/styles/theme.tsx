@@ -1,66 +1,58 @@
 import { useColorModeValue } from "@/components/ui/color-mode";
+import { COLORS, STYLES } from "./theme-tokens";
 
 export const useColors = () => {
   // Color mode values
   return {
-    bg: useColorModeValue("#f8fafc", "#0f172a"),
-    cardBg: useColorModeValue("white", "#1e293b"),
-    darkBg: "#0f172a",
-    border: useColorModeValue("#e2e8f0", "#334155"),
+    bg: useColorModeValue(COLORS.light.bg, COLORS.dark.bg),
+    cardBg: useColorModeValue(COLORS.light.cardBg, COLORS.dark.cardBg),
+    darkBg: COLORS.dark.bg,
+    border: useColorModeValue(COLORS.light.border, COLORS.dark.border),
     primary: {
-      default: useColorModeValue("#6366f1", "#818cf8"),
-      hover: useColorModeValue("#4f46e5", "#a5b4fc"),
-      light: useColorModeValue("#eef2ff", "#1e1b4b"),
-      dark: useColorModeValue("#3730a3", "#c7d2fe"),
-      alpha: useColorModeValue("rgba(99, 102, 241, 0.1)", "rgba(129, 140, 248, 0.1)"),
+      default: useColorModeValue(COLORS.light.primary.default, COLORS.dark.primary.default),
+      hover: useColorModeValue(COLORS.light.primary.hover, COLORS.dark.primary.hover),
+      light: useColorModeValue(COLORS.light.primary.light, COLORS.dark.primary.light),
+      dark: useColorModeValue(COLORS.light.primary.dark, COLORS.dark.primary.dark),
+      alpha: useColorModeValue(COLORS.light.primary.alpha, COLORS.dark.primary.alpha),
     },
     secondary: {
-      default: useColorModeValue("#64748b", "#94a3b8"),
-      hover: useColorModeValue("#475569", "#cbd5e1"),
-      light: useColorModeValue("#f1f5f9", "#1e293b"),
-      dark: useColorModeValue("#334155", "#e2e8f0"),
+      default: useColorModeValue(COLORS.light.secondary.default, COLORS.dark.secondary.default),
+      hover: useColorModeValue(COLORS.light.secondary.hover, COLORS.dark.secondary.hover),
+      light: useColorModeValue(COLORS.light.secondary.light, COLORS.dark.secondary.light),
+      dark: useColorModeValue(COLORS.light.secondary.dark, COLORS.dark.secondary.dark),
     },
     text: {
-      primary: useColorModeValue("#0f172a", "#f8fafc"),
-      secondary: useColorModeValue("#475569", "#cbd5e1"),
-      inverse: useColorModeValue("white", "#0f172a"),
-      muted: useColorModeValue("#64748b", "#94a3b8"),
-      accent: useColorModeValue("#4f46e5", "#a5b4fc"),
+      primary: useColorModeValue(COLORS.light.text.primary, COLORS.dark.text.primary),
+      secondary: useColorModeValue(COLORS.light.text.secondary, COLORS.dark.text.secondary),
+      inverse: useColorModeValue("white", COLORS.light.text.primary),
+      muted: useColorModeValue(COLORS.light.text.muted, COLORS.dark.text.muted),
+      accent: useColorModeValue(COLORS.light.primary.hover, COLORS.dark.primary.hover),
     },
     accent: {
       success: {
-        default: useColorModeValue("#10b981", "#34d399"),
-        bg: useColorModeValue("#ecfdf5", "#064e3b"),
-        hover: useColorModeValue("#059669", "#6ee7b7"),
+        default: useColorModeValue(COLORS.light.accent.success.default, COLORS.dark.accent.success.default),
+        bg: useColorModeValue(COLORS.light.accent.success.bg, COLORS.dark.accent.success.bg),
+        hover: useColorModeValue(COLORS.light.accent.success.hover, COLORS.dark.accent.success.hover),
       },
       warning: {
-        default: useColorModeValue("#f59e0b", "#fbbf24"),
-        bg: useColorModeValue("#fffbeb", "#78350f"),
-        hover: useColorModeValue("#d97706", "#fcd34d"),
+        default: useColorModeValue(COLORS.light.accent.warning.default, COLORS.dark.accent.warning.default),
+        bg: useColorModeValue(COLORS.light.accent.warning.bg, COLORS.dark.accent.warning.bg),
+        hover: useColorModeValue(COLORS.light.accent.warning.hover, COLORS.dark.accent.warning.hover),
       },
       info: {
-        default: useColorModeValue("#0ea5e9", "#38bdf8"),
-        bg: useColorModeValue("#f0f9ff", "#0c4a6e"),
-        hover: useColorModeValue("#0284c7", "#7dd3fc"),
+        default: useColorModeValue(COLORS.light.accent.info.default, COLORS.dark.accent.info.default),
+        bg: useColorModeValue(COLORS.light.accent.info.bg, COLORS.dark.accent.info.bg),
+        hover: useColorModeValue(COLORS.light.accent.info.hover, COLORS.dark.accent.info.hover),
       },
     },
     hover: {
-      card: useColorModeValue("#f1f5f9", "#1e293b"),
-      link: useColorModeValue("#4f46e5", "#a5b4fc"),
+      card: useColorModeValue(COLORS.light.secondary.light, COLORS.dark.secondary.light),
+      link: useColorModeValue(COLORS.light.primary.hover, COLORS.dark.primary.hover),
     },
     shadow: {
-      sm: useColorModeValue(
-        "0 2px 8px rgba(15, 23, 42, 0.08)",
-        "0 2px 8px rgba(0, 0, 0, 0.3)"
-      ),
-      md: useColorModeValue(
-        "0 4px 12px rgba(15, 23, 42, 0.08)",
-        "0 4px 12px rgba(0, 0, 0, 0.3)"
-      ),
-      lg: useColorModeValue(
-        "0 8px 24px rgba(15, 23, 42, 0.08)",
-        "0 8px 24px rgba(0, 0, 0, 0.3)"
-      ),
+      sm: useColorModeValue(COLORS.light.shadow.sm, COLORS.dark.shadow.sm),
+      md: useColorModeValue(COLORS.light.shadow.md, COLORS.dark.shadow.md),
+      lg: useColorModeValue(COLORS.light.shadow.lg, COLORS.dark.shadow.lg),
     },
     dialog: {
       overlay: {
@@ -78,25 +70,19 @@ export const useColors = () => {
 
 export const useStyles = (colors: ReturnType<typeof useColors>, showScrollTop: boolean) => {
   return {
-    container: {
-      maxW: { base: "container.lg", xl: "container.xl" },
-      px: { base: 6, md: 8, lg: 12 },
-    },
-    section: {
-      py: { base: 20, md: 24, lg: 32 },
-    },
+    container: STYLES.container,
+    section: STYLES.section,
     card: {
+      ...STYLES.card,
       bg: colors.cardBg,
       borderColor: colors.border,
       borderWidth: "1px",
-      borderRadius: "3xl",
       boxShadow: colors.shadow.sm,
       backdropFilter: "blur(12px)",
-      transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
       _hover: {
+        ...STYLES.card._hover,
         boxShadow: colors.shadow.lg,
         borderColor: colors.primary.default,
-        transform: "translateY(-4px)",
       },
     },
     infoCard: {
@@ -112,16 +98,12 @@ export const useStyles = (colors: ReturnType<typeof useColors>, showScrollTop: b
     },
     button: {
       primary: {
+        ...STYLES.button.primary,
         bgGradient: colors.gradient.primary,
         color: colors.text.inverse,
-        fontWeight: "bold",
-        px: 8,
-        py: 6,
-        borderRadius: "2xl",
-        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         _hover: { 
+          ...STYLES.button.primary._hover,
           bgGradient: "linear-gradient(135deg, #4f46e5, #7c3aed)",
-          transform: "translateY(-2px)",
           boxShadow: colors.shadow.md,
         },
         _active: {
@@ -130,19 +112,14 @@ export const useStyles = (colors: ReturnType<typeof useColors>, showScrollTop: b
         },
       },
       secondary: {
+        ...STYLES.button.secondary,
         bg: "rgba(99, 102, 241, 0.1)",
         color: colors.primary.default,
-        fontWeight: "bold",
-        px: 8,
-        py: 6,
-        borderRadius: "2xl",
-        borderWidth: "1px",
         borderColor: "transparent",
-        backdropFilter: "blur(12px)",
         _hover: { 
+          ...STYLES.button.secondary._hover,
           bg: "rgba(99, 102, 241, 0.15)",
           borderColor: colors.primary.default,
-          transform: "translateY(-2px)",
           boxShadow: colors.shadow.sm,
         },
         _active: {
@@ -151,18 +128,13 @@ export const useStyles = (colors: ReturnType<typeof useColors>, showScrollTop: b
         },
       },
       outline: {
+        ...STYLES.button.secondary,
         bg: "transparent",
         color: colors.primary.default,
         borderColor: colors.primary.default,
-        borderWidth: "1px",
-        borderRadius: "2xl",
-        fontWeight: "bold",
-        px: 8,
-        py: 6,
-        backdropFilter: "blur(12px)",
         _hover: {
+          ...STYLES.button.secondary._hover,
           bg: "rgba(99, 102, 241, 0.1)",
-          transform: "translateY(-2px)",
           boxShadow: colors.shadow.sm,
         },
         _active: {
@@ -173,32 +145,26 @@ export const useStyles = (colors: ReturnType<typeof useColors>, showScrollTop: b
     },
     text: {
       heading: {
+        ...STYLES.text.heading,
         color: colors.text.primary,
-        letterSpacing: "tight",
-        lineHeight: "shorter",
-        fontWeight: "black",
       },
       subheading: {
+        ...STYLES.text.subheading,
         color: colors.text.secondary,
-        letterSpacing: "wide",
-        fontWeight: "semibold",
-        textTransform: "uppercase",
       },
       body: {
+        ...STYLES.text.body,
         color: colors.text.secondary,
-        lineHeight: "tall",
-        fontSize: { base: "lg", md: "xl" },
       },
       gradient: {
+        ...STYLES.text.heading,
         bgGradient: colors.gradient.primary,
         bgClip: "text",
-        letterSpacing: "tight",
-        lineHeight: "shorter",
-        fontWeight: "black",
       },
     },
     badge: {
       success: {
+        ...STYLES.badge,
         bg: colors.accent.success.bg,
         color: colors.accent.success.default,
         px: 6,
@@ -210,12 +176,15 @@ export const useStyles = (colors: ReturnType<typeof useColors>, showScrollTop: b
         borderWidth: "1px",
         borderColor: "transparent",
         backdropFilter: "blur(12px)",
+        transition: "all 0.3s ease-in-out",
         _hover: {
+          ...STYLES.badge._hover,
           borderColor: colors.accent.success.default,
           transform: "translateY(-1px)",
         },
       },
       info: {
+        ...STYLES.badge,
         bg: colors.accent.info.bg,
         color: colors.accent.info.default,
         px: 6,
@@ -227,12 +196,15 @@ export const useStyles = (colors: ReturnType<typeof useColors>, showScrollTop: b
         borderWidth: "1px",
         borderColor: "transparent",
         backdropFilter: "blur(12px)",
+        transition: "all 0.3s ease-in-out",
         _hover: {
+          ...STYLES.badge._hover,
           borderColor: colors.accent.info.default,
           transform: "translateY(-1px)",
         },
       },
       warning: {
+        ...STYLES.badge,
         bg: colors.accent.warning.bg,
         color: colors.accent.warning.default,
         px: 6,
@@ -244,7 +216,9 @@ export const useStyles = (colors: ReturnType<typeof useColors>, showScrollTop: b
         borderWidth: "1px",
         borderColor: "transparent",
         backdropFilter: "blur(12px)",
+        transition: "all 0.3s ease-in-out",
         _hover: {
+          ...STYLES.badge._hover,
           borderColor: colors.accent.warning.default,
           transform: "translateY(-1px)",
         },
@@ -252,6 +226,7 @@ export const useStyles = (colors: ReturnType<typeof useColors>, showScrollTop: b
     },
     icon: {
       primary: {
+        ...STYLES.icon,
         color: colors.primary.default,
         boxSize: { base: 6, md: 7 },
         transition: "all 0.3s ease-in-out",
@@ -261,6 +236,7 @@ export const useStyles = (colors: ReturnType<typeof useColors>, showScrollTop: b
         },
       },
       secondary: {
+        ...STYLES.icon,
         color: colors.text.secondary,
         boxSize: { base: 5, md: 6 },
         transition: "all 0.3s ease-in-out",
@@ -270,9 +246,9 @@ export const useStyles = (colors: ReturnType<typeof useColors>, showScrollTop: b
         },
       },
       accent: {
+        ...STYLES.icon,
         color: colors.text.accent,
         boxSize: { base: 6, md: 7 },
-        transition: "all 0.3s ease-in-out",
         _groupHover: {
           transform: "scale(1.2) rotate(10deg)",
         },
@@ -280,21 +256,19 @@ export const useStyles = (colors: ReturnType<typeof useColors>, showScrollTop: b
     },
     link: {
       default: {
+        ...STYLES.link,
         color: colors.text.secondary,
-        transition: "all 0.3s ease-in-out",
         _hover: {
+          ...STYLES.link._hover,
           color: colors.hover.link,
-          textDecoration: "none",
-          transform: "translateY(-1px)",
         },
       },
       accent: {
+        ...STYLES.link,
         color: colors.primary.default,
-        transition: "all 0.3s ease-in-out",
         _hover: {
+          ...STYLES.link._hover,
           color: colors.primary.hover,
-          textDecoration: "none",
-          transform: "translateY(-1px)",
         },
       },
     },

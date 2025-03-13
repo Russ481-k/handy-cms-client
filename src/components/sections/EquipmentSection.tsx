@@ -17,6 +17,7 @@ import {
   themeDarkMode,
   themeLightMode,
 } from "@/lib/ag-grid-config";
+import { useColors } from "@/styles/theme";
 
 // Register required modules
 ModuleRegistry.registerModules([ClientSideRowModelModule, CellStyleModule]);
@@ -30,6 +31,7 @@ interface EquipmentData {
 
 export function EquipmentSection() {
   const { colorMode } = useColorMode();
+  const colors = useColors();
 
   const columnDefs = useMemo<ColDef<EquipmentData>[]>(
     () => [
@@ -39,14 +41,14 @@ export function EquipmentSection() {
         headerName: "상태",
         width: 100,
         cellStyle: (params: CellClassParams<EquipmentData>) => ({
-          backgroundColor: params.value === "normal" ? "#4299E1" : "#ECC94B",
+          backgroundColor: params.value === "normal" ? colors.accent.info.default : colors.accent.warning.default,
           color: "white",
         }),
       },
       { field: "temperature", headerName: "온도", width: 100 },
       { field: "lastCheck", headerName: "최종 점검", width: 150 },
     ],
-    []
+    [colors]
   );
 
   const rowData = useMemo(
@@ -62,7 +64,7 @@ export function EquipmentSection() {
 
   return (
     <Section title="장비 상태" subtitle="실시간 장비 상태 정보">
-      <Box h="full">
+      <Box h="full" borderRadius="xl" overflow="hidden" boxShadow={colors.shadow.sm}>
         <AgGridReact
           className="ag-theme-quartz"
           theme={colorMode === "dark" ? themeDarkMode : themeLightMode}

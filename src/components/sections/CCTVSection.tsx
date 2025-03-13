@@ -2,14 +2,17 @@
 
 import { Box, Text, AspectRatio } from "@chakra-ui/react";
 import { Section } from "@/components/ui/section";
+import { useColors } from "@/styles/theme";
 
 export function CCTVSection() {
+  const colors = useColors();
+  
   return (
     <Section
       title="CCTV 모니터링"
       subtitle="실시간 현장 영상"
       headerRight={
-        <Text fontSize="xs" color="gray.500">
+        <Text fontSize="xs" color={colors.text.secondary}>
           Camera #1
         </Text>
       }
@@ -17,9 +20,12 @@ export function CCTVSection() {
       <AspectRatio ratio={16 / 9} h="full">
         <Box
           bg="blue.900"
-          borderRadius="md"
+          borderRadius="xl"
           overflow="hidden"
           position="relative"
+          boxShadow={colors.shadow.sm}
+          transition="all 0.3s ease-in-out"
+          _hover={{ boxShadow: colors.shadow.md }}
           _after={{
             content: '""',
             position: "absolute",

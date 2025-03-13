@@ -2,13 +2,17 @@ import { Box, IconButton } from "@chakra-ui/react";
 import { LuArrowUp, LuMoon, LuSun } from "react-icons/lu";
 import { useColorMode } from "@/components/ui/color-mode";
 import { useColors, useStyles } from "@/styles/theme";
+import { ColorModeToggle } from "../ui/ColorModeToggle";
 
 interface FloatingButtonsProps {
   showScrollTop: boolean;
   scrollToTop: () => void;
 }
 
-export const FloatingButtons: React.FC<FloatingButtonsProps> = ({ showScrollTop, scrollToTop }) => {
+export const FloatingButtons: React.FC<FloatingButtonsProps> = ({
+  showScrollTop,
+  scrollToTop,
+}) => {
   const { colorMode, toggleColorMode } = useColorMode();
   const colors = useColors();
   const styles = useStyles(colors, showScrollTop);
@@ -44,24 +48,7 @@ export const FloatingButtons: React.FC<FloatingButtonsProps> = ({ showScrollTop,
       >
         <LuArrowUp />
       </IconButton>
-      <IconButton
-        aria-label={colorMode === 'light' ? '다크 모드로 전환' : '라이트 모드로 전환'}
-        onClick={toggleColorMode}
-        bg={colors.cardBg}
-        color={colorMode === 'light' ? "#8b5cf6" : "#fbbf24"}
-        borderWidth="1px"
-        borderColor={colors.border}
-        boxShadow={colors.shadow.lg}
-        borderRadius="full"
-        size="lg"
-        _hover={{
-          bg: colorMode === 'light' ? "rgba(139, 92, 246, 0.1)" : "rgba(251, 191, 36, 0.1)",
-          transform: "translateY(-4px)",
-        }}
-        transition="all 0.3s ease-in-out"
-      >
-        {colorMode === 'light' ? <LuMoon /> : <LuSun />}
-      </IconButton>
+      <ColorModeToggle size="lg" variant="icon" />
     </Box>
   );
 };

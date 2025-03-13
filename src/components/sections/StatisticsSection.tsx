@@ -1,7 +1,7 @@
 "use client";
 
 import { Box, Text } from "@chakra-ui/react";
-import { useColorModeValue } from "@/components/ui/color-mode";
+import { useColorMode, useColorModeValue } from "@/components/ui/color-mode";
 import { useMemo, useEffect, useState } from "react";
 import {
   AgCartesianChartOptions,
@@ -11,6 +11,7 @@ import {
 } from "ag-charts-community";
 import { AgCharts } from "ag-charts-react";
 import { Section } from "@/components/ui/section";
+import { useColors } from "@/styles/theme";
 
 interface ChartData {
   hour: string;
@@ -18,7 +19,9 @@ interface ChartData {
 }
 
 export function StatisticsSection() {
-  const textColor = useColorModeValue("gray.800", "white");
+  const colors = useColors();
+  const { colorMode } = useColorMode();
+  const textColor = useColorModeValue(colors.text.primary, colors.text.primary);
   const chartTheme = useColorModeValue<AgChartThemeName>(
     "ag-default",
     "ag-default-dark"
@@ -50,12 +53,12 @@ export function StatisticsSection() {
           xKey: "hour",
           yKey: "value",
           yName: "데이터 수",
-          fill: "#3182CE",
-          stroke: "#2B6CB0",
+          fill: colors.primary.default,
+          stroke: colors.primary.dark,
           highlightStyle: {
             item: {
-              fill: "#4299E1",
-              stroke: "#2B6CB0",
+              fill: colors.primary.light,
+              stroke: colors.primary.dark,
             },
           },
           tooltip: {
@@ -103,7 +106,7 @@ export function StatisticsSection() {
         enabled: false,
       },
     }),
-    [textColor, chartTheme, data]
+    [textColor, chartTheme, data, colors]
   );
 
   return (
@@ -111,7 +114,7 @@ export function StatisticsSection() {
       title="시간별 통계"
       subtitle="24시간 동안의 데이터 분포"
       headerRight={
-        <Text fontSize="xs" color="gray.500">
+        <Text fontSize="xs" color={colors.text.secondary}>
           총 {totalCount.toLocaleString()}건
         </Text>
       }

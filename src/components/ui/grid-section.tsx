@@ -1,7 +1,7 @@
 "use client";
 
 import { Box, IconButton } from "@chakra-ui/react";
-import { useColorModeValue } from "@/components/ui/color-mode";
+import { useColorMode, useColorModeValue } from "@/components/ui/color-mode";
 import { Responsive, WidthProvider, Layout, Layouts } from "react-grid-layout";
 import { LuGrip } from "react-icons/lu";
 import * as React from "react";
@@ -9,6 +9,7 @@ import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import { useState } from "react";
 import { css, Global } from "@emotion/react";
+import { useColors } from "@/styles/theme";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -32,8 +33,15 @@ export function GridSection({
     { id: "d", x: 6, y: 4, w: 6, h: 4 },
   ],
 }: GridSectionProps) {
-  const bgColor = useColorModeValue("white", "gray.800");
-  const borderColor = useColorModeValue("gray.200", "transparent");
+  const colors = useColors();
+  const { colorMode } = useColorMode();
+  const isDark = colorMode === 'dark';
+  
+  // 홈페이지 스타일에 맞는 색상 적용
+  const bgColor = useColorModeValue(colors.cardBg, colors.cardBg);
+  const borderColor = useColorModeValue(colors.border, "whiteAlpha.200");
+  const handleColor = useColorModeValue(colors.text.secondary, "whiteAlpha.700");
+  const handleHoverColor = useColorModeValue(colors.text.primary, "white");
 
   const childrenArray = React.Children.toArray(children);
 
@@ -46,21 +54,21 @@ export function GridSection({
   };
 
   return (
-    <Box>
+    <Box width="full">
       <Global
         styles={css`
           .react-resizable-handle {
             opacity: 0.3;
-            color: #718096;
+            color: ${isDark ? "#94a3b8" : "#64748b"};
             &:hover {
               opacity: 1;
-              color: #4a5568;
+              color: ${isDark ? "#cbd5e1" : "#475569"};
             }
           }
           .react-grid-item.react-grid-placeholder {
-            background: #a0aec0; // gray.400
+            background: ${isDark ? "#334155" : "#e2e8f0"};
             opacity: 0.2;
-            border-radius: 0.375rem;
+            border-radius: 0.75rem;
             transition: all 200ms ease;
           }
           .react-grid-item.react-draggable-dragging {
@@ -79,21 +87,25 @@ export function GridSection({
         onLayoutChange={onLayoutChange}
         isDraggable
         isResizable
-        margin={[8, 8]}
+        margin={[12, 12]}
         draggableHandle=".drag-handle"
       >
         {initialLayout.map((layout, index) => (
           <Box
             key={layout.id}
             bg={bgColor}
-            borderRadius="md"
+            borderRadius="xl"
             borderWidth="1px"
             borderColor={borderColor}
             p="2"
-            shadow="sm"
-            transition="all 0.2s"
-            _hover={{ shadow: "md" }}
+            shadow={colors.shadow.sm}
+            transition="all 0.3s ease-in-out"
+            _hover={{ 
+              shadow: colors.shadow.md,
+              borderColor: colors.primary.alpha,
+            }}
             position="relative"
+            backdropFilter="blur(8px)"
           >
             <IconButton
               className="drag-handle"
@@ -108,13 +120,13 @@ export function GridSection({
               cursor="move"
               minW="4"
               h="4"
-              color="gray.500"
+              color={handleColor}
               zIndex="100"
               bg="transparent"
               _hover={{
                 opacity: 1,
                 bg: "transparent",
-                color: "gray.700",
+                color: handleHoverColor,
               }}
             />
             {childrenArray[index]}

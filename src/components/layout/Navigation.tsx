@@ -19,6 +19,7 @@ import NextLink from 'next/link';
 import { useColors, useStyles } from "@/styles/theme";
 import { useState } from "react";
 import { useColorMode } from "@/components/ui/color-mode";
+import { ColorModeToggle } from "@/components/ui/ColorModeToggle";
 
 interface NavigationProps {
   isScrolled?: boolean;
@@ -180,23 +181,27 @@ export const Navigation = ({ isScrolled = false }: NavigationProps) => {
                 </Box>
               </Box>
             ))}
+            
+            {/* 색상 모드 토글 버튼 */}
+            <ColorModeToggle size="md" variant="icon" />
           </HStack>
 
-          {/* 모바일 메뉴 버튼 */}
-          <IconButton
-            aria-label="Open menu"
-            onClick={onOpen}
-            display={{ base: "flex", md: "none" }}
-            size="md"
-            variant="ghost"
-            color={isDark ? 'whiteAlpha.900' : 'inherit'}
-            bg={isDark ? 'whiteAlpha.100' : 'blackAlpha.50'}
-            _hover={{
-              bg: isDark ? 'whiteAlpha.200' : 'blackAlpha.100',
-            }}
-          >
-            <LuMenu />
-          </IconButton>
+          {/* 모바일 메뉴 버튼과 색상 모드 토글 */}
+          <HStack display={{ base: "flex", md: "none" }} gap={2}>
+            <IconButton
+              aria-label="Open menu"
+              onClick={onOpen}
+              size="md"
+              variant="ghost"
+              color={isDark ? 'whiteAlpha.900' : 'inherit'}
+              bg={isDark ? 'whiteAlpha.100' : 'blackAlpha.50'}
+              _hover={{
+                bg: isDark ? 'whiteAlpha.200' : 'blackAlpha.100',
+              }}
+            >
+              <LuMenu />
+            </IconButton>
+          </HStack>
         </Flex>
       </Container>
 

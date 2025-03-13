@@ -5,23 +5,30 @@ import { Menu as ChakraMenu } from "@chakra-ui/react";
 import { DataListItem, DataListRoot } from "@/components/ui/data-list";
 import { useColorMode, useColorModeValue } from "@/components/ui/color-mode";
 import { useState, useEffect } from "react";
+import { useColors } from "@/styles/theme";
 
 interface AvatarProps {
   isSidebarOpen: boolean;
   asButton?: boolean;
+  gradientBorder?: boolean;
 }
 
 type Placement = "bottom" | "right-start" | "right-end";
 
-export function Avatar({ isSidebarOpen, asButton = true }: AvatarProps) {
+export function Avatar({ isSidebarOpen, asButton = true, gradientBorder = false }: AvatarProps) {
   const [placement, setPlacement] = useState<Placement>("right-start");
-  const textColor = useColorModeValue("gray.700", "whiteAlpha.900");
-  const menuBg = useColorModeValue("white", "gray.700");
-  const menuBorderColor = useColorModeValue("gray.100", "whiteAlpha.100");
-  const menuItemHoverBg = useColorModeValue("gray.100", "whiteAlpha.200");
-  const menuTextColor = useColorModeValue("gray.700", "gray.50");
-  const menuSubtitleColor = useColorModeValue("gray.500", "whiteAlpha.700");
-  const { colorMode, toggleColorMode } = useColorMode();
+  const colors = useColors();
+  const { colorMode } = useColorMode();
+  const isDark = colorMode === 'dark';
+  
+  // 홈페이지 스타일에 맞는 색상 적용
+  const textColor = useColorModeValue(colors.text.primary, "whiteAlpha.900");
+  const menuBg = useColorModeValue(colors.cardBg, colors.cardBg);
+  const menuBorderColor = useColorModeValue(colors.border, "whiteAlpha.100");
+  const menuItemHoverBg = useColorModeValue(colors.primary.alpha, "whiteAlpha.200");
+  const menuTextColor = useColorModeValue(colors.text.primary, colors.text.primary);
+  const menuSubtitleColor = useColorModeValue(colors.text.secondary, "whiteAlpha.700");
+  const { toggleColorMode } = useColorMode();
 
   const stats = [
     { label: "Id", value: "sbyun" },
@@ -44,16 +51,15 @@ export function Avatar({ isSidebarOpen, asButton = true }: AvatarProps) {
 
   const avatarContent = (
     <>
-      <ChakraAvatar size="2xs" name="Sage" src="https://bit.ly/sage-adebayo" />
-      {/* <Text
-        color="inherit"
-        opacity={isSidebarOpen ? 1 : 0}
-        w={isSidebarOpen ? "full" : "0"}
-        transition="all 0.2s ease-in-out"
-        textAlign="left"
+      <Box 
+        position="relative" 
+        borderRadius="full" 
+        p={gradientBorder ? "2px" : "0"}
+        bgGradient={gradientBorder ? colors.gradient.primary : undefined}
+        boxShadow={gradientBorder ? `0 0 0 1px ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}` : "none"}
       >
-        Sage
-      </Text> */}
+        <ChakraAvatar size="2xs" name="Sage" src="https://bit.ly/sage-adebayo" />
+      </Box>
       <Text
         color="inherit"
         overflow="hidden"
@@ -92,8 +98,8 @@ export function Avatar({ isSidebarOpen, asButton = true }: AvatarProps) {
   }
 
   const hoverStyles = {
-    bg: colorMode === "light" ? "gray.100" : "whiteAlpha.200",
-    color: colorMode === "light" ? "#0A3981" : "whiteAlpha.900",
+    bg: isDark ? "whiteAlpha.200" : colors.primary.alpha,
+    color: isDark ? "whiteAlpha.900" : colors.primary.default,
   };
 
   return (
@@ -114,7 +120,7 @@ export function Avatar({ isSidebarOpen, asButton = true }: AvatarProps) {
           justifyContent="start"
           h="10"
           ml="-9px"
-          borderRadius="4px"
+          borderRadius="md"
           overflow="hidden"
           transition="all 0.2s ease-in-out"
           w={isSidebarOpen ? "120px" : "40px"}
@@ -122,7 +128,7 @@ export function Avatar({ isSidebarOpen, asButton = true }: AvatarProps) {
           p="8px"
           gap="6px"
           bg="transparent"
-          color={isSidebarOpen ? "white" : textColor}
+          color={textColor}
           _hover={hoverStyles}
           _active={hoverStyles}
           _expanded={hoverStyles}
@@ -136,8 +142,9 @@ export function Avatar({ isSidebarOpen, asButton = true }: AvatarProps) {
             bg={menuBg}
             borderWidth="1px"
             borderColor={menuBorderColor}
-            borderRadius="md"
-            boxShadow="sm"
+            borderRadius="xl"
+            boxShadow={colors.shadow.md}
+            backdropFilter="blur(8px)"
           >
             <ChakraMenu.ItemGroup>
               <DataListRoot orientation="horizontal" p="2">
@@ -159,9 +166,13 @@ export function Avatar({ isSidebarOpen, asButton = true }: AvatarProps) {
               h="8"
               onClick={toggleColorMode}
               color={menuTextColor}
-              _hover={{ bg: menuItemHoverBg }}
+              _hover={{ bg: menuItemHoverBg, color: colors.primary.default }}
             >
-              {colorMode === "light" ? <LuSun /> : <LuMoon />}
+              <Box 
+                as={isDark ? LuSun : LuMoon} 
+                color={colors.primary.default}
+                mr={1}
+              />
               Color Mode
             </ChakraMenu.Item>
             <Separator borderColor={menuBorderColor} />
@@ -172,9 +183,14 @@ export function Avatar({ isSidebarOpen, asButton = true }: AvatarProps) {
                 justifyContent="center"
                 h="8"
                 color={menuTextColor}
-                _hover={{ bg: menuItemHoverBg }}
+                _hover={{ bg: menuItemHoverBg, color: colors.primary.default }}
               >
-                <LuSettings size={20} />
+                <Box 
+                  as={LuSettings} 
+                  fontSize="20px" 
+                  color={colors.primary.default}
+                  mr={1}
+                />
                 Setting
               </ChakraMenu.Item>
               <Separator
@@ -189,7 +205,7 @@ export function Avatar({ isSidebarOpen, asButton = true }: AvatarProps) {
                 justifyContent="center"
                 h="8"
                 color={menuTextColor}
-                _hover={{ bg: menuItemHoverBg }}
+                _hover={{ bg: menuItemHoverBg, color: colors.primary.default }}
               >
                 LogOut
               </ChakraMenu.Item>

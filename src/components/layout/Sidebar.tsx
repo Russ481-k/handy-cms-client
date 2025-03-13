@@ -9,6 +9,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Tooltip } from "@/components/ui/tooltip";
 import { MenuItems } from "./MenuItems";
+import { useColors } from "@/styles/theme";
 
 interface SidebarProps {
   isSidebarOpen: boolean;
@@ -18,10 +19,17 @@ interface SidebarProps {
 export function Sidebar({ isSidebarOpen, onToggle }: SidebarProps) {
   const currentPath = usePathname();
   const [activePath, setActivePath] = useState("");
-  const sidebarBg = useColorModeValue("#0A3981", "#1A1A1A");
-  const borderColor = useColorModeValue("white", "gray.700");
-  // const textColor = useColorModeValue("gray.700", "whiteAlpha.900");
+  const colors = useColors();
   const { colorMode } = useColorMode();
+  const isDark = colorMode === "dark";
+
+  // 홈페이지 스타일에 맞는 색상 적용
+  const sidebarBg = useColorModeValue(
+    "rgba(255, 255, 255, 0.95)",
+    "rgba(15, 23, 42, 0.95)"
+  );
+  const borderColor = useColorModeValue(colors.border, "whiteAlpha.200");
+  const textColor = useColorModeValue(colors.text.primary, "whiteAlpha.900");
   useEffect(() => {
     setActivePath(currentPath || "");
   }, [currentPath]);
@@ -35,23 +43,24 @@ export function Sidebar({ isSidebarOpen, onToggle }: SidebarProps) {
       h="100vh"
       w={isSidebarOpen ? "36" : "16"}
       borderRightWidth="1px"
-      borderTopWidth="1px"
-      borderBottomWidth="1px"
-      borderRightRadius="12px"
-      borderColor={colorMode === "light" ? "whiteAlpha.800" : "whiteAlpha.100"}
+      borderColor={borderColor}
       bg={sidebarBg}
       py="4"
       pl="5"
       display={{ base: "none", md: "block" }}
       transition="all 0.2s ease-in-out"
       overflow="hidden"
+      backdropFilter="blur(8px)"
+      boxShadow={colors.shadow.sm}
+      zIndex="1000"
     >
       <Flex alignItems="center" justifyContent="left" w="full" height="38px">
         <Text
           fontSize={isSidebarOpen ? "36px" : "42px"}
           fontWeight="bold"
           transition="all 0.2s ease-in-out"
-          color="white"
+          bgGradient={colors.gradient.primary}
+          bgClip="text"
         >
           {isSidebarOpen ? " Handy" : "H"}
         </Text>
@@ -72,9 +81,13 @@ export function Sidebar({ isSidebarOpen, onToggle }: SidebarProps) {
         overflow="hidden"
         cursor="pointer"
         onClick={onToggle}
+        bg={isDark ? "whiteAlpha.50" : "blackAlpha.50"}
+        _hover={{
+          borderColor: colors.primary.alpha,
+        }}
       >
         <Text
-          color="white"
+          color={textColor}
           fontSize="10px"
           h="32px"
           transition="all 0.2s ease-in-out"
@@ -90,17 +103,26 @@ export function Sidebar({ isSidebarOpen, onToggle }: SidebarProps) {
           aria-label={isSidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
           as={isSidebarOpen ? LuChevronLeft : LuChevronRight}
           bg={colorMode === "light" ? "white" : "gray.800"}
-          color={colorMode === "light" ? "#0A3981" : "whiteAlpha.900"}
+          color={isDark ? colors.gradient.primary : "whiteAlpha.900"}
           textAlign="right"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
           borderWidth="0 0 0 1px"
           borderRadius="0"
           borderColor={borderColor}
-        />
+        >
+          <Box
+            as={isSidebarOpen ? LuChevronLeft : LuChevronRight}
+            fontSize="14px"
+            bgGradient={colors.gradient.primary}
+            bgClip="text"
+          />
+        </IconButton>
       </Flex>
       <Box>
         <Box mt="16">
           {MenuItems.map((item, index) => {
-            console.log("activePath : ", activePath === item.path);
             return (
               <Link
                 key={index}
@@ -112,20 +134,20 @@ export function Sidebar({ isSidebarOpen, onToggle }: SidebarProps) {
                 passHref
               >
                 <Tooltip
-                  showArrow
                   content={isSidebarOpen ? "" : item.label}
                   disabled={isSidebarOpen}
                   positioning={{ placement: "right" }}
-                  openDelay={100}
+                  openDelay={50}
                   closeDelay={200}
                   contentProps={{
                     css: {
-                      width: "68px",
+                      width: "80px",
                       textAlign: "center",
-                      height: "18px",
+                      height: "24px",
                       alignItems: "center",
-                      lineHeight: "18px",
+                      lineHeight: "16px",
                       fontSize: "12px",
+                      bg: "linear-gradient(135deg, #6366f1, #8b5cf6)",
                     },
                   }}
                 >
@@ -143,7 +165,8 @@ export function Sidebar({ isSidebarOpen, onToggle }: SidebarProps) {
                     ml="-9px"
                     p="9px"
                     bg="transparent"
-                    color="white"
+                    transition="all 0.2s ease-in-out"
+                    color={colors.gradient.primary}
                     _hover={{
                       bg:
                         activePath === item.path
@@ -199,9 +222,15 @@ export function Sidebar({ isSidebarOpen, onToggle }: SidebarProps) {
             );
           })}
         </Box>
-       
+
         <Box position="absolute" bottom="8" left="2" right="0" px="3">
-          <Avatar isSidebarOpen={isSidebarOpen} />
+          <Flex
+            align="center"
+            justify={isSidebarOpen ? "space-between" : "center"}
+            width="full"
+          >
+            <Avatar isSidebarOpen={isSidebarOpen} gradientBorder={true} />
+          </Flex>
         </Box>
       </Box>
     </Box>
