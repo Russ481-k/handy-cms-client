@@ -6,17 +6,17 @@ import DashboardPage from "./dashboard/page";
 import { useAuth } from "@/lib/AuthContext";
 
 export default function Cms() {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       router.push("/cms/login");
     }
-  }, [isAuthenticated, loading, router]);
+  }, [isAuthenticated, isLoading, router]);
 
-  if (loading) {
-    return <div>Loading...</div>;
+  if (isLoading) {
+    return <div>isLoading...</div>;
   }
 
   if (!isAuthenticated) {

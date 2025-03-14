@@ -1,7 +1,7 @@
 "use client";
 
 import { Box, Text } from "@chakra-ui/react";
-import { useColorMode, useColorModeValue } from "@/components/ui/color-mode";
+import { useColorModeValue } from "@/components/ui/color-mode";
 import { useMemo, useEffect, useState } from "react";
 import {
   AgCartesianChartOptions,
@@ -20,7 +20,6 @@ interface ChartData {
 
 export function StatisticsSection() {
   const colors = useColors();
-  const { colorMode } = useColorMode();
   const textColor = useColorModeValue(colors.text.primary, colors.text.primary);
   const chartTheme = useColorModeValue<AgChartThemeName>(
     "ag-default",

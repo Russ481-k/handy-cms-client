@@ -6,9 +6,14 @@ import { useColors } from "@/styles/theme";
 interface LogoProps {
   size?: "sm" | "md" | "lg" | "xl";
   abbreviated?: boolean;
+  isLogin: boolean;
 }
 
-export function Logo({ size = "md", abbreviated = false }: LogoProps) {
+export function Logo({
+  size = "md",
+  abbreviated = false,
+  isLogin = false,
+}: LogoProps) {
   const colors = useColors();
 
   // 크기에 따른 폰트 사이즈 설정
@@ -29,7 +34,7 @@ export function Logo({ size = "md", abbreviated = false }: LogoProps) {
       letterSpacing="tight"
       lineHeight="1"
     >
-      {abbreviated ? "H" : "HANDY"}
+      {abbreviated ? "H" : isLogin ? "HANDY CMS" : "HANDY"}
     </Text>
   );
 }

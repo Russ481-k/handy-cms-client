@@ -2,7 +2,7 @@
 
 import { Box, Flex, Text } from "@chakra-ui/react";
 import { ReactNode } from "react";
-import { useColorMode, useColorModeValue } from "@/components/ui/color-mode";
+import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
 
 interface SectionProps {
@@ -21,8 +21,6 @@ export function Section({
   footer,
 }: SectionProps) {
   const colors = useColors();
-  const { colorMode } = useColorMode();
-  const isDark = colorMode === "dark";
 
   // 홈페이지 스타일에 맞는 색상 적용
   const bg = useColorModeValue(colors.cardBg, colors.cardBg);

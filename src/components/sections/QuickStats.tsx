@@ -1,22 +1,41 @@
 import { Box, SimpleGrid, VStack, Text } from "@chakra-ui/react";
 import { LuTarget, LuUsers, LuGraduationCap, LuBuilding } from "react-icons/lu";
-import { useColors, useStyles } from "@/styles/theme";
+import { useColors } from "@/styles/theme";
 
 export const QuickStats = () => {
   const colors = useColors();
-  const styles = useStyles(colors, false);
 
   const stats = [
-    { icon: LuTarget, title: '지원 규모', value: '최대 2억원', desc: '기업당 지원금' },
-    { icon: LuUsers, title: '모집 인원', value: '20개사', desc: '연간 선발 기업' },
-    { icon: LuGraduationCap, title: '멘토링', value: '전담 멘토 배정', desc: '1:1 밀착 지원' },
-    { icon: LuBuilding, title: '입주 공간', value: '무상 제공', desc: '최대 2년' },
+    {
+      icon: LuTarget,
+      title: "지원 규모",
+      value: "최대 2억원",
+      desc: "기업당 지원금",
+    },
+    {
+      icon: LuUsers,
+      title: "모집 인원",
+      value: "20개사",
+      desc: "연간 선발 기업",
+    },
+    {
+      icon: LuGraduationCap,
+      title: "멘토링",
+      value: "전담 멘토 배정",
+      desc: "1:1 밀착 지원",
+    },
+    {
+      icon: LuBuilding,
+      title: "입주 공간",
+      value: "무상 제공",
+      desc: "최대 2년",
+    },
   ];
 
   return (
-    <SimpleGrid 
-      columns={{ base: 1, md: 2, lg: 4 }} 
-      gap={{ base: 6, md: 8 }} 
+    <SimpleGrid
+      columns={{ base: 1, md: 2, lg: 4 }}
+      gap={{ base: 6, md: 8 }}
       my={{ base: 16, md: 24 }}
     >
       {stats.map((stat, idx) => (
@@ -44,10 +63,15 @@ export const QuickStats = () => {
             left={0}
             right={0}
             height="6px"
-            bgGradient={idx % 4 === 0 ? colors.gradient.primary : 
-                        idx % 4 === 1 ? colors.gradient.secondary : 
-                        idx % 4 === 2 ? "linear-gradient(135deg, #10b981, #0ea5e9)" : 
-                        colors.gradient.accent}
+            bgGradient={
+              idx % 4 === 0
+                ? colors.gradient.primary
+                : idx % 4 === 1
+                ? colors.gradient.secondary
+                : idx % 4 === 2
+                ? "linear-gradient(135deg, #10b981, #0ea5e9)"
+                : colors.gradient.accent
+            }
           />
           <VStack gap={{ base: 6, md: 8 }}>
             <Box
@@ -61,7 +85,7 @@ export const QuickStats = () => {
               <stat.icon size={48} />
             </Box>
             <VStack gap={4}>
-              <Text 
+              <Text
                 fontSize="lg"
                 fontWeight="bold"
                 color={colors.text.primary}
@@ -70,12 +94,17 @@ export const QuickStats = () => {
               >
                 {stat.title}
               </Text>
-              <Text 
+              <Text
                 fontSize={{ base: "3xl", md: "4xl" }}
-                bgGradient={idx % 4 === 0 ? colors.gradient.primary : 
-                           idx % 4 === 1 ? colors.gradient.secondary : 
-                           idx % 4 === 2 ? "linear-gradient(135deg, #10b981, #0ea5e9)" : 
-                           colors.gradient.accent}
+                bgGradient={
+                  idx % 4 === 0
+                    ? colors.gradient.primary
+                    : idx % 4 === 1
+                    ? colors.gradient.secondary
+                    : idx % 4 === 2
+                    ? "linear-gradient(135deg, #10b981, #0ea5e9)"
+                    : colors.gradient.accent
+                }
                 bgClip="text"
                 fontWeight="extrabold"
                 letterSpacing="tight"
@@ -83,10 +112,7 @@ export const QuickStats = () => {
               >
                 {stat.value}
               </Text>
-              <Text 
-                color={colors.text.secondary}
-                fontSize="lg"
-              >
+              <Text color={colors.text.secondary} fontSize="lg">
                 {stat.desc}
               </Text>
             </VStack>
@@ -95,4 +121,4 @@ export const QuickStats = () => {
       ))}
     </SimpleGrid>
   );
-}; 
+};

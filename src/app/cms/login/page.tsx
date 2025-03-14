@@ -108,7 +108,7 @@ export default function LoginPage() {
     } catch (error) {
       toaster.error({
         title: "오류 발생",
-        description: "로그인 중 오류가 발생했습니다.",
+        description: "로그인 중 오류가 발생했습니다." + error,
       });
     }
   };
@@ -124,7 +124,7 @@ export default function LoginPage() {
     >
       <Container maxW="lg" px={{ base: "4", sm: "8" }}>
         <Flex direction="column" gap={3} align="center">
-          <Logo size="xl" />
+          <Logo size="xl" isLogin />
           <Flex
             direction="column"
             gap={1}

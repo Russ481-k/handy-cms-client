@@ -1,8 +1,13 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useColors } from "@/styles/theme";
 
 interface User {
   uuid: string;
@@ -36,13 +41,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
   const pathname = usePathname();
-  const colors = useColors();
 
-  useEffect(() => {
-    checkAuth();
-  }, [pathname]);
-
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
       const storedUser = localStorage.getItem("user");
@@ -74,7 +74,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [router, pathname]);
+
+  useEffect(() => {
+    checkAuth();
+  }, [pathname, checkAuth]);
 
   const login = async (username: string, password: string) => {
     try {

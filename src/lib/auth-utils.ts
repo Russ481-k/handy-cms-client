@@ -13,6 +13,12 @@ export interface User {
   role: string;
 }
 
+interface DBUser extends User {
+  password: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, SALT_ROUNDS);
 }
@@ -33,11 +39,12 @@ export async function createInitialAdmin() {
       await connection.execute(`
         CREATE TABLE IF NOT EXISTS users (
           uuid VARCHAR(36) PRIMARY KEY,
-          username VARCHAR(255) NOT NULL UNIQUE,
-          name VARCHAR(255) NOT NULL,
-          email VARCHAR(255) NOT NULL UNIQUE,
+          username VARCHAR(50) NOT NULL UNIQUE,
+          name VARCHAR(100) NOT NULL,
+          email VARCHAR(100) NOT NULL UNIQUE,
           password VARCHAR(255) NOT NULL,
-          role VARCHAR(50) NOT NULL,
+          role VARCHAR(20) NOT NULL,
+          avatar_url VARCHAR(255),
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         )
@@ -89,7 +96,7 @@ export async function validateUser(
         return null;
       }
 
-      const user = users[0] as any;
+      const user = users[0] as DBUser;
       const isValid = await comparePasswords(password, user.password);
 
       if (!isValid) {
@@ -127,7 +134,7 @@ export function generateToken(user: User): string {
 }
 
 export function verifyToken(token: string): User {
-  const decoded = verify(token, JWT_SECRET) as any;
+  const decoded = verify(token, JWT_SECRET) as User;
   return {
     uuid: decoded.uuid,
     username: decoded.username,

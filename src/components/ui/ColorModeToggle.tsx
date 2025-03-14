@@ -2,7 +2,7 @@
 
 import { IconButton } from "@chakra-ui/react";
 import { useColors } from "@/styles/theme";
-import { useColorMode, useColorModeValue } from "./color-mode";
+import { useColorMode } from "./color-mode";
 import { LuMoon, LuSun } from "react-icons/lu";
 
 interface ColorModeToggleProps {

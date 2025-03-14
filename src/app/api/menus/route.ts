@@ -107,6 +107,7 @@ export async function POST(request: Request) {
   try {
     const data = await request.json();
 
+    console.log(data);
     // 실제 구현에서는 데이터베이스에 메뉴를 저장합니다.
     // 여기서는 간단히 성공 응답만 반환합니다.
 
@@ -116,7 +117,7 @@ export async function POST(request: Request) {
     );
   } catch (error) {
     return NextResponse.json(
-      { success: false, message: "메뉴 생성에 실패했습니다." },
+      { success: false, message: "메뉴 생성에 실패했습니다." + error },
       { status: 500 }
     );
   }

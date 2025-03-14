@@ -63,13 +63,6 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
     backgroundColor: "transparent",
   };
 
-  // 체크박스 스타일
-  const checkboxStyle = {
-    width: "1.5rem",
-    height: "1.5rem",
-    cursor: "pointer",
-  };
-
   useEffect(() => {
     // Fetch boards and contents for selection
     const fetchData = async () => {
@@ -104,11 +97,6 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
         return newErrors;
       });
     }
-  };
-
-  const handleSwitchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: checked }));
   };
 
   const validateForm = () => {

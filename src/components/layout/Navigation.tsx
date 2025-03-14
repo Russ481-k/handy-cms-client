@@ -9,17 +9,12 @@ import {
   VStack,
   IconButton,
   useDisclosure,
-  useBreakpointValue,
-  Portal,
-  Icon,
 } from "@chakra-ui/react";
-import { Drawer } from "@chakra-ui/react";
 import { LuChevronDown, LuMenu } from "react-icons/lu";
 import NextLink from "next/link";
 import { useColors, useStyles } from "@/styles/theme";
 import { useState } from "react";
 import { useColorMode } from "@/components/ui/color-mode";
-import { ColorModeToggle } from "@/components/ui/ColorModeToggle";
 
 interface NavigationProps {
   isScrolled?: boolean;
@@ -32,9 +27,6 @@ export const Navigation = ({ isScrolled = false }: NavigationProps) => {
   const styles = useStyles(colors, false);
   const [activeMenu, setActiveMenu] = useState<number | null>(null);
   const { open, onOpen, onClose } = useDisclosure();
-
-  // 반응형 설정
-  const isMobile = useBreakpointValue({ base: true, md: false });
 
   // 메뉴 구조 정의
   const menuItems = [

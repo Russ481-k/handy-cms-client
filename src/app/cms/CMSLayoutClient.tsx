@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Flex } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
 import { useColors } from "@/styles/theme";
 import { RootLayoutClient } from "@/components/layout/RootLayoutClient";
 

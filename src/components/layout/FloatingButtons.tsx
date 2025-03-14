@@ -1,7 +1,7 @@
 import { Box, IconButton } from "@chakra-ui/react";
-import { LuArrowUp, LuMoon, LuSun } from "react-icons/lu";
-import { useColorMode } from "@/components/ui/color-mode";
-import { useColors, useStyles } from "@/styles/theme";
+import { LuArrowUp } from "react-icons/lu";
+import {} from "@/components/ui/color-mode";
+import { useColors } from "@/styles/theme";
 import { ColorModeToggle } from "../ui/ColorModeToggle";
 
 interface FloatingButtonsProps {
@@ -13,9 +13,7 @@ export const FloatingButtons: React.FC<FloatingButtonsProps> = ({
   showScrollTop,
   scrollToTop,
 }) => {
-  const { colorMode, toggleColorMode } = useColorMode();
   const colors = useColors();
-  const styles = useStyles(colors, showScrollTop);
 
   return (
     <Box

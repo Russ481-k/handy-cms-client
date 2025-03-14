@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import { FiChevronRight, FiChevronDown, FiCircle, FiX } from "react-icons/fi";
-import { Box, Flex, Text, Button, Center, Icon } from "@chakra-ui/react";
+import { Box, Flex, Text, Button, Center } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
 import { Menu } from "@/app/cms/menu/page";
@@ -54,6 +54,8 @@ const MenuItem = ({
     "rgba(99, 179, 237, 0.15)"
   );
   const textColor = useColorModeValue(colors.text.primary, colors.text.primary);
+  const menuBgColor = useColorModeValue("gray.100", "gray.700");
+
   const disabledTextColor = useColorModeValue("gray.400", "gray.500");
   const indicatorColor = useColorModeValue(
     colors.primary.default,
@@ -66,10 +68,6 @@ const MenuItem = ({
   const arrowHoverColor = useColorModeValue(
     colors.primary.default,
     colors.primary.light
-  );
-  const borderColor = useColorModeValue(
-    "rgba(226, 232, 240, 0.5)",
-    "rgba(74, 85, 104, 0.2)"
   );
   const leafColor = useColorModeValue(
     "rgba(160, 174, 192, 0.6)",
@@ -89,9 +87,9 @@ const MenuItem = ({
     }),
   });
 
-  const [{ isOver, isOverCurrent }, drop] = useDrop({
+  const [{ isOver }, drop] = useDrop({
     accept: "MENU_ITEM",
-    hover(item: DragItem, monitor) {
+    hover(item: DragItem) {
       if (!ref.current) {
         return;
       }
@@ -301,7 +299,7 @@ const MenuItem = ({
                 px={1.5}
                 py={0.5}
                 borderRadius="full"
-                bg={useColorModeValue("gray.100", "gray.700")}
+                bg={menuBgColor}
                 fontSize="xs"
               >
                 <Text fontSize="2xs" color={disabledTextColor}>

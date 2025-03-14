@@ -1,15 +1,13 @@
 "use client";
 
-import { Box, Flex, Text, HStack } from "@chakra-ui/react";
-import { useColorMode, useColorModeValue } from "@/components/ui/color-mode";
-import { LuMic } from "react-icons/lu";
+import { Box, Flex, Text } from "@chakra-ui/react";
+import { useColorModeValue } from "@/components/ui/color-mode";
+
 import { Avatar } from "@/components/layout/Avatar";
 import { useColors } from "@/styles/theme";
 
 export function Topbar({ isSidebarOpen }: { isSidebarOpen: boolean }) {
   const colors = useColors();
-  const { colorMode } = useColorMode();
-  const isDark = colorMode === "dark";
 
   // 홈페이지 스타일에 맞는 색상 적용
   const borderColor = useColorModeValue(colors.border, "whiteAlpha.200");

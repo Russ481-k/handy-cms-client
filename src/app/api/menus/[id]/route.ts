@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 // 임시 메뉴 데이터 (실제 구현에서는 데이터베이스에서 가져옵니다)
 const menus = [
@@ -26,10 +26,10 @@ const menus = [
 ];
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
-  const id = parseInt(params.id);
+  const id = parseInt((await context.params).id);
 
   // 실제 구현에서는 데이터베이스에서 해당 ID의 메뉴를 조회합니다.
   const menu = menus.find((menu) => menu.id === id);
@@ -45,13 +45,14 @@ export async function GET(
 }
 
 export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
+    const id = parseInt((await context.params).id);
     const data = await request.json();
 
+    console.log(id, data);
     // 실제 구현에서는 데이터베이스에서 해당 ID의 메뉴를 업데이트합니다.
     // 여기서는 간단히 성공 응답만 반환합니다.
 
@@ -61,19 +62,19 @@ export async function PUT(
     });
   } catch (error) {
     return NextResponse.json(
-      { success: false, message: "메뉴 수정에 실패했습니다." },
+      { success: false, message: "메뉴 수정에 실패했습니다." + error },
       { status: 500 }
     );
   }
 }
 
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = parseInt(params.id);
-
+    const id = parseInt((await context.params).id);
+    console.log(id);
     // 실제 구현에서는 데이터베이스에서 해당 ID의 메뉴를 삭제합니다.
     // 여기서는 간단히 성공 응답만 반환합니다.
 
@@ -83,7 +84,7 @@ export async function DELETE(
     });
   } catch (error) {
     return NextResponse.json(
-      { success: false, message: "메뉴 삭제에 실패했습니다." },
+      { success: false, message: "메뉴 삭제에 실패했습니다." + error },
       { status: 500 }
     );
   }

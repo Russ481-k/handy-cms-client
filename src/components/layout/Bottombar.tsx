@@ -17,7 +17,6 @@ export function Bottombar() {
   // 홈페이지 스타일에 맞는 색상 적용
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.200");
   const bg = useColorModeValue("white", "rgba(15, 23, 42, 0.95)");
-  const textColor = useColorModeValue("gray.800", "whiteAlpha.900");
 
   return (
     <Box

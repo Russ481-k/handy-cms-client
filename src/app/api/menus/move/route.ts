@@ -17,7 +17,7 @@ interface Menu {
 }
 
 // 임시 메뉴 데이터 (실제 구현에서는 데이터베이스에서 가져옵니다)
-let menus: Menu[] = [
+const menus: Menu[] = [
   {
     id: 1,
     name: "홈",
