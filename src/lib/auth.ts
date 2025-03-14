@@ -91,3 +91,23 @@ export const logout = (): void => {
   removeAuthToken();
   // Redirect to login page can be handled by the component
 };
+
+// API request helper with authentication
+export const authenticatedFetch = async (
+  url: string,
+  options: RequestInit = {}
+): Promise<Response> => {
+  const token = getAuthToken();
+
+  if (!token) {
+    throw new Error("No authentication token found");
+  }
+
+  const headers = new Headers(options.headers || {});
+  headers.set("Authorization", `Bearer ${token}`);
+
+  return fetch(url, {
+    ...options,
+    headers,
+  });
+};

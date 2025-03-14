@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { sign } from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"; // 실제 운영에서는 반드시 환경변수로 관리
 
 // This is a mock authentication endpoint
 // In a real application, you would validate credentials against a database
@@ -25,29 +27,29 @@ export async function POST(request: Request) {
       );
     }
 
-    // Generate a mock JWT token
-    // In a real app, you would use a proper JWT library
-    const token = `mock-jwt-token-${Date.now()}`;
+    // Create user object
+    const user = {
+      id: "1",
+      email,
+      name: email.split("@")[0],
+      role: "admin",
+    };
 
-    // Set the token in a cookie for the middleware to use
-    cookies().set({
-      name: "cms_auth_token",
-      value: token,
-      httpOnly: true,
-      path: "/",
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60 * 24 * 7, // 1 week
-    });
+    // Generate JWT token
+    const token = sign(
+      {
+        userId: user.id,
+        email: user.email,
+        role: user.role,
+      },
+      JWT_SECRET,
+      { expiresIn: "7d" }
+    );
 
     // Return the token and user info
     return NextResponse.json({
       token,
-      user: {
-        id: "1",
-        email,
-        name: email.split("@")[0],
-        role: "admin",
-      },
+      user,
     });
   } catch (error) {
     console.error("Login error:", error);
