@@ -23,12 +23,12 @@ import { userState } from "@/lib/recoil/atoms/user";
 import { toaster } from "@/components/ui/toaster";
 
 export default function LoginPage() {
-  const [id, setId] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberId, setRememberId] = useState(false);
   const [errors, setErrors] = useState<{
-    id?: string;
+    username?: string;
     password?: string;
   }>({});
 
@@ -46,18 +46,18 @@ export default function LoginPage() {
   const inputHover = useColorModeValue("blackAlpha.100", "whiteAlpha.100");
 
   useEffect(() => {
-    const savedId = localStorage.getItem("rememberedId");
-    if (savedId) {
-      setId(savedId);
+    const savedUsername = localStorage.getItem("rememberedId");
+    if (savedUsername) {
+      setUsername(savedUsername);
       setRememberId(true);
     }
   }, []);
 
   const validateForm = () => {
-    const newErrors: { id?: string; password?: string } = {};
+    const newErrors: { username?: string; password?: string } = {};
 
-    if (!id) {
-      newErrors.id = "Please enter your ID";
+    if (!username) {
+      newErrors.username = "Please enter your username";
     }
 
     if (!password) {
@@ -74,11 +74,12 @@ export default function LoginPage() {
     if (!validateForm()) return;
 
     try {
-      const response = await login(id, password);
+      const response = await login(username, password);
       if (response.success && response.user) {
         // 사용자 정보를 Recoil 상태에 저장
         setUser({
-          id: response.user.id,
+          uuid: response.user.uuid,
+          username: response.user.username,
           name: response.user.name,
           email: response.user.email,
           role: response.user.role,
@@ -86,7 +87,7 @@ export default function LoginPage() {
         });
 
         if (rememberId) {
-          localStorage.setItem("rememberedId", id);
+          localStorage.setItem("rememberedId", username);
         } else {
           localStorage.removeItem("rememberedId");
         }
@@ -176,16 +177,16 @@ export default function LoginPage() {
                         fontWeight="medium"
                         letterSpacing="wide"
                       >
-                        ID
+                        Username
                       </Text>
                     }
-                    errorText={errors.id}
+                    errorText={errors.username}
                   >
                     <Input
-                      id="id"
+                      id="username"
                       type="text"
-                      value={id}
-                      onChange={(e) => setId(e.target.value)}
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
                       placeholder="admin"
                       bg={inputBg}
                       borderColor={inputBorder}

@@ -6,7 +6,8 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 const SALT_ROUNDS = 10;
 
 export interface User {
-  id: string;
+  uuid: string;
+  username: string;
   name: string;
   email: string;
   role: string;
@@ -31,8 +32,9 @@ export async function createInitialAdmin() {
       // users 테이블이 없으면 생성
       await connection.execute(`
         CREATE TABLE IF NOT EXISTS users (
-          id VARCHAR(36) PRIMARY KEY,
+          uuid VARCHAR(36) PRIMARY KEY,
           username VARCHAR(255) NOT NULL UNIQUE,
+          name VARCHAR(255) NOT NULL,
           email VARCHAR(255) NOT NULL UNIQUE,
           password VARCHAR(255) NOT NULL,
           role VARCHAR(50) NOT NULL,
@@ -51,8 +53,14 @@ export async function createInitialAdmin() {
         // admin 계정이 없으면 생성
         const hashedPassword = await hashPassword("0000");
         await connection.execute(
-          "INSERT INTO users (id, username, email, password, role) VALUES (UUID(), ?, ?, ?, ?)",
-          ["admin", "admin@example.com", hashedPassword, "admin"]
+          "INSERT INTO users (uuid, username, name, email, password, role) VALUES (UUID(), ?, ?, ?, ?, ?)",
+          [
+            "admin",
+            "Administrator",
+            "admin@example.com",
+            hashedPassword,
+            "admin",
+          ]
         );
         console.log("Initial admin account created");
       }
@@ -66,7 +74,7 @@ export async function createInitialAdmin() {
 }
 
 export async function validateUser(
-  id: string,
+  username: string,
   password: string
 ): Promise<User | null> {
   try {
@@ -74,7 +82,7 @@ export async function validateUser(
     try {
       const [users] = await connection.execute(
         "SELECT * FROM users WHERE username = ?",
-        [id]
+        [username]
       );
 
       if (!Array.isArray(users) || users.length === 0) {
@@ -89,8 +97,9 @@ export async function validateUser(
       }
 
       return {
-        id: user.id,
-        name: user.username,
+        uuid: user.uuid,
+        username: user.username,
+        name: user.name,
         email: user.email,
         role: user.role,
       };
@@ -106,7 +115,8 @@ export async function validateUser(
 export function generateToken(user: User): string {
   return sign(
     {
-      userId: user.id,
+      uuid: user.uuid,
+      username: user.username,
       name: user.name,
       email: user.email,
       role: user.role,
@@ -119,7 +129,8 @@ export function generateToken(user: User): string {
 export function verifyToken(token: string): User {
   const decoded = verify(token, JWT_SECRET) as any;
   return {
-    id: decoded.userId,
+    uuid: decoded.uuid,
+    username: decoded.username,
     name: decoded.name,
     email: decoded.email,
     role: decoded.role,

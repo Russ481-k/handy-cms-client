@@ -5,7 +5,8 @@ import { useRouter, usePathname } from "next/navigation";
 import { useColors } from "@/styles/theme";
 
 interface User {
-  id: string;
+  uuid: string;
+  username: string;
   name: string;
   email: string;
   role: string;
@@ -17,7 +18,7 @@ interface AuthContextType {
   isLoading: boolean;
   user: User | null;
   login: (
-    id: string,
+    username: string,
     password: string
   ) => Promise<{
     success: boolean;
@@ -75,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = async (id: string, password: string) => {
+  const login = async (username: string, password: string) => {
     try {
       // API 호출
       const response = await fetch("/api/auth/login", {
@@ -83,7 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id, password }),
+        body: JSON.stringify({ username, password }),
       });
 
       const data = await response.json();

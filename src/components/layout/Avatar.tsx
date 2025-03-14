@@ -50,8 +50,7 @@ export function Avatar({
   const { toggleColorMode } = useColorMode();
 
   const stats = [
-    { label: "Id", value: user?.id || "-" },
-    { label: "Name", value: user?.name || "-" },
+    { label: "Username", value: user?.username || "-" },
     { label: "Email", value: user?.email || "-" },
     { label: "Role", value: user?.role || "-" },
   ];
@@ -73,7 +72,7 @@ export function Avatar({
       >
         <ChakraAvatar
           size="2xs"
-          name={user?.name || "User"}
+          name={user?.username || "User"}
           src={user?.avatar}
         />
       </Box>
@@ -86,7 +85,7 @@ export function Avatar({
         textAlign="left"
         whiteSpace="nowrap"
       >
-        {user?.name || "User"}
+        {user?.username || "User"}
       </Text>
     </>
   );
