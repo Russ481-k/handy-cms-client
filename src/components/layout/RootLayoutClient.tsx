@@ -9,82 +9,62 @@ import { Provider } from "@/components/ui/provider";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Bottombar } from "@/components/layout/Bottombar";
 import { Topbar } from "@/components/layout/Topbar";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useColors } from "@/styles/theme";
 import { ColorModeToggle } from "@/components/ui/ColorModeToggle";
+import { useAuth } from "@/lib/AuthContext";
+import { AuthProvider } from "@/lib/AuthContext";
 
 function Layout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
   const colors = useColors();
+  const { isAuthenticated, loading } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
 
   // 홈페이지 스타일에 맞는 색상 적용
   const mainBg = useColorModeValue(colors.bg, colors.darkBg);
   const textColor = useColorModeValue(colors.text.primary, colors.text.primary);
 
   const isLargerThanLg = useBreakpointValue({ base: false, lg: true });
-  const pathname = usePathname();
   const isRootPath = pathname === "/";
+  const isCMSPath = pathname?.startsWith("/cms");
+  const isLoginPage = pathname === "/cms/login";
 
   useEffect(() => {
     setIsSidebarOpen(!!isLargerThanLg);
   }, [isLargerThanLg]);
 
-  return (
-    <Box
-      bg={mainBg}
-      margin={0}
-      padding={0}
-      height="100vh"
-      width="100vw"
-      overflow="hidden"
-    >
-      <Global styles={[getScrollbarStyle(isDark)]} />
+  useEffect(() => {
+    if (!loading) {
+      if (isCMSPath) {
+        if (isAuthenticated) {
+          if (isLoginPage || pathname === "/cms") {
+            router.replace("/cms/dashboard");
+          }
+        } else {
+          if (!isLoginPage) {
+            router.replace("/cms/login");
+          }
+        }
+      }
+    }
+  }, [isAuthenticated, loading, pathname, router, isCMSPath, isLoginPage]);
 
-      {!isRootPath && (
-        <Box
-          color={textColor}
-          bg={mainBg}
-          transition="all 0.2s ease-in-out"
-          w="100%"
-          h="100vh"
-          position="relative"
-        >
-          <Topbar isSidebarOpen={isSidebarOpen} />
-          <Sidebar
-            isSidebarOpen={isSidebarOpen}
-            onToggle={() => setIsSidebarOpen((prev) => !prev)}
-          />
-          <Box
-            overflowY="auto"
-            pl="0"
-            pr="0"
-            h={{ base: "calc(100vh - 56px)", md: "100vh" }}
-            py={{ base: "56px", md: "0" }}
-            bg={mainBg}
-            transition="all 0.2s ease-in-out"
-            position="relative"
-            ml={{ base: 0, md: isSidebarOpen ? "36" : "16" }}
-          >
-            {children}
-          </Box>
-          <Bottombar />
-
-          {/* CMS 화면에서만 컬러 모드 토글 버튼 표시 */}
-          <Flex
-            position="fixed"
-            bottom="4"
-            right="4"
-            zIndex="1001"
-            display={{ base: "none", md: "flex" }}
-          >
-            <ColorModeToggle size="md" variant="icon" />
-          </Flex>
-        </Box>
-      )}
-
-      {isRootPath && (
+  // 로딩 중이거나 인증되지 않은 CMS 페이지인 경우 네비게이션 숨김
+  if (loading || (isCMSPath && !isAuthenticated)) {
+    return (
+      <Box
+        bg={mainBg}
+        margin={0}
+        padding={0}
+        height="100vh"
+        width="100vw"
+        overflow="hidden"
+      >
+        <Global styles={[getScrollbarStyle(isDark)]} />
         <Box
           color={textColor}
           bg={mainBg}
@@ -97,7 +77,69 @@ function Layout({ children }: { children: React.ReactNode }) {
         >
           {children}
         </Box>
-      )}
+      </Box>
+    );
+  }
+
+  return (
+    <Box
+      bg={mainBg}
+      margin={0}
+      padding={0}
+      height="100vh"
+      width="100vw"
+      overflow="hidden"
+    >
+      <Global styles={[getScrollbarStyle(isDark)]} />
+      <Box
+        color={textColor}
+        bg={mainBg}
+        transition="all 0.2s ease-in-out"
+        w="100%"
+        h="100vh"
+        position="relative"
+      >
+        {!isRootPath && isAuthenticated && (
+          <>
+            <Topbar isSidebarOpen={isSidebarOpen} />
+            <Sidebar
+              isSidebarOpen={isSidebarOpen}
+              onToggle={() => setIsSidebarOpen((prev) => !prev)}
+            />
+            <Bottombar />
+          </>
+        )}
+        <Box
+          overflowY="auto"
+          pl="0"
+          pr="0"
+          h={{ base: "calc(100vh - 56px)", md: "100vh" }}
+          py={{ base: "56px", md: "0" }}
+          bg={mainBg}
+          transition="all 0.2s ease-in-out"
+          position="relative"
+          ml={
+            !isRootPath && isAuthenticated
+              ? { base: 0, md: isSidebarOpen ? "36" : "16" }
+              : 0
+          }
+        >
+          {children}
+        </Box>
+
+        {/* CMS 화면에서만 컬러 모드 토글 버튼 표시 */}
+        {isCMSPath && isAuthenticated && (
+          <Flex
+            position="fixed"
+            bottom="4"
+            right="4"
+            zIndex="1001"
+            display={{ base: "none", md: "flex" }}
+          >
+            <ColorModeToggle size="md" variant="icon" />
+          </Flex>
+        )}
+      </Box>
     </Box>
   );
 }
@@ -105,7 +147,9 @@ function Layout({ children }: { children: React.ReactNode }) {
 export function RootLayoutClient({ children }: { children: React.ReactNode }) {
   return (
     <Provider>
-      <Layout>{children}</Layout>
+      <AuthProvider>
+        <Layout>{children}</Layout>
+      </AuthProvider>
     </Provider>
   );
 }

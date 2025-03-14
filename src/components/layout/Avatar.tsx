@@ -1,11 +1,12 @@
 import { Group, Separator, Text, Box, Portal } from "@chakra-ui/react";
 import { Avatar as ChakraAvatar } from "@/components/ui/avatar";
-import { LuSettings, LuMoon, LuSun } from "react-icons/lu";
+import { LuSettings, LuMoon, LuSun, LuLogOut } from "react-icons/lu";
 import { Menu as ChakraMenu } from "@chakra-ui/react";
 import { DataListItem, DataListRoot } from "@/components/ui/data-list";
 import { useColorMode, useColorModeValue } from "@/components/ui/color-mode";
 import { useState, useEffect } from "react";
 import { useColors } from "@/styles/theme";
+import { useAuth } from "@/lib/AuthContext";
 
 interface AvatarProps {
   isSidebarOpen: boolean;
@@ -24,6 +25,7 @@ export function Avatar({
   const colors = useColors();
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
+  const { logout } = useAuth();
 
   // 홈페이지 스타일에 맞는 색상 적용
   const textColor = useColorModeValue(colors.text.primary, "whiteAlpha.900");
@@ -40,6 +42,10 @@ export function Avatar({
   const menuSubtitleColor = useColorModeValue(
     colors.text.secondary,
     "whiteAlpha.700"
+  );
+  const focusRingColor = useColorModeValue(
+    colors.primary.alpha,
+    "whiteAlpha.300"
   );
   const { toggleColorMode } = useColorMode();
 
@@ -155,6 +161,10 @@ export function Avatar({
           _hover={hoverStyles}
           _active={hoverStyles}
           _expanded={hoverStyles}
+          _focus={{
+            outline: "none",
+            boxShadow: `0 0 0 2px ${focusRingColor}`,
+          }}
         >
           {avatarContent}
         </Box>
@@ -162,6 +172,7 @@ export function Avatar({
       <Portal>
         <ChakraMenu.Positioner>
           <ChakraMenu.Content
+            p={0}
             bg={menuBg}
             borderWidth="1px"
             borderColor={menuBorderColor}
@@ -190,6 +201,11 @@ export function Avatar({
               onClick={toggleColorMode}
               color={menuTextColor}
               _hover={{ bg: menuItemHoverBg, color: colors.primary.default }}
+              _focus={{
+                outline: "none",
+                bg: menuItemHoverBg,
+                color: colors.primary.default,
+              }}
             >
               <Box
                 as={isDark ? LuSun : LuMoon}
@@ -207,6 +223,11 @@ export function Avatar({
                 h="8"
                 color={menuTextColor}
                 _hover={{ bg: menuItemHoverBg, color: colors.primary.default }}
+                _focus={{
+                  outline: "none",
+                  bg: menuItemHoverBg,
+                  color: colors.primary.default,
+                }}
               >
                 <Box
                   as={LuSettings}
@@ -228,8 +249,20 @@ export function Avatar({
                 justifyContent="center"
                 h="8"
                 color={menuTextColor}
+                onClick={logout}
                 _hover={{ bg: menuItemHoverBg, color: colors.primary.default }}
+                _focus={{
+                  outline: "none",
+                  bg: menuItemHoverBg,
+                  color: colors.primary.default,
+                }}
               >
+                <Box
+                  as={LuLogOut}
+                  fontSize="20px"
+                  color={colors.primary.default}
+                  mr={1}
+                />
                 LogOut
               </ChakraMenu.Item>
             </Group>

@@ -24,12 +24,9 @@ export function Sidebar({ isSidebarOpen, onToggle }: SidebarProps) {
   const isDark = colorMode === "dark";
 
   // 홈페이지 스타일에 맞는 색상 적용
-  const sidebarBg = useColorModeValue(
-    "rgba(255, 255, 255, 0.95)",
-    "rgba(15, 23, 42, 0.95)"
-  );
-  const borderColor = useColorModeValue(colors.border, "whiteAlpha.200");
-  const textColor = useColorModeValue(colors.text.primary, "whiteAlpha.900");
+  const sidebarBg = useColorModeValue("white", "rgba(15, 23, 42, 0.95)");
+  const borderColor = useColorModeValue("gray.200", "whiteAlpha.200");
+  const textColor = useColorModeValue("gray.800", "whiteAlpha.900");
   useEffect(() => {
     setActivePath(currentPath || "");
   }, [currentPath]);
@@ -81,7 +78,7 @@ export function Sidebar({ isSidebarOpen, onToggle }: SidebarProps) {
         overflow="hidden"
         cursor="pointer"
         onClick={onToggle}
-        bg={isDark ? "whiteAlpha.50" : "blackAlpha.50"}
+        bg={isDark ? "blackAlpha.50" : "whiteAlpha.50"}
         _hover={{
           borderColor: colors.primary.alpha,
         }}
@@ -101,9 +98,9 @@ export function Sidebar({ isSidebarOpen, onToggle }: SidebarProps) {
           h="36px"
           size="2xs"
           aria-label={isSidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
-          as={isSidebarOpen ? LuChevronLeft : LuChevronRight}
-          bg={colorMode === "light" ? "white" : "gray.800"}
-          color={isDark ? colors.gradient.primary : "whiteAlpha.900"}
+          variant="ghost"
+          bg={isDark ? "whiteAlpha.50" : "white"}
+          color={isDark ? "white" : "gray.700"}
           textAlign="right"
           display="flex"
           alignItems="center"
@@ -115,8 +112,8 @@ export function Sidebar({ isSidebarOpen, onToggle }: SidebarProps) {
           <Box
             as={isSidebarOpen ? LuChevronLeft : LuChevronRight}
             fontSize="14px"
-            bgGradient={colors.gradient.primary}
             bgClip="text"
+            color="inherit"
           />
         </IconButton>
       </Flex>
@@ -166,46 +163,48 @@ export function Sidebar({ isSidebarOpen, onToggle }: SidebarProps) {
                     p="9px"
                     bg="transparent"
                     transition="all 0.2s ease-in-out"
-                    color={colors.gradient.primary}
+                    color={isDark ? colors.gradient.primary : "gray.700"}
                     _hover={{
                       bg:
                         activePath === item.path
-                          ? colorMode === "light"
-                            ? "gray.100"
-                            : "whiteAlpha.200"
+                          ? isDark
+                            ? "whiteAlpha.200"
+                            : "gray.100"
                           : "transparent",
                       color:
                         activePath === item.path
-                          ? colorMode === "light"
-                            ? "#0A3981"
-                            : "whiteAlpha.900"
-                          : "white",
+                          ? isDark
+                            ? "whiteAlpha.900"
+                            : "#0A3981"
+                          : isDark
+                          ? "white"
+                          : colors.gradient.primary,
                     }}
                     _active={{
                       bg:
                         activePath === item.path
-                          ? colorMode === "light"
-                            ? "gray.100"
-                            : "whiteAlpha.200"
+                          ? isDark
+                            ? "whiteAlpha.200"
+                            : "gray.100"
                           : "transparent",
                       color:
                         activePath === item.path
-                          ? colorMode === "light"
-                            ? "#0A3981"
-                            : "whiteAlpha.900"
-                          : "white",
+                          ? isDark
+                            ? "whiteAlpha.900"
+                            : "#0A3981"
+                          : isDark
+                          ? "white"
+                          : colors.gradient.primary,
                     }}
                     css={{
                       "&[data-active='true']": {
-                        bg:
-                          colorMode === "light" ? "gray.100" : "whiteAlpha.200",
-                        color:
-                          colorMode === "light" ? "#0A3981" : "whiteAlpha.900",
+                        bg: isDark ? "whiteAlpha.200" : "gray.100",
+                        color: isDark ? "whiteAlpha.900" : "#0A3981",
                       },
                     }}
                     data-active={activePath === item.path}
                   >
-                    <item.icon />
+                    <Box as={item.icon} color="inherit" />
                     <Text
                       fontSize="14px"
                       h="5"

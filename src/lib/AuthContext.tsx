@@ -1,9 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { User } from "./auth-utils";
 import {
-  AuthResponse,
   getAuthToken,
   getUser,
   isAuthenticated as checkIsAuthenticated,
@@ -13,8 +12,8 @@ import {
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: AuthResponse["user"] | null;
-  login: (email: string, password: string) => Promise<void>;
+  user: User | null;
+  login: (username: string, password: string) => Promise<void>;
   logout: () => void;
   loading: boolean;
 }
@@ -22,35 +21,46 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthResponse["user"] | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
-  const router = useRouter();
 
   useEffect(() => {
-    // Check authentication status on mount
-    const checkAuth = () => {
-      const authenticated = checkIsAuthenticated();
-      setIsAuthenticated(authenticated);
+    // Check authentication status on mount and token changes
+    const checkAuth = async () => {
+      try {
+        const token = getAuthToken();
+        const authenticated = !!token;
+        setIsAuthenticated(authenticated);
 
-      if (authenticated) {
-        setUser(getUser());
+        if (authenticated) {
+          const userData = getUser();
+          setUser(userData);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+        setIsAuthenticated(false);
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     };
 
     checkAuth();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (username: string, password: string) => {
     setLoading(true);
     try {
-      const response = await authLogin({ email, password });
+      const response = await authLogin({ username, password });
       setUser(response.user);
       setIsAuthenticated(true);
-      router.push("/cms/dashboard");
+      window.location.href = "/cms/dashboard";
     } catch (error) {
+      setIsAuthenticated(false);
+      setUser(null);
       throw error;
     } finally {
       setLoading(false);
@@ -61,7 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     authLogout();
     setUser(null);
     setIsAuthenticated(false);
-    router.push("/cms/login");
+    window.location.href = "/cms/login";
   };
 
   return (

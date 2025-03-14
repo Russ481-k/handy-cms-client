@@ -1,50 +1,39 @@
 import { NextResponse } from "next/server";
-import { sign } from "jsonwebtoken";
+import {
+  validateUser,
+  generateToken,
+  createInitialAdmin,
+} from "@/lib/auth-utils";
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"; // 실제 운영에서는 반드시 환경변수로 관리
+// 서버 시작 시 초기 admin 계정 생성
+createInitialAdmin().catch(console.error);
 
 // This is a mock authentication endpoint
 // In a real application, you would validate credentials against a database
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, password } = body;
+    const { username, password } = body;
 
     // Simple validation
-    if (!email || !password) {
+    if (!username || !password) {
       return NextResponse.json(
-        { message: "Email and password are required" },
+        { message: "Username and password are required" },
         { status: 400 }
       );
     }
 
-    // Mock authentication - in a real app, you would check against a database
-    // For demo purposes, we'll accept any email with a password of "password123"
-    if (password !== "password123") {
+    // Validate user against database
+    const user = await validateUser(username, password);
+    if (!user) {
       return NextResponse.json(
         { message: "Invalid credentials" },
         { status: 401 }
       );
     }
 
-    // Create user object
-    const user = {
-      id: "1",
-      email,
-      name: email.split("@")[0],
-      role: "admin",
-    };
-
     // Generate JWT token
-    const token = sign(
-      {
-        userId: user.id,
-        email: user.email,
-        role: user.role,
-      },
-      JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+    const token = generateToken(user);
 
     // Return the token and user info
     return NextResponse.json({

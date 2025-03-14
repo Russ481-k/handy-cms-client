@@ -9,16 +9,16 @@ import { useColors } from "@/styles/theme";
 export function Topbar({ isSidebarOpen }: { isSidebarOpen: boolean }) {
   const colors = useColors();
   const { colorMode } = useColorMode();
-  const isDark = colorMode === 'dark';
-  
+  const isDark = colorMode === "dark";
+
   // 홈페이지 스타일에 맞는 색상 적용
   const borderColor = useColorModeValue(colors.border, "whiteAlpha.200");
   const bg = useColorModeValue(
-    "rgba(255, 255, 255, 0.95)", 
+    "rgba(255, 255, 255, 0.95)",
     "rgba(15, 23, 42, 0.95)"
   );
   const textColor = useColorModeValue(colors.text.primary, "white");
-  
+
   return (
     <Box
       position="fixed"
@@ -37,8 +37,8 @@ export function Topbar({ isSidebarOpen }: { isSidebarOpen: boolean }) {
       boxShadow={colors.shadow.sm}
     >
       <Flex justify="space-between" align="center" px={4} py={2}>
-        <Text 
-          fontSize="xl" 
+        <Text
+          fontSize="xl"
           fontWeight="bold"
           bgGradient={colors.gradient.primary}
           bgClip="text"

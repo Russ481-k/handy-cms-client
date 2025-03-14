@@ -9,15 +9,17 @@ import { Field } from "@/components/ui/field";
 import { InputGroup } from "@/components/ui/input-group";
 import { useColors } from "@/styles/theme";
 import { Button } from "@/components/ui/button";
+import { useColorModeValue } from "@/components/ui/color-mode";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
-    {}
-  );
+  const [errors, setErrors] = useState<{
+    username?: string;
+    password?: string;
+  }>({});
 
   const { login } = useAuth();
   const router = useRouter();
@@ -25,13 +27,17 @@ export default function LoginPage() {
   const from = searchParams.get("from") || "/cms/dashboard";
   const colors = useColors();
 
-  const validateForm = () => {
-    const newErrors: { email?: string; password?: string } = {};
+  const inputBg = useColorModeValue("white", "whiteAlpha.50");
+  const inputBorder = useColorModeValue("gray.200", "whiteAlpha.200");
+  const inputText = useColorModeValue("gray.800", "whiteAlpha.900");
+  const inputPlaceholder = useColorModeValue("gray.400", "whiteAlpha.400");
+  const inputHover = useColorModeValue("blackAlpha.100", "whiteAlpha.100");
 
-    if (!email) {
-      newErrors.email = "이메일을 입력해주세요";
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "유효한 이메일 주소를 입력해주세요";
+  const validateForm = () => {
+    const newErrors: { username?: string; password?: string } = {};
+
+    if (!username) {
+      newErrors.username = "아이디를 입력해주세요";
     }
 
     if (!password) {
@@ -50,7 +56,7 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      await login(email, password);
+      await login(username, password);
       router.push(from);
     } catch (error) {
       console.error("Login error:", error);
@@ -86,20 +92,36 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit}>
             <Flex direction="column" gap={6}>
               <Flex direction="column" gap={5}>
-                <Field label="이메일" errorText={errors.email}>
+                <Field label="아이디" errorText={errors.username}>
                   <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="your-email@example.com"
+                    id="username"
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="admin"
+                    bg={inputBg}
+                    borderColor={inputBorder}
+                    color={inputText}
+                    _placeholder={{ color: inputPlaceholder }}
+                    _hover={{ borderColor: inputBorder }}
+                    _focus={{
+                      borderColor: colors.primary.alpha,
+                      boxShadow: `0 0 0 1px ${colors.primary.alpha}`,
+                    }}
                   />
                 </Field>
                 <Field label="비밀번호" errorText={errors.password}>
                   <InputGroup
+                    w="full"
+                    endElementProps={{
+                      paddingInline: 0,
+                    }}
                     endElement={
                       <Button
                         variant="ghost"
+                        color={inputText}
+                        borderLeftRadius="0"
+                        _hover={{ bgColor: inputHover }}
                         aria-label={
                           showPassword ? "비밀번호 숨기기" : "비밀번호 보기"
                         }
@@ -115,7 +137,16 @@ export default function LoginPage() {
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
+                      placeholder="••••"
+                      bg={inputBg}
+                      borderColor={inputBorder}
+                      color={inputText}
+                      _placeholder={{ color: inputPlaceholder }}
+                      _hover={{ borderColor: inputBorder }}
+                      _focus={{
+                        borderColor: colors.primary.alpha,
+                        boxShadow: `0 0 0 1px ${colors.primary.alpha}`,
+                      }}
                     />
                   </InputGroup>
                 </Field>

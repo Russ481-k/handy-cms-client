@@ -15,7 +15,8 @@ const ColorModeContext = createContext<ColorModeContextType | undefined>(
 );
 
 export function ColorModeProvider({ children }: { children: React.ReactNode }) {
-  const [colorMode, setColorMode] = useState<ColorMode>("light");
+  const [colorMode, setColorMode] = useState<ColorMode>("dark");
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     // 초기 컬러모드 설정
@@ -23,11 +24,11 @@ export function ColorModeProvider({ children }: { children: React.ReactNode }) {
     if (savedMode) {
       setColorMode(savedMode);
     } else {
-      const prefersDark = window.matchMedia(
-        "(prefers-color-scheme: dark)"
-      ).matches;
-      setColorMode(prefersDark ? "dark" : "light");
+      // 기본값을 다크 모드로 설정
+      setColorMode("dark");
+      localStorage.setItem("color-mode", "dark");
     }
+    setMounted(true);
   }, []);
 
   const value = {
@@ -42,6 +43,11 @@ export function ColorModeProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("color-mode", newMode);
     },
   };
+
+  // 마운트되기 전에는 children을 렌더링하지 않음
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <ColorModeContext.Provider value={value}>

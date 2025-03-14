@@ -1,19 +1,15 @@
 // Authentication service for JWT token management
+import { User } from "./auth-utils";
 
 // Types
 export interface LoginCredentials {
-  email: string;
+  username: string;
   password: string;
 }
 
 export interface AuthResponse {
   token: string;
-  user: {
-    id: string;
-    email: string;
-    name: string;
-    role: string;
-  };
+  user: User;
 }
 
 // Constants
@@ -37,11 +33,11 @@ export const removeAuthToken = (): void => {
   localStorage.removeItem(USER_KEY);
 };
 
-export const setUser = (user: AuthResponse["user"]): void => {
+export const setUser = (user: User): void => {
   localStorage.setItem(USER_KEY, JSON.stringify(user));
 };
 
-export const getUser = (): AuthResponse["user"] | null => {
+export const getUser = (): User | null => {
   if (typeof window !== "undefined") {
     const userStr = localStorage.getItem(USER_KEY);
     if (userStr) {
@@ -60,7 +56,6 @@ export const login = async (
   credentials: LoginCredentials
 ): Promise<AuthResponse> => {
   try {
-    // Replace with your actual API endpoint
     const response = await fetch("/api/auth/login", {
       method: "POST",
       headers: {
@@ -111,3 +106,17 @@ export const authenticatedFetch = async (
     headers,
   });
 };
+
+// Add middleware request interceptor
+if (typeof window !== "undefined") {
+  const originalFetch = window.fetch;
+  window.fetch = async function (input: RequestInfo | URL, init?: RequestInit) {
+    const token = getAuthToken();
+    if (token && init?.headers !== undefined) {
+      const headers = new Headers(init.headers);
+      headers.set("Authorization", `Bearer ${token}`);
+      init.headers = headers;
+    }
+    return originalFetch.call(window, input, init);
+  };
+}
