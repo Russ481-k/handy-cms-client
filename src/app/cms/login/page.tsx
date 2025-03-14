@@ -21,6 +21,7 @@ import { useColorModeValue } from "@/components/ui/color-mode";
 import { useSetRecoilState } from "recoil";
 import { userState } from "@/lib/recoil/atoms/user";
 import { toaster } from "@/components/ui/toaster";
+import { Logo } from "@/components/ui/logo";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -123,16 +124,7 @@ export default function LoginPage() {
     >
       <Container maxW="lg" px={{ base: "4", sm: "8" }}>
         <Flex direction="column" gap={3} align="center">
-          <Heading
-            fontSize={{ base: "4xl", md: "5xl" }}
-            fontWeight="black"
-            bgGradient={colors.gradient.primary}
-            bgClip="text"
-            letterSpacing="tight"
-            h="9"
-          >
-            HANDY
-          </Heading>
+          <Logo size="xl" />
           <Flex
             direction="column"
             gap={1}

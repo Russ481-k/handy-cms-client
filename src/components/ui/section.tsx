@@ -22,13 +22,16 @@ export function Section({
 }: SectionProps) {
   const colors = useColors();
   const { colorMode } = useColorMode();
-  const isDark = colorMode === 'dark';
-  
+  const isDark = colorMode === "dark";
+
   // 홈페이지 스타일에 맞는 색상 적용
   const bg = useColorModeValue(colors.cardBg, colors.cardBg);
   const borderColor = useColorModeValue(colors.border, "whiteAlpha.100");
   const textColor = useColorModeValue(colors.text.primary, colors.text.primary);
-  const subtitleColor = useColorModeValue(colors.text.secondary, "whiteAlpha.700");
+  const subtitleColor = useColorModeValue(
+    colors.text.secondary,
+    "whiteAlpha.700"
+  );
 
   return (
     <Flex
@@ -48,6 +51,7 @@ export function Section({
       _hover={{
         boxShadow: colors.shadow.md,
         borderColor: colors.primary.alpha,
+        bgColor: colors.cardBg,
       }}
     >
       {/* Header */}

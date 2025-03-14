@@ -48,8 +48,8 @@ export const COLORS = {
   },
   dark: {
     bg: "#0f172a",
-    cardBg: "#1e293b",
-    border: "#334155",
+    cardBg: "#1e293bff",
+    border: "#3341556c",
     text: {
       primary: "#f8fafc",
       secondary: "#cbd5e1",
@@ -116,7 +116,7 @@ export const STYLES = {
       py: 6,
       borderRadius: "2xl",
       transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-      _hover: { 
+      _hover: {
         transform: "translateY(-2px)",
       },
     },
@@ -127,7 +127,7 @@ export const STYLES = {
       borderRadius: "2xl",
       borderWidth: "1px",
       backdropFilter: "blur(12px)",
-      _hover: { 
+      _hover: {
         transform: "translateY(-2px)",
       },
     },
@@ -171,4 +171,4 @@ export const STYLES = {
       transform: "translateY(-1px)",
     },
   },
-}; 
+};

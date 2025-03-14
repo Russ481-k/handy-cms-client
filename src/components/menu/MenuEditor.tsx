@@ -8,10 +8,10 @@ import {
   Button,
   VStack,
   Heading,
-  Field,
-  Switch,
-  NativeSelect,
+  Text,
 } from "@chakra-ui/react";
+import { useColorModeValue } from "@/components/ui/color-mode";
+import { useColors } from "@/styles/theme";
 import { Menu } from "@/app/cms/menu/page";
 
 interface MenuEditorProps {
@@ -34,6 +34,38 @@ export function MenuEditor({ menu, onClose }: MenuEditorProps) {
     parentId: menu?.parentId || "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // 컬러 모드에 맞는 색상 설정
+  const colors = useColors();
+  const bgColor = useColorModeValue(colors.cardBg, colors.cardBg);
+  const borderColor = useColorModeValue(colors.border, colors.border);
+  const textColor = useColorModeValue(colors.text.primary, colors.text.primary);
+  const errorColor = useColorModeValue("red.500", "red.300");
+  const buttonBg = useColorModeValue(
+    colors.primary.default,
+    colors.primary.default
+  );
+  const buttonHoverBg = useColorModeValue(
+    colors.primary.hover,
+    colors.primary.hover
+  );
+
+  // 셀렉트 박스 스타일
+  const selectStyle = {
+    width: "100%",
+    padding: "0.5rem",
+    borderWidth: "1px",
+    borderRadius: "0.375rem",
+    borderColor: "inherit",
+    backgroundColor: "transparent",
+  };
+
+  // 체크박스 스타일
+  const checkboxStyle = {
+    width: "1.5rem",
+    height: "1.5rem",
+    cursor: "pointer",
+  };
 
   useEffect(() => {
     // Fetch boards and contents for selection
@@ -140,134 +172,196 @@ export function MenuEditor({ menu, onClose }: MenuEditorProps) {
   };
 
   return (
-    <Box bg="white" p={6} borderRadius="lg" boxShadow="md">
-      <Heading size="md" mb={6}>
+    <Box p={2}>
+      <Heading size="md" mb={6} color={textColor}>
         {menu ? "메뉴 수정" : "새 메뉴 추가"}
       </Heading>
 
       <form onSubmit={handleSubmit}>
-        <VStack gap={4} align="stretch">
-          <Field.Root invalid={!!errors.name} required>
-            <Field.Label>메뉴명</Field.Label>
-            <Input name="name" value={formData.name} onChange={handleChange} />
-            {errors.name && <Field.ErrorText>{errors.name}</Field.ErrorText>}
-          </Field.Root>
+        <VStack gap={3} align="stretch">
+          <Box>
+            <Flex mb={1}>
+              <Text fontWeight="medium" color={textColor}>
+                메뉴명
+              </Text>
+              <Text color={errorColor} ml={1}>
+                *
+              </Text>
+            </Flex>
+            <Input
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              borderColor={errors.name ? errorColor : borderColor}
+              color={textColor}
+              bg="transparent"
+            />
+            {errors.name && (
+              <Text color={errorColor} fontSize="sm" mt={1}>
+                {errors.name}
+              </Text>
+            )}
+          </Box>
 
-          <Field.Root required>
-            <Field.Label>메뉴 유형</Field.Label>
-            <NativeSelect.Root>
-              <NativeSelect.Field
+          <Box>
+            <Flex mb={1}>
+              <Text fontWeight="medium" color={textColor}>
+                메뉴 유형
+              </Text>
+              <Text color={errorColor} ml={1}>
+                *
+              </Text>
+            </Flex>
+            <Box>
+              <select
                 name="type"
                 value={formData.type}
                 onChange={handleChange}
+                style={selectStyle}
               >
                 <option value="LINK">링크</option>
                 <option value="FOLDER">폴더</option>
                 <option value="BOARD">게시판</option>
                 <option value="CONTENT">컨텐츠</option>
-              </NativeSelect.Field>
-              <NativeSelect.Indicator />
-            </NativeSelect.Root>
-          </Field.Root>
+              </select>
+            </Box>
+          </Box>
 
           {formData.type === "LINK" && (
-            <Field.Root invalid={!!errors.url} required>
-              <Field.Label>URL</Field.Label>
-              <Input name="url" value={formData.url} onChange={handleChange} />
-              {errors.url && <Field.ErrorText>{errors.url}</Field.ErrorText>}
-            </Field.Root>
+            <Box>
+              <Flex mb={1}>
+                <Text fontWeight="medium" color={textColor}>
+                  URL
+                </Text>
+                <Text color={errorColor} ml={1}>
+                  *
+                </Text>
+              </Flex>
+              <Input
+                name="url"
+                value={formData.url}
+                onChange={handleChange}
+                borderColor={errors.url ? errorColor : borderColor}
+                color={textColor}
+                bg="transparent"
+              />
+              {errors.url && (
+                <Text color={errorColor} fontSize="sm" mt={1}>
+                  {errors.url}
+                </Text>
+              )}
+            </Box>
           )}
 
           {formData.type === "BOARD" && (
-            <Field.Root invalid={!!errors.targetId} required>
-              <Field.Label>게시판</Field.Label>
-              <NativeSelect.Root>
-                <NativeSelect.Field
+            <Box>
+              <Flex mb={1}>
+                <Text fontWeight="medium" color={textColor}>
+                  게시판
+                </Text>
+                <Text color={errorColor} ml={1}>
+                  *
+                </Text>
+              </Flex>
+              <Box>
+                <select
                   name="targetId"
                   value={formData.targetId}
                   onChange={handleChange}
-                  placeholder="게시판 선택"
+                  style={{
+                    ...selectStyle,
+                    borderColor: errors.targetId
+                      ? "var(--chakra-colors-red-500)"
+                      : "inherit",
+                  }}
                 >
+                  <option value="">게시판 선택</option>
                   {boards.map((board) => (
                     <option key={board.id} value={board.id}>
                       {board.name}
                     </option>
                   ))}
-                </NativeSelect.Field>
-                <NativeSelect.Indicator />
-              </NativeSelect.Root>
+                </select>
+              </Box>
               {errors.targetId && (
-                <Field.ErrorText>{errors.targetId}</Field.ErrorText>
+                <Text color={errorColor} fontSize="sm" mt={1}>
+                  {errors.targetId}
+                </Text>
               )}
-            </Field.Root>
+            </Box>
           )}
 
           {formData.type === "CONTENT" && (
-            <Field.Root invalid={!!errors.targetId} required>
-              <Field.Label>컨텐츠</Field.Label>
-              <NativeSelect.Root>
-                <NativeSelect.Field
+            <Box>
+              <Flex mb={1}>
+                <Text fontWeight="medium" color={textColor}>
+                  컨텐츠
+                </Text>
+                <Text color={errorColor} ml={1}>
+                  *
+                </Text>
+              </Flex>
+              <Box>
+                <select
                   name="targetId"
                   value={formData.targetId}
                   onChange={handleChange}
-                  placeholder="컨텐츠 선택"
+                  style={{
+                    ...selectStyle,
+                    borderColor: errors.targetId
+                      ? "var(--chakra-colors-red-500)"
+                      : "inherit",
+                  }}
                 >
+                  <option value="">컨텐츠 선택</option>
                   {contents.map((content) => (
                     <option key={content.id} value={content.id}>
                       {content.name}
                     </option>
                   ))}
-                </NativeSelect.Field>
-                <NativeSelect.Indicator />
-              </NativeSelect.Root>
+                </select>
+              </Box>
               {errors.targetId && (
-                <Field.ErrorText>{errors.targetId}</Field.ErrorText>
+                <Text color={errorColor} fontSize="sm" mt={1}>
+                  {errors.targetId}
+                </Text>
               )}
-            </Field.Root>
+            </Box>
           )}
 
-          <Field.Root invalid={!!errors.displayPosition} required>
-            <Field.Label>출력 위치</Field.Label>
-            <NativeSelect.Root>
-              <NativeSelect.Field
-                name="displayPosition"
-                value={formData.displayPosition}
-                onChange={handleChange}
-              >
-                <option value="HEADER">헤더</option>
-                <option value="SIDEBAR">사이드바</option>
-                <option value="FOOTER">푸터</option>
-              </NativeSelect.Field>
-              <NativeSelect.Indicator />
-            </NativeSelect.Root>
-            {errors.displayPosition && (
-              <Field.ErrorText>{errors.displayPosition}</Field.ErrorText>
-            )}
-          </Field.Root>
-
-          <Flex alignItems="center">
-            <Field.Label htmlFor="visible" mb="0" mr={2}>
+          <Flex alignItems="center" mt={2}>
+            <Text fontWeight="medium" color={textColor} mr={2}>
               메뉴 노출
-            </Field.Label>
-            <Switch.Root>
-              <Switch.HiddenInput
+            </Text>
+            <Box>
+              <input
+                type="checkbox"
                 id="visible"
                 name="visible"
                 checked={formData.visible}
                 onChange={handleSwitchChange}
+                style={checkboxStyle}
               />
-              <Switch.Control>
-                <Switch.Thumb />
-              </Switch.Control>
-            </Switch.Root>
+            </Box>
           </Flex>
 
-          <Flex justify="flex-end" mt={4}>
-            <Button variant="outline" mr={3} onClick={onClose}>
+          <Flex justify="flex-end" gap={2} mt={4}>
+            <Button
+              variant="outline"
+              onClick={onClose}
+              borderColor={borderColor}
+              color={textColor}
+              _hover={{ bg: useColorModeValue("gray.100", "gray.700") }}
+            >
               취소
             </Button>
-            <Button type="submit" colorScheme="blue">
-              {menu ? "수정" : "추가"}
+            <Button
+              type="submit"
+              bg={buttonBg}
+              color="white"
+              _hover={{ bg: buttonHoverBg }}
+            >
+              저장
             </Button>
           </Flex>
         </VStack>

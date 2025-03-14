@@ -43,10 +43,7 @@ export default function MenuManagementPage() {
     colors.primary.hover,
     colors.primary.hover
   );
-  const emptyMessageBg = useColorModeValue(
-    colors.secondary.light,
-    colors.secondary.light
-  );
+
   const emptyMessageColor = useColorModeValue(
     colors.text.secondary,
     colors.text.secondary
@@ -84,7 +81,7 @@ export default function MenuManagementPage() {
       <Container maxW="container.xl" style={{ paddingInline: 0 }}>
         <GridSection initialLayout={menuLayout}>
           <Flex justify="space-between" align="center" h="36px">
-            <Flex align="center" gap={3} px={2}>
+            <Flex align="center" gap={2} px={2}>
               <Heading size="lg" color={headingColor} letterSpacing="tight">
                 메뉴 관리
               </Heading>
@@ -128,7 +125,6 @@ export default function MenuManagementPage() {
               direction="column"
               align="center"
               justify="center"
-              bg={emptyMessageBg}
               borderRadius="xl"
               height="100%"
               gap={4}

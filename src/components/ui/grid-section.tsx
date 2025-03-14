@@ -40,8 +40,14 @@ export function GridSection({
   const isDark = colorMode === "dark";
 
   // 테마 색상 적용
-  const bgColor = useColorModeValue(colors.cardBg, colors.cardBg);
-  const borderColor = useColorModeValue(colors.border, colors.border);
+  const bgColor = useColorModeValue(
+    "rgba(255, 255, 255, 0.5)",
+    "rgba(26, 32, 44, 0.4)"
+  );
+  const borderColor = useColorModeValue(
+    "rgba(226, 232, 240, 0.4)",
+    "rgba(74, 85, 104, 0.2)"
+  );
   const handleColor = useColorModeValue(
     colors.text.secondary,
     colors.text.secondary
@@ -55,12 +61,12 @@ export function GridSection({
     "rgba(129, 140, 248, 0.1)"
   );
   const hoverBorderColor = useColorModeValue(
-    colors.primary.alpha,
-    colors.primary.alpha
+    "rgba(99, 102, 241, 0.3)",
+    "rgba(129, 140, 248, 0.3)"
   );
   const hoverBg = useColorModeValue(
-    "rgba(241, 245, 249, 0.8)",
-    "rgba(30, 41, 59, 0.8)"
+    "rgba(241, 245, 249, 0.6)",
+    "rgba(30, 41, 59, 0.6)"
   );
 
   const childrenArray = React.Children.toArray(children);
@@ -97,18 +103,20 @@ export function GridSection({
           }
           .react-grid-item.react-grid-placeholder {
             background: ${placeholderBg};
-            opacity: 0.4;
+            opacity: 0.3;
             border-radius: 1rem;
-            border: 1px dashed ${colors.primary.default};
+            border: 1px dashed ${colors.primary.alpha};
             transition: all 200ms ease;
           }
           .react-grid-item.react-draggable-dragging {
             transition: none;
             z-index: 100;
             cursor: move;
-            box-shadow: ${colors.shadow.lg};
-            border-color: ${colors.primary.default};
-            background: ${hoverBg};
+            box-shadow: ${colors.shadow.md};
+            border-color: ${colors.primary.alpha};
+            background: ${isDark
+              ? "rgba(30, 41, 59, 0.7)"
+              : "rgba(241, 245, 249, 0.7)"};
             backdrop-filter: blur(12px);
           }
           .react-grid-item.static {
