@@ -275,22 +275,10 @@ const MenuItem = ({
           <Flex
             flex="1"
             alignItems="center"
-            borderLeft={level > 0 ? `1px solid ${borderColor}` : "none"}
-            pl={level > 0 ? 3 : 0}
-            ml={level > 0 ? 1 : 0}
+            pl={level > 0 ? 1 : 0}
             position="relative"
             minHeight="24px"
           >
-            {level > 0 && (
-              <Box
-                position="absolute"
-                left="-1px"
-                top="-12px"
-                width="1px"
-                height="12px"
-                bg={borderColor}
-              />
-            )}
             <Text
               color={!menu.visible ? disabledTextColor : textColor}
               transition="all 0.2s ease"
@@ -303,7 +291,6 @@ const MenuItem = ({
             </Text>
             {!menu.visible && (
               <Box
-                ml={2}
                 px={1.5}
                 py={0.5}
                 borderRadius="full"
@@ -330,14 +317,6 @@ export function MenuList({ onEditMenu }: MenuListProps) {
   const [menus, setMenus] = useState<Menu[]>([]);
   const [expandedMenus, setExpandedMenus] = useState<Set<number>>(new Set());
   const bgColor = useColorModeValue("transparent", "transparent");
-  const lineColor = useColorModeValue(
-    "rgba(226, 232, 240, 0.7)",
-    "rgba(74, 85, 104, 0.3)"
-  );
-  const borderColor = useColorModeValue(
-    "rgba(226, 232, 240, 0.5)",
-    "rgba(74, 85, 104, 0.2)"
-  );
 
   useEffect(() => {
     fetchMenus();
@@ -433,21 +412,7 @@ export function MenuList({ onEditMenu }: MenuListProps) {
         {expandedMenus.has(menu.id) &&
           menu.children &&
           menu.children.length > 0 && (
-            <Box
-              pl={level === 0 ? 4 : 2}
-              ml={2}
-              position="relative"
-              _before={{
-                content: '""',
-                position: "absolute",
-                left: "0",
-                top: "0",
-                bottom: "8px",
-                width: "1px",
-                bg: borderColor,
-                opacity: 0.7,
-              }}
-            >
+            <Box pl={level === 0 ? 3 : 2}>
               {renderMenuItems(
                 menu.children,
                 level + 1,
