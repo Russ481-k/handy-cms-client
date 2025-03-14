@@ -15,19 +15,32 @@ interface AvatarProps {
 
 type Placement = "bottom" | "right-start" | "right-end";
 
-export function Avatar({ isSidebarOpen, asButton = true, gradientBorder = false }: AvatarProps) {
+export function Avatar({
+  isSidebarOpen,
+  asButton = true,
+  gradientBorder = false,
+}: AvatarProps) {
   const [placement, setPlacement] = useState<Placement>("right-start");
   const colors = useColors();
   const { colorMode } = useColorMode();
-  const isDark = colorMode === 'dark';
-  
+  const isDark = colorMode === "dark";
+
   // 홈페이지 스타일에 맞는 색상 적용
   const textColor = useColorModeValue(colors.text.primary, "whiteAlpha.900");
   const menuBg = useColorModeValue(colors.cardBg, colors.cardBg);
   const menuBorderColor = useColorModeValue(colors.border, "whiteAlpha.100");
-  const menuItemHoverBg = useColorModeValue(colors.primary.alpha, "whiteAlpha.200");
-  const menuTextColor = useColorModeValue(colors.text.primary, colors.text.primary);
-  const menuSubtitleColor = useColorModeValue(colors.text.secondary, "whiteAlpha.700");
+  const menuItemHoverBg = useColorModeValue(
+    colors.primary.alpha,
+    "whiteAlpha.200"
+  );
+  const menuTextColor = useColorModeValue(
+    colors.text.primary,
+    colors.text.primary
+  );
+  const menuSubtitleColor = useColorModeValue(
+    colors.text.secondary,
+    "whiteAlpha.700"
+  );
   const { toggleColorMode } = useColorMode();
 
   const stats = [
@@ -51,14 +64,24 @@ export function Avatar({ isSidebarOpen, asButton = true, gradientBorder = false 
 
   const avatarContent = (
     <>
-      <Box 
-        position="relative" 
-        borderRadius="full" 
+      <Box
+        position="relative"
+        borderRadius="full"
         p={gradientBorder ? "2px" : "0"}
         bgGradient={gradientBorder ? colors.gradient.primary : undefined}
-        boxShadow={gradientBorder ? `0 0 0 1px ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}` : "none"}
+        boxShadow={
+          gradientBorder
+            ? `0 0 0 1px ${
+                isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"
+              }`
+            : "none"
+        }
       >
-        <ChakraAvatar size="2xs" name="Sage" src="https://bit.ly/sage-adebayo" />
+        <ChakraAvatar
+          size="2xs"
+          name="Sage"
+          src="https://bit.ly/sage-adebayo"
+        />
       </Box>
       <Text
         color="inherit"
@@ -168,8 +191,8 @@ export function Avatar({ isSidebarOpen, asButton = true, gradientBorder = false 
               color={menuTextColor}
               _hover={{ bg: menuItemHoverBg, color: colors.primary.default }}
             >
-              <Box 
-                as={isDark ? LuSun : LuMoon} 
+              <Box
+                as={isDark ? LuSun : LuMoon}
                 color={colors.primary.default}
                 mr={1}
               />
@@ -185,9 +208,9 @@ export function Avatar({ isSidebarOpen, asButton = true, gradientBorder = false 
                 color={menuTextColor}
                 _hover={{ bg: menuItemHoverBg, color: colors.primary.default }}
               >
-                <Box 
-                  as={LuSettings} 
-                  fontSize="20px" 
+                <Box
+                  as={LuSettings}
+                  fontSize="20px"
                   color={colors.primary.default}
                   mr={1}
                 />

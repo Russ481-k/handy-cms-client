@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "../globals.css";
 import { RootLayoutClient } from "@/components/layout/RootLayoutClient";
 import { Flex } from "@chakra-ui/react";
+import { AuthProvider } from "@/lib/AuthContext";
 
 const geistSans = localFont({
   src: "../fonts/GeistVF.woff",
@@ -27,7 +28,7 @@ export default function RootLayout({
 }) {
   return (
     <Flex className={`${geistSans.variable} ${geistMono.variable}`}>
-      {children}
+      <AuthProvider>{children}</AuthProvider>
     </Flex>
   );
 }
