@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useDrag, useDrop } from "react-dnd";
-import { FiChevronRight, FiChevronDown, FiCircle } from "react-icons/fi";
+import { FiChevronRight, FiChevronDown, FiCircle, FiX } from "react-icons/fi";
 import { Box, Flex, Text, Button, Center, Icon } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
@@ -27,6 +27,7 @@ interface MenuItemProps {
     targetId: number,
     position: "inside" | "before" | "after"
   ) => void;
+  onDeleteMenu: (menuId: number) => void;
   index: number;
 }
 
@@ -37,6 +38,7 @@ const MenuItem = ({
   expanded,
   onToggle,
   onMoveMenu,
+  onDeleteMenu,
   index,
 }: MenuItemProps) => {
   const ref = useRef<HTMLDivElement>(null);
@@ -167,6 +169,11 @@ const MenuItem = ({
   const dragDropRef = useRef<HTMLDivElement>(null);
   drag(dragDropRef);
   drop(dragDropRef);
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDeleteMenu(menu.id);
+  };
 
   return (
     <div ref={dragDropRef} style={{ opacity: isDragging ? 0.5 : 1 }}>
@@ -303,6 +310,24 @@ const MenuItem = ({
               </Box>
             )}
           </Flex>
+          {menu.name !== "홈" && (
+            <Button
+              size="xs"
+              variant="ghost"
+              p={1}
+              minW="auto"
+              h="auto"
+              onClick={handleDelete}
+              opacity={0}
+              _groupHover={{ opacity: 1 }}
+              transition="all 0.2s ease"
+              color="gray.500"
+              _hover={{ color: "red.500" }}
+              ml={2}
+            >
+              <FiX size={14} />
+            </Button>
+          )}
         </Flex>
       </Flex>
     </div>
@@ -320,6 +345,23 @@ export function MenuList({ onEditMenu }: MenuListProps) {
 
   useEffect(() => {
     fetchMenus();
+  }, []);
+
+  useEffect(() => {
+    const handleRefresh = () => {
+      fetchMenus();
+    };
+
+    const menuListElement = document.querySelector('[data-testid="menu-list"]');
+    if (menuListElement) {
+      menuListElement.addEventListener("refresh", handleRefresh);
+    }
+
+    return () => {
+      if (menuListElement) {
+        menuListElement.removeEventListener("refresh", handleRefresh);
+      }
+    };
   }, []);
 
   // 메뉴 데이터 가져오기
@@ -392,6 +434,34 @@ export function MenuList({ onEditMenu }: MenuListProps) {
     }
   };
 
+  const handleDeleteMenu = async (menuId: number) => {
+    try {
+      const response = await fetch(`/api/menus/${menuId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete menu");
+      }
+
+      // 성공 시 메뉴 데이터 다시 불러오기
+      fetchMenus();
+
+      toaster.success({
+        title: "메뉴 삭제 완료",
+        description: "메뉴가 성공적으로 삭제되었습니다.",
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error("Failed to delete menu:", error);
+      toaster.error({
+        title: "메뉴 삭제 실패",
+        description: "메뉴 삭제 중 오류가 발생했습니다.",
+        duration: 3000,
+      });
+    }
+  };
+
   // 메뉴 항목 렌더링 함수
   const renderMenuItems = (
     items: Menu[],
@@ -407,6 +477,7 @@ export function MenuList({ onEditMenu }: MenuListProps) {
           expanded={expandedMenus.has(menu.id)}
           onToggle={() => toggleExpanded(menu.id)}
           onMoveMenu={handleMoveMenu}
+          onDeleteMenu={handleDeleteMenu}
           index={parentIndex * 100 + index}
         />
         {expandedMenus.has(menu.id) &&
@@ -426,6 +497,7 @@ export function MenuList({ onEditMenu }: MenuListProps) {
 
   return (
     <Box
+      data-testid="menu-list"
       borderRadius="md"
       overflow="hidden"
       bg={bgColor}

@@ -19,9 +19,10 @@ import { Menu } from "@/app/cms/menu/page";
 interface MenuEditorProps {
   menu?: Menu | null;
   onClose: () => void;
+  onDelete?: (menuId: number) => void;
 }
 
-export function MenuEditor({ menu, onClose }: MenuEditorProps) {
+export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
   const [boards, setBoards] = useState<Array<{ id: number; name: string }>>([]);
   const [contents, setContents] = useState<Array<{ id: number; name: string }>>(
     []
@@ -173,11 +174,33 @@ export function MenuEditor({ menu, onClose }: MenuEditorProps) {
     }
   };
 
+  const handleDelete = async () => {
+    if (!menu || !onDelete) return;
+
+    if (window.confirm("정말로 이 메뉴를 삭제하시겠습니까?")) {
+      onDelete(menu.id);
+      onClose();
+    }
+  };
+
   return (
     <Box p={2}>
-      <Heading size="md" mb={6} color={textColor}>
-        {menu ? "메뉴 수정" : "새 메뉴 추가"}
-      </Heading>
+      <Flex justify="space-between" align="center" mb={6}>
+        <Heading size="md" color={textColor}>
+          {menu ? "메뉴 수정" : "새 메뉴 추가"}
+        </Heading>
+        {menu && menu.name !== "홈" && (
+          <Button
+            size="sm"
+            variant="ghost"
+            color="red.500"
+            _hover={{ bg: "red.50" }}
+            onClick={handleDelete}
+          >
+            삭제
+          </Button>
+        )}
+      </Flex>
 
       <form onSubmit={handleSubmit}>
         <VStack gap={3} align="stretch">

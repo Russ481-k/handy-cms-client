@@ -71,6 +71,29 @@ export default function MenuManagementPage() {
     setSelectedMenu(null);
   };
 
+  const handleDeleteMenu = async (menuId: number) => {
+    try {
+      const response = await fetch(`/api/menus/${menuId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete menu");
+      }
+
+      // 메뉴 목록 새로고침을 위해 MenuList 컴포넌트를 다시 렌더링
+      const menuListElement = document.querySelector(
+        '[data-testid="menu-list"]'
+      );
+      if (menuListElement) {
+        menuListElement.dispatchEvent(new Event("refresh"));
+      }
+    } catch (error) {
+      console.error("Failed to delete menu:", error);
+      alert("메뉴 삭제 중 오류가 발생했습니다.");
+    }
+  };
+
   // 메뉴 관리 페이지 레이아웃 정의
   const menuLayout = [
     { id: "header", x: 0, y: 0, w: 12, h: 1, isStatic: true, isHeader: true },
@@ -121,7 +144,11 @@ export default function MenuManagementPage() {
 
           {isEditorOpen ? (
             <Box>
-              <MenuEditor menu={selectedMenu} onClose={handleCloseEditor} />
+              <MenuEditor
+                menu={selectedMenu}
+                onClose={handleCloseEditor}
+                onDelete={handleDeleteMenu}
+              />
             </Box>
           ) : (
             <Flex
