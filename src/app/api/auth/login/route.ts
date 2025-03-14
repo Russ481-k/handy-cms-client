@@ -13,18 +13,18 @@ createInitialAdmin().catch(console.error);
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { username, password } = body;
+    const { id, password } = body;
 
     // Simple validation
-    if (!username || !password) {
+    if (!id || !password) {
       return NextResponse.json(
-        { message: "Username and password are required" },
+        { message: "ID and password are required" },
         { status: 400 }
       );
     }
 
     // Validate user against database
-    const user = await validateUser(username, password);
+    const user = await validateUser(id, password);
     if (!user) {
       return NextResponse.json(
         { message: "Invalid credentials" },

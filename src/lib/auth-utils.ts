@@ -7,7 +7,7 @@ const SALT_ROUNDS = 10;
 
 export interface User {
   id: string;
-  username: string;
+  name: string;
   email: string;
   role: string;
 }
@@ -66,7 +66,7 @@ export async function createInitialAdmin() {
 }
 
 export async function validateUser(
-  username: string,
+  id: string,
   password: string
 ): Promise<User | null> {
   try {
@@ -74,7 +74,7 @@ export async function validateUser(
     try {
       const [users] = await connection.execute(
         "SELECT * FROM users WHERE username = ?",
-        [username]
+        [id]
       );
 
       if (!Array.isArray(users) || users.length === 0) {
@@ -90,7 +90,7 @@ export async function validateUser(
 
       return {
         id: user.id,
-        username: user.username,
+        name: user.username,
         email: user.email,
         role: user.role,
       };
@@ -107,7 +107,7 @@ export function generateToken(user: User): string {
   return sign(
     {
       userId: user.id,
-      username: user.username,
+      name: user.name,
       email: user.email,
       role: user.role,
     },
@@ -120,7 +120,7 @@ export function verifyToken(token: string): User {
   const decoded = verify(token, JWT_SECRET) as any;
   return {
     id: decoded.userId,
-    username: decoded.username,
+    name: decoded.name,
     email: decoded.email,
     role: decoded.role,
   };

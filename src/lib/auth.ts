@@ -1,15 +1,19 @@
 // Authentication service for JWT token management
-import { User } from "./auth-utils";
 
 // Types
 export interface LoginCredentials {
-  username: string;
+  email: string;
   password: string;
 }
 
 export interface AuthResponse {
   token: string;
-  user: User;
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    role: string;
+  };
 }
 
 // Constants
@@ -33,11 +37,11 @@ export const removeAuthToken = (): void => {
   localStorage.removeItem(USER_KEY);
 };
 
-export const setUser = (user: User): void => {
+export const setUser = (user: AuthResponse["user"]): void => {
   localStorage.setItem(USER_KEY, JSON.stringify(user));
 };
 
-export const getUser = (): User | null => {
+export const getUser = (): AuthResponse["user"] | null => {
   if (typeof window !== "undefined") {
     const userStr = localStorage.getItem(USER_KEY);
     if (userStr) {
@@ -56,6 +60,7 @@ export const login = async (
   credentials: LoginCredentials
 ): Promise<AuthResponse> => {
   try {
+    // Replace with your actual API endpoint
     const response = await fetch("/api/auth/login", {
       method: "POST",
       headers: {
@@ -86,37 +91,3 @@ export const logout = (): void => {
   removeAuthToken();
   // Redirect to login page can be handled by the component
 };
-
-// API request helper with authentication
-export const authenticatedFetch = async (
-  url: string,
-  options: RequestInit = {}
-): Promise<Response> => {
-  const token = getAuthToken();
-
-  if (!token) {
-    throw new Error("No authentication token found");
-  }
-
-  const headers = new Headers(options.headers || {});
-  headers.set("Authorization", `Bearer ${token}`);
-
-  return fetch(url, {
-    ...options,
-    headers,
-  });
-};
-
-// Add middleware request interceptor
-if (typeof window !== "undefined") {
-  const originalFetch = window.fetch;
-  window.fetch = async function (input: RequestInfo | URL, init?: RequestInit) {
-    const token = getAuthToken();
-    if (token && init?.headers !== undefined) {
-      const headers = new Headers(init.headers);
-      headers.set("Authorization", `Bearer ${token}`);
-      init.headers = headers;
-    }
-    return originalFetch.call(window, input, init);
-  };
-}

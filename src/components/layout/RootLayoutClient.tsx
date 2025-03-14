@@ -5,7 +5,6 @@ import { Global } from "@emotion/react";
 import { getScrollbarStyle } from "@/styles/scrollbar";
 import { useColorMode, useColorModeValue } from "@/components/ui/color-mode";
 import { useState, useEffect } from "react";
-import { Provider } from "@/components/ui/provider";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Bottombar } from "@/components/layout/Bottombar";
 import { Topbar } from "@/components/layout/Topbar";
@@ -13,14 +12,13 @@ import { usePathname, useRouter } from "next/navigation";
 import { useColors } from "@/styles/theme";
 import { ColorModeToggle } from "@/components/ui/ColorModeToggle";
 import { useAuth } from "@/lib/AuthContext";
-import { AuthProvider } from "@/lib/AuthContext";
 
 function Layout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
   const colors = useColors();
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -38,7 +36,7 @@ function Layout({ children }: { children: React.ReactNode }) {
   }, [isLargerThanLg]);
 
   useEffect(() => {
-    if (!loading) {
+    if (!isLoading) {
       if (isCMSPath) {
         if (isAuthenticated) {
           if (isLoginPage || pathname === "/cms") {
@@ -51,10 +49,10 @@ function Layout({ children }: { children: React.ReactNode }) {
         }
       }
     }
-  }, [isAuthenticated, loading, pathname, router, isCMSPath, isLoginPage]);
+  }, [isAuthenticated, isLoading, pathname, router, isCMSPath, isLoginPage]);
 
   // 로딩 중이거나 인증되지 않은 CMS 페이지인 경우 네비게이션 숨김
-  if (loading || (isCMSPath && !isAuthenticated)) {
+  if (isLoading || (isCMSPath && !isAuthenticated)) {
     return (
       <Box
         bg={mainBg}
@@ -145,11 +143,5 @@ function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export function RootLayoutClient({ children }: { children: React.ReactNode }) {
-  return (
-    <Provider>
-      <AuthProvider>
-        <Layout>{children}</Layout>
-      </AuthProvider>
-    </Provider>
-  );
+  return <Layout>{children}</Layout>;
 }

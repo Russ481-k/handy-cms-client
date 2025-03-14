@@ -2,8 +2,15 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Box, Container, Flex, Heading, Input, Text } from "@chakra-ui/react";
-import { Checkbox } from "@chakra-ui/react/checkbox";
+import {
+  Box,
+  Container,
+  Flex,
+  Heading,
+  Input,
+  Text,
+  Checkbox,
+} from "@chakra-ui/react";
 import { LuEye, LuEyeOff, LuCheck } from "react-icons/lu";
 import { useAuth } from "@/lib/AuthContext";
 import { Field } from "@/components/ui/field";
@@ -11,15 +18,17 @@ import { InputGroup } from "@/components/ui/input-group";
 import { useColors } from "@/styles/theme";
 import { Button } from "@/components/ui/button";
 import { useColorModeValue } from "@/components/ui/color-mode";
+import { useSetRecoilState } from "recoil";
+import { userState } from "@/lib/recoil/atoms/user";
+import { toaster } from "@/components/ui/toaster";
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("");
+  const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberId, setRememberId] = useState(false);
   const [errors, setErrors] = useState<{
-    username?: string;
+    id?: string;
     password?: string;
   }>({});
 
@@ -28,6 +37,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const from = searchParams.get("from") || "/cms/dashboard";
   const colors = useColors();
+  const setUser = useSetRecoilState(userState);
 
   const inputBg = useColorModeValue("white", "whiteAlpha.50");
   const inputBorder = useColorModeValue("gray.200", "whiteAlpha.200");
@@ -36,19 +46,18 @@ export default function LoginPage() {
   const inputHover = useColorModeValue("blackAlpha.100", "whiteAlpha.100");
 
   useEffect(() => {
-    // 저장된 아이디가 있으면 불러오기
-    const savedUsername = localStorage.getItem("remember_username");
-    if (savedUsername) {
-      setUsername(savedUsername);
-      setRememberMe(true);
+    const savedId = localStorage.getItem("rememberedId");
+    if (savedId) {
+      setId(savedId);
+      setRememberId(true);
     }
   }, []);
 
   const validateForm = () => {
-    const newErrors: { username?: string; password?: string } = {};
+    const newErrors: { id?: string; password?: string } = {};
 
-    if (!username) {
-      newErrors.username = "Please enter your username";
+    if (!id) {
+      newErrors.id = "Please enter your ID";
     }
 
     if (!password) {
@@ -64,21 +73,41 @@ export default function LoginPage() {
 
     if (!validateForm()) return;
 
-    setIsSubmitting(true);
-
     try {
-      await login(username, password);
-      // 아이디 저장 처리
-      if (rememberMe) {
-        localStorage.setItem("remember_username", username);
+      const response = await login(id, password);
+      if (response.success && response.user) {
+        // 사용자 정보를 Recoil 상태에 저장
+        setUser({
+          id: response.user.id,
+          name: response.user.name,
+          email: response.user.email,
+          role: response.user.role,
+          avatar: response.user.avatar,
+        });
+
+        if (rememberId) {
+          localStorage.setItem("rememberedId", id);
+        } else {
+          localStorage.removeItem("rememberedId");
+        }
+
+        toaster.success({
+          title: "로그인 성공",
+          description: "환영합니다!",
+        });
+        router.push(from);
       } else {
-        localStorage.removeItem("remember_username");
+        toaster.error({
+          title: "로그인 실패",
+          description:
+            response.message || "아이디 또는 비밀번호가 올바르지 않습니다.",
+        });
       }
-      router.push(from);
     } catch (error) {
-      console.error("Login error:", error);
-    } finally {
-      setIsSubmitting(false);
+      toaster.error({
+        title: "오류 발생",
+        description: "로그인 중 오류가 발생했습니다.",
+      });
     }
   };
 
@@ -147,16 +176,16 @@ export default function LoginPage() {
                         fontWeight="medium"
                         letterSpacing="wide"
                       >
-                        Username
+                        ID
                       </Text>
                     }
-                    errorText={errors.username}
+                    errorText={errors.id}
                   >
                     <Input
-                      id="username"
+                      id="id"
                       type="text"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                      value={id}
+                      onChange={(e) => setId(e.target.value)}
                       placeholder="admin"
                       bg={inputBg}
                       borderColor={inputBorder}
@@ -227,8 +256,8 @@ export default function LoginPage() {
                   </Field>
                 </Flex>
                 <Checkbox.Root
-                  checked={rememberMe}
-                  onCheckedChange={(e) => setRememberMe(!!e.checked)}
+                  checked={rememberId}
+                  onCheckedChange={(e) => setRememberId(!!e.checked)}
                   colorPalette="blue"
                   size="md"
                 >
@@ -270,7 +299,6 @@ export default function LoginPage() {
                   fontSize="md"
                   fontWeight="semibold"
                   h="12"
-                  loading={isSubmitting}
                   bgGradient={colors.gradient.primary}
                   color="white"
                   letterSpacing="wide"
