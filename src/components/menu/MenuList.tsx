@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { DndProvider, useDrag, useDrop } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import { FiChevronRight, FiChevronDown, FiMenu } from "react-icons/fi";
+import { useDrag, useDrop } from "react-dnd";
+import { FiChevronRight, FiChevronDown, FiCircle } from "react-icons/fi";
 import { Box, Flex, Text, Button, Center, Icon } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
@@ -57,6 +56,22 @@ const MenuItem = ({
   const indicatorColor = useColorModeValue(
     colors.primary.default,
     colors.primary.light
+  );
+  const arrowColor = useColorModeValue(
+    colors.text.secondary,
+    "rgba(255, 255, 255, 0.7)"
+  );
+  const arrowHoverColor = useColorModeValue(
+    colors.primary.default,
+    colors.primary.light
+  );
+  const borderColor = useColorModeValue(
+    "rgba(226, 232, 240, 0.5)",
+    "rgba(74, 85, 104, 0.2)"
+  );
+  const leafColor = useColorModeValue(
+    "rgba(160, 174, 192, 0.6)",
+    "rgba(160, 174, 192, 0.4)"
   );
 
   const [{ isDragging }, drag] = useDrag({
@@ -149,13 +164,15 @@ const MenuItem = ({
   };
 
   // Connect drag and drop refs
-  drag(drop(ref));
+  const dragDropRef = useRef<HTMLDivElement>(null);
+  drag(dragDropRef);
+  drop(dragDropRef);
 
   return (
-    <div ref={ref} style={{ opacity: isDragging ? 0.5 : 1 }}>
+    <div ref={dragDropRef} style={{ opacity: isDragging ? 0.5 : 1 }}>
       <Flex
-        pl={`${level * 1.5}rem`}
-        py={2}
+        pl={`${level * 0.5}rem`}
+        py={1.5}
         px={2}
         alignItems="center"
         cursor="pointer"
@@ -172,6 +189,7 @@ const MenuItem = ({
         onClick={() => onEditMenu(menu)}
         position="relative"
         role="group"
+        mb={1}
       >
         <Box
           position="absolute"
@@ -211,39 +229,94 @@ const MenuItem = ({
             }}
           />
         )}
-        {menu.children && menu.children.length > 0 && (
-          <Button
-            size="sm"
-            variant="ghost"
-            p={1}
-            minW="auto"
-            h="auto"
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggle();
-            }}
-            transition="all 0.2s ease"
-            _hover={{ color: colors.primary.default }}
+        <Flex width="100%" alignItems="center">
+          <Box width="24px" mr={2} textAlign="center">
+            {menu.children && menu.children.length > 0 ? (
+              <Button
+                size="sm"
+                variant="ghost"
+                p={0}
+                minW="auto"
+                h="auto"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggle();
+                }}
+                transition="all 0.2s ease"
+                _hover={{ color: arrowHoverColor }}
+                color={arrowColor}
+                borderRadius="full"
+              >
+                {expanded ? (
+                  <FiChevronDown size={16} />
+                ) : (
+                  <FiChevronRight size={16} />
+                )}
+              </Button>
+            ) : (
+              <Flex
+                width="24px"
+                height="24px"
+                alignItems="center"
+                justifyContent="center"
+              >
+                <FiCircle
+                  size={6}
+                  color={leafColor}
+                  style={{
+                    opacity: 0.7,
+                    transition: "all 0.2s ease",
+                  }}
+                  className="group-hover:opacity-100"
+                />
+              </Flex>
+            )}
+          </Box>
+          <Flex
+            flex="1"
+            alignItems="center"
+            borderLeft={level > 0 ? `1px solid ${borderColor}` : "none"}
+            pl={level > 0 ? 3 : 0}
+            ml={level > 0 ? 1 : 0}
+            position="relative"
+            minHeight="24px"
           >
-            <Icon size="sm">
-              {expanded ? <FiChevronDown /> : <FiChevronRight />}
-            </Icon>
-          </Button>
-        )}
-        <Icon
-          mr={2}
-          transition="transform 0.2s ease"
-          _groupHover={{ transform: "scale(1.1)" }}
-        >
-          <FiMenu />
-        </Icon>
-        <Text
-          color={!menu.visible ? disabledTextColor : textColor}
-          transition="all 0.2s ease"
-          _groupHover={{ fontWeight: "medium" }}
-        >
-          {menu.name}
-        </Text>
+            {level > 0 && (
+              <Box
+                position="absolute"
+                left="-1px"
+                top="-12px"
+                width="1px"
+                height="12px"
+                bg={borderColor}
+              />
+            )}
+            <Text
+              color={!menu.visible ? disabledTextColor : textColor}
+              transition="all 0.2s ease"
+              _groupHover={{ fontWeight: "medium" }}
+              fontSize={level === 0 ? "sm" : "xs"}
+              fontWeight={level === 0 ? "medium" : "normal"}
+              lineHeight="short"
+            >
+              {menu.name}
+            </Text>
+            {!menu.visible && (
+              <Box
+                ml={2}
+                px={1.5}
+                py={0.5}
+                borderRadius="full"
+                bg={useColorModeValue("gray.100", "gray.700")}
+                fontSize="xs"
+              >
+                <Text fontSize="2xs" color={disabledTextColor}>
+                  숨김
+                </Text>
+              </Box>
+            )}
+          </Flex>
+        </Flex>
       </Flex>
     </div>
   );
@@ -256,9 +329,15 @@ interface MenuListProps {
 export function MenuList({ onEditMenu }: MenuListProps) {
   const [menus, setMenus] = useState<Menu[]>([]);
   const [expandedMenus, setExpandedMenus] = useState<Set<number>>(new Set());
-
-  // 테두리 색상 제거
-  const emptyBorderColor = "transparent";
+  const bgColor = useColorModeValue("transparent", "transparent");
+  const lineColor = useColorModeValue(
+    "rgba(226, 232, 240, 0.7)",
+    "rgba(74, 85, 104, 0.3)"
+  );
+  const borderColor = useColorModeValue(
+    "rgba(226, 232, 240, 0.5)",
+    "rgba(74, 85, 104, 0.2)"
+  );
 
   useEffect(() => {
     fetchMenus();
@@ -341,7 +420,7 @@ export function MenuList({ onEditMenu }: MenuListProps) {
     parentIndex: number = 0
   ) => {
     return items.map((menu, index) => (
-      <Box key={menu.id}>
+      <Box key={menu.id} mb={level === 0 ? 2 : 0}>
         <MenuItem
           menu={menu}
           level={level}
@@ -354,7 +433,21 @@ export function MenuList({ onEditMenu }: MenuListProps) {
         {expandedMenus.has(menu.id) &&
           menu.children &&
           menu.children.length > 0 && (
-            <Box>
+            <Box
+              pl={level === 0 ? 4 : 2}
+              ml={2}
+              position="relative"
+              _before={{
+                content: '""',
+                position: "absolute",
+                left: "0",
+                top: "0",
+                bottom: "8px",
+                width: "1px",
+                bg: borderColor,
+                opacity: 0.7,
+              }}
+            >
               {renderMenuItems(
                 menu.children,
                 level + 1,
@@ -367,21 +460,21 @@ export function MenuList({ onEditMenu }: MenuListProps) {
   };
 
   return (
-    <DndProvider backend={HTML5Backend}>
-      <Box
-        borderRadius="md"
-        overflow="hidden"
-        bg="transparent"
-        boxShadow="none"
-      >
-        {menus.length > 0 ? (
-          renderMenuItems(menus)
-        ) : (
-          <Center p={4} color="gray.500">
-            메뉴가 없습니다.
-          </Center>
-        )}
-      </Box>
-    </DndProvider>
+    <Box
+      borderRadius="md"
+      overflow="hidden"
+      bg={bgColor}
+      boxShadow="none"
+      position="relative"
+      py={2}
+    >
+      {menus.length > 0 ? (
+        <Box>{renderMenuItems(menus)}</Box>
+      ) : (
+        <Center p={4} color="gray.500">
+          메뉴가 없습니다.
+        </Center>
+      )}
+    </Box>
   );
 }

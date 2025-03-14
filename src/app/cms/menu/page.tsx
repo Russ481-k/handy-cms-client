@@ -8,6 +8,8 @@ import { MenuEditor } from "@/components/menu/MenuEditor";
 import { GridSection } from "@/components/ui/grid-section";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
 export interface Menu {
   id: number;
@@ -112,7 +114,9 @@ export default function MenuManagementPage() {
           </Flex>
 
           <Box>
-            <MenuList onEditMenu={handleEditMenu} />
+            <DndProvider backend={HTML5Backend}>
+              <MenuList onEditMenu={handleEditMenu} />
+            </DndProvider>
           </Box>
 
           {isEditorOpen ? (

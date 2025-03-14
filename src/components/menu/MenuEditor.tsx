@@ -9,9 +9,11 @@ import {
   VStack,
   Heading,
   Text,
+  Checkbox,
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
+import { LuCheck } from "react-icons/lu";
 import { Menu } from "@/app/cms/menu/page";
 
 interface MenuEditorProps {
@@ -330,19 +332,40 @@ export function MenuEditor({ menu, onClose }: MenuEditorProps) {
           )}
 
           <Flex alignItems="center" mt={2}>
-            <Text fontWeight="medium" color={textColor} mr={2}>
-              메뉴 노출
-            </Text>
-            <Box>
-              <input
-                type="checkbox"
-                id="visible"
-                name="visible"
-                checked={formData.visible}
-                onChange={handleSwitchChange}
-                style={checkboxStyle}
-              />
-            </Box>
+            <Checkbox.Root
+              checked={formData.visible}
+              onCheckedChange={(e) =>
+                setFormData({ ...formData, visible: !!e.checked })
+              }
+              colorPalette="blue"
+              size="md"
+            >
+              <Checkbox.HiddenInput />
+              <Checkbox.Control
+                borderColor={borderColor}
+                bg={bgColor}
+                // _hover={{
+                //   bg: inputHover,
+                // }}
+                _checked={{
+                  borderColor: "transparent",
+                  bgGradient: colors.gradient.primary,
+                  color: "white",
+                  _hover: {
+                    opacity: 0.8,
+                  },
+                }}
+              >
+                <Checkbox.Indicator>
+                  <LuCheck />
+                </Checkbox.Indicator>
+              </Checkbox.Control>
+              <Checkbox.Label>
+                <Text fontWeight="medium" color={textColor}>
+                  메뉴 노출
+                </Text>
+              </Checkbox.Label>
+            </Checkbox.Root>
           </Flex>
 
           <Flex justify="flex-end" gap={2} mt={4}>
