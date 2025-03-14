@@ -25,7 +25,7 @@ export function Avatar({
   const colors = useColors();
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
 
   // 홈페이지 스타일에 맞는 색상 적용
   const textColor = useColorModeValue(colors.text.primary, "whiteAlpha.900");
@@ -50,23 +50,11 @@ export function Avatar({
   const { toggleColorMode } = useColorMode();
 
   const stats = [
-    { label: "Id", value: "sbyun" },
-    { label: "Department", value: "Development" },
-    { label: "Rank", value: "Enterprise" },
-    { label: "Expire Date", value: "2025-12-12" },
+    { label: "Id", value: user?.id || "-" },
+    { label: "Name", value: user?.name || "-" },
+    { label: "Email", value: user?.email || "-" },
+    { label: "Role", value: user?.role || "-" },
   ];
-  // const stats2 = [
-  //   { label: "Id", value: "234", diff: -12, helpText: "Till date" },
-  //   { label: "User Name", value: "234", diff: -12, helpText: "Till date" },
-  //   { label: "E-mail", value: "234", diff: -12, helpText: "Till date" },
-  //   {
-  //     label: "Zip Code",
-  //     value: "£12,340",
-  //     diff: 12,
-  //     helpText: "Last 30 days",
-  //   },
-  //   { label: "Address", value: "3,450", diff: 4.5, helpText: "Last 30 days" },
-  // ];
 
   const avatarContent = (
     <>
@@ -85,8 +73,8 @@ export function Avatar({
       >
         <ChakraAvatar
           size="2xs"
-          name="Sage"
-          src="https://bit.ly/sage-adebayo"
+          name={user?.name || "User"}
+          src={user?.avatar}
         />
       </Box>
       <Text
@@ -98,7 +86,7 @@ export function Avatar({
         textAlign="left"
         whiteSpace="nowrap"
       >
-        Sage
+        {user?.name || "User"}
       </Text>
     </>
   );
