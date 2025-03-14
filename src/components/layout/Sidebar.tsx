@@ -113,7 +113,7 @@ export function Sidebar({ isSidebarOpen, onToggle }: SidebarProps) {
             as={isSidebarOpen ? LuChevronLeft : LuChevronRight}
             fontSize="14px"
             bgClip="text"
-            color="inherit"
+            color={colors.gradient.primary}
           />
         </IconButton>
       </Flex>
@@ -173,12 +173,10 @@ export function Sidebar({ isSidebarOpen, onToggle }: SidebarProps) {
                           : "transparent",
                       color:
                         activePath === item.path
-                          ? isDark
-                            ? "whiteAlpha.900"
-                            : "#0A3981"
+                          ? colors.gradient.primary
                           : isDark
                           ? "white"
-                          : colors.gradient.primary,
+                          : "gray.700",
                     }}
                     _active={{
                       bg:
@@ -191,7 +189,7 @@ export function Sidebar({ isSidebarOpen, onToggle }: SidebarProps) {
                         activePath === item.path
                           ? isDark
                             ? "whiteAlpha.900"
-                            : "#0A3981"
+                            : colors.gradient.primary
                           : isDark
                           ? "white"
                           : colors.gradient.primary,
@@ -199,7 +197,9 @@ export function Sidebar({ isSidebarOpen, onToggle }: SidebarProps) {
                     css={{
                       "&[data-active='true']": {
                         bg: isDark ? "whiteAlpha.200" : "gray.100",
-                        color: isDark ? "whiteAlpha.900" : "#0A3981",
+                        color: isDark
+                          ? "whiteAlpha.900"
+                          : colors.gradient.primary,
                       },
                     }}
                     data-active={activePath === item.path}

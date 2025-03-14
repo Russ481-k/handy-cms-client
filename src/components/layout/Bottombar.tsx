@@ -12,18 +12,13 @@ export function Bottombar() {
   const currentPath = usePathname();
   const colors = useColors();
   const { colorMode } = useColorMode();
-  const isDark = colorMode === 'dark';
-  
+  const isDark = colorMode === "dark";
+
   // 홈페이지 스타일에 맞는 색상 적용
-  const borderColor = useColorModeValue(colors.border, "whiteAlpha.200");
-  const bg = useColorModeValue(
-    "rgba(255, 255, 255, 0.95)", 
-    "rgba(15, 23, 42, 0.95)"
-  );
-  const activeItemBg = useColorModeValue(colors.primary.light, "whiteAlpha.200");
-  const activeItemColor = useColorModeValue(colors.primary.default, "whiteAlpha.900");
-  const textColor = useColorModeValue(colors.text.primary, "white");
-  
+  const borderColor = useColorModeValue("gray.200", "whiteAlpha.200");
+  const bg = useColorModeValue("white", "rgba(15, 23, 42, 0.95)");
+  const textColor = useColorModeValue("gray.800", "whiteAlpha.900");
+
   return (
     <Box
       position="fixed"
@@ -43,19 +38,19 @@ export function Bottombar() {
         {MenuItems.map((item, index) => (
           <Link key={index} href={item.path}>
             <Tooltip
-              showArrow
               content={item.label}
               positioning={{ placement: "top" }}
-              openDelay={100}
+              openDelay={50}
               closeDelay={200}
               contentProps={{
                 css: {
-                  width: "68px",
+                  width: "80px",
                   textAlign: "center",
-                  height: "18px",
+                  height: "24px",
                   alignItems: "center",
-                  lineHeight: "18px",
+                  lineHeight: "16px",
                   fontSize: "12px",
+                  bg: "linear-gradient(135deg, #6366f1, #8b5cf6)",
                 },
               }}
             >
@@ -64,22 +59,23 @@ export function Bottombar() {
                 aria-label={item.path}
                 as={item.icon}
                 bg="transparent"
-                color={currentPath === item.path ? colors.primary.default : textColor}
+                color={
+                  currentPath === item.path
+                    ? isDark
+                      ? "whiteAlpha.900"
+                      : colors.gradient.primary
+                    : isDark
+                    ? "whiteAlpha.600"
+                    : colors.gradient.primary
+                }
                 _hover={{
-                  bg: colors.primary.alpha,
-                  color: colors.primary.default,
+                  bg: isDark ? "whiteAlpha.200" : "gray.100",
+                  color: isDark ? "white" : colors.gradient.primary,
                 }}
                 _active={{
-                  bg: activeItemBg,
-                  color: activeItemColor,
+                  bg: isDark ? "whiteAlpha.200" : "gray.100",
+                  color: isDark ? "whiteAlpha.900" : colors.gradient.primary,
                 }}
-                css={{
-                  "&[data-active='true']": {
-                    bg: activeItemBg,
-                    color: activeItemColor,
-                  },
-                }}
-                data-active={currentPath === item.path}
                 size="sm"
                 p={1}
               />
