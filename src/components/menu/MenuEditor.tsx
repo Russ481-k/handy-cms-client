@@ -1,20 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Flex,
-  Input,
   Button,
   VStack,
   Heading,
   Text,
   Checkbox,
+  NativeSelect,
+  Input,
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
 import { LuCheck } from "react-icons/lu";
 import { Menu } from "@/app/cms/menu/page";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 
 interface MenuEditorProps {
   menu?: Menu | null;
@@ -22,21 +26,59 @@ interface MenuEditorProps {
   onDelete?: (menuId: number) => void;
 }
 
+const menuSchema = z
+  .object({
+    name: z.string().min(1, "메뉴명을 입력해주세요."),
+    type: z.enum(["LINK", "FOLDER", "BOARD", "CONTENT"]),
+    url: z.string().optional(),
+    targetId: z.string().optional(),
+    displayPosition: z.string().min(1, "출력 위치를 선택해주세요."),
+    visible: z.boolean().default(true),
+    parentId: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.type === "LINK") {
+        return !!data.url;
+      }
+      if (data.type === "BOARD" || data.type === "CONTENT") {
+        return !!data.targetId;
+      }
+      return true;
+    },
+    {
+      message: "필수 항목을 입력해주세요.",
+      path: ["url", "targetId"],
+    }
+  );
+
+type MenuFormData = z.infer<typeof menuSchema>;
+
 export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
   const [boards, setBoards] = useState<Array<{ id: number; name: string }>>([]);
   const [contents, setContents] = useState<Array<{ id: number; name: string }>>(
     []
   );
-  const [formData, setFormData] = useState({
-    name: menu?.name || "",
-    type: menu?.type || "LINK",
-    url: menu?.url || "",
-    targetId: menu?.targetId || "",
-    displayPosition: menu?.displayPosition || "HEADER",
-    visible: menu?.visible ?? true,
-    parentId: menu?.parentId || "",
+
+  const {
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<MenuFormData>({
+    resolver: zodResolver(menuSchema),
+    defaultValues: {
+      name: menu?.name || "",
+      type: menu?.type || "LINK",
+      url: menu?.url || "",
+      targetId: menu?.targetId?.toString() || "",
+      displayPosition: menu?.displayPosition || "HEADER",
+      visible: menu?.visible ?? true,
+      parentId: menu?.parentId?.toString() || "",
+    },
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const menuType = watch("type");
 
   // 컬러 모드에 맞는 색상 설정
   const colors = useColors();
@@ -47,10 +89,6 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
   const buttonBg = useColorModeValue(
     colors.primary.default,
     colors.primary.default
-  );
-  const buttonHoverBg = useColorModeValue(
-    colors.primary.hover,
-    colors.primary.hover
   );
 
   // 셀렉트 박스 스타일
@@ -64,7 +102,6 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
   };
 
   useEffect(() => {
-    // Fetch boards and contents for selection
     const fetchData = async () => {
       try {
         const [boardsResponse, contentsResponse] = await Promise.all([
@@ -83,65 +120,14 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
     fetchData();
   }, []);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-
-    // Clear error when field is changed
-    if (errors[name]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = "메뉴명을 입력해주세요.";
-    }
-
-    if (!formData.displayPosition) {
-      newErrors.displayPosition = "출력 위치를 선택해주세요.";
-    }
-
-    if (formData.type === "LINK" && !formData.url) {
-      newErrors.url = "URL을 입력해주세요.";
-    }
-
-    if (
-      (formData.type === "BOARD" || formData.type === "CONTENT") &&
-      !formData.targetId
-    ) {
-      newErrors.targetId = `${
-        formData.type === "BOARD" ? "게시판" : "컨텐츠"
-      }를 선택해주세요.`;
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
-    // 서버에 전송할 데이터 준비
-    const submitData = {
-      ...formData,
-      targetId: formData.targetId ? Number(formData.targetId) : undefined,
-      parentId: formData.parentId ? Number(formData.parentId) : undefined,
-    };
-
+  const onSubmit = async (data: MenuFormData) => {
     try {
+      const submitData = {
+        ...data,
+        targetId: data.targetId ? Number(data.targetId) : undefined,
+        parentId: data.parentId ? Number(data.parentId) : undefined,
+      };
+
       const response = await fetch(`/api/menus${menu ? `/${menu.id}` : ""}`, {
         method: menu ? "PUT" : "POST",
         headers: {
@@ -177,20 +163,9 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
         <Heading size="md" color={textColor}>
           {menu ? "메뉴 수정" : "새 메뉴 추가"}
         </Heading>
-        {menu && menu.name !== "홈" && (
-          <Button
-            size="sm"
-            variant="ghost"
-            color="red.500"
-            _hover={{ bg: "red.50" }}
-            onClick={handleDelete}
-          >
-            삭제
-          </Button>
-        )}
       </Flex>
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <VStack gap={3} align="stretch">
           <Box>
             <Flex mb={1}>
@@ -201,17 +176,21 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
                 *
               </Text>
             </Flex>
-            <Input
+            <Controller
               name="name"
-              value={formData.name}
-              onChange={handleChange}
-              borderColor={errors.name ? errorColor : borderColor}
-              color={textColor}
-              bg="transparent"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  borderColor={errors.name ? errorColor : borderColor}
+                  color={textColor}
+                  bg="transparent"
+                />
+              )}
             />
             {errors.name && (
               <Text color={errorColor} fontSize="sm" mt={1}>
-                {errors.name}
+                {errors.name.message}
               </Text>
             )}
           </Box>
@@ -225,22 +204,24 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
                 *
               </Text>
             </Flex>
-            <Box>
-              <select
-                name="type"
-                value={formData.type}
-                onChange={handleChange}
-                style={selectStyle}
-              >
-                <option value="LINK">링크</option>
-                <option value="FOLDER">폴더</option>
-                <option value="BOARD">게시판</option>
-                <option value="CONTENT">컨텐츠</option>
-              </select>
-            </Box>
+            <Controller
+              name="type"
+              control={control}
+              render={({ field }) => (
+                <NativeSelect.Root>
+                  <NativeSelect.Field {...field} style={selectStyle}>
+                    <option value="LINK">링크</option>
+                    <option value="FOLDER">폴더</option>
+                    <option value="BOARD">게시판</option>
+                    <option value="CONTENT">컨텐츠</option>
+                  </NativeSelect.Field>
+                  <NativeSelect.Indicator />
+                </NativeSelect.Root>
+              )}
+            />
           </Box>
 
-          {formData.type === "LINK" && (
+          {menuType === "LINK" && (
             <Box>
               <Flex mb={1}>
                 <Text fontWeight="medium" color={textColor}>
@@ -250,23 +231,27 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
                   *
                 </Text>
               </Flex>
-              <Input
+              <Controller
                 name="url"
-                value={formData.url}
-                onChange={handleChange}
-                borderColor={errors.url ? errorColor : borderColor}
-                color={textColor}
-                bg="transparent"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    borderColor={errors.url ? errorColor : borderColor}
+                    color={textColor}
+                    bg="transparent"
+                  />
+                )}
               />
               {errors.url && (
                 <Text color={errorColor} fontSize="sm" mt={1}>
-                  {errors.url}
+                  {errors.url.message}
                 </Text>
               )}
             </Box>
           )}
 
-          {formData.type === "BOARD" && (
+          {menuType === "BOARD" && (
             <Box>
               <Flex mb={1}>
                 <Text fontWeight="medium" color={textColor}>
@@ -276,35 +261,37 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
                   *
                 </Text>
               </Flex>
-              <Box>
-                <select
-                  name="targetId"
-                  value={formData.targetId}
-                  onChange={handleChange}
-                  style={{
-                    ...selectStyle,
-                    borderColor: errors.targetId
-                      ? "var(--chakra-colors-red-500)"
-                      : "inherit",
-                  }}
-                >
-                  <option value="">게시판 선택</option>
-                  {boards.map((board) => (
-                    <option key={board.id} value={board.id}>
-                      {board.name}
-                    </option>
-                  ))}
-                </select>
-              </Box>
+              <Controller
+                name="targetId"
+                control={control}
+                render={({ field }) => (
+                  <select
+                    {...field}
+                    style={{
+                      ...selectStyle,
+                      borderColor: errors.targetId
+                        ? "var(--chakra-colors-red-500)"
+                        : "inherit",
+                    }}
+                  >
+                    <option value="">게시판 선택</option>
+                    {boards.map((board) => (
+                      <option key={board.id} value={board.id}>
+                        {board.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              />
               {errors.targetId && (
                 <Text color={errorColor} fontSize="sm" mt={1}>
-                  {errors.targetId}
+                  {errors.targetId.message}
                 </Text>
               )}
             </Box>
           )}
 
-          {formData.type === "CONTENT" && (
+          {menuType === "CONTENT" && (
             <Box>
               <Flex mb={1}>
                 <Text fontWeight="medium" color={textColor}>
@@ -314,89 +301,112 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
                   *
                 </Text>
               </Flex>
-              <Box>
-                <select
-                  name="targetId"
-                  value={formData.targetId}
-                  onChange={handleChange}
-                  style={{
-                    ...selectStyle,
-                    borderColor: errors.targetId
-                      ? "var(--chakra-colors-red-500)"
-                      : "inherit",
-                  }}
-                >
-                  <option value="">컨텐츠 선택</option>
-                  {contents.map((content) => (
-                    <option key={content.id} value={content.id}>
-                      {content.name}
-                    </option>
-                  ))}
-                </select>
-              </Box>
+              <Controller
+                name="targetId"
+                control={control}
+                render={({ field }) => (
+                  <select
+                    {...field}
+                    style={{
+                      ...selectStyle,
+                      borderColor: errors.targetId
+                        ? "var(--chakra-colors-red-500)"
+                        : "inherit",
+                    }}
+                  >
+                    <option value="">컨텐츠 선택</option>
+                    {contents.map((content) => (
+                      <option key={content.id} value={content.id}>
+                        {content.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              />
               {errors.targetId && (
                 <Text color={errorColor} fontSize="sm" mt={1}>
-                  {errors.targetId}
+                  {errors.targetId.message}
                 </Text>
               )}
             </Box>
           )}
 
           <Flex alignItems="center" mt={2}>
-            <Checkbox.Root
-              checked={formData.visible}
-              onCheckedChange={(e) =>
-                setFormData({ ...formData, visible: !!e.checked })
-              }
-              colorPalette="blue"
-              size="md"
-            >
-              <Checkbox.HiddenInput />
-              <Checkbox.Control
-                borderColor={borderColor}
-                bg={bgColor}
-                // _hover={{
-                //   bg: inputHover,
-                // }}
-                _checked={{
-                  borderColor: "transparent",
-                  bgGradient: colors.gradient.primary,
-                  color: "white",
-                  _hover: {
-                    opacity: 0.8,
-                  },
-                }}
-              >
-                <Checkbox.Indicator>
-                  <LuCheck />
-                </Checkbox.Indicator>
-              </Checkbox.Control>
-              <Checkbox.Label>
-                <Text fontWeight="medium" color={textColor}>
-                  메뉴 노출
-                </Text>
-              </Checkbox.Label>
-            </Checkbox.Root>
+            <Controller
+              name="visible"
+              control={control}
+              render={({ field: { value, onChange } }) => (
+                <Checkbox.Root
+                  checked={value}
+                  onCheckedChange={(e) => onChange(!!e.checked)}
+                  colorPalette="blue"
+                  size="md"
+                >
+                  <Checkbox.HiddenInput />
+                  <Checkbox.Control
+                    borderColor={borderColor}
+                    bg={bgColor}
+                    _checked={{
+                      borderColor: "transparent",
+                      bgGradient: colors.gradient.primary,
+                      color: "white",
+                      _hover: {
+                        opacity: 0.8,
+                      },
+                    }}
+                  >
+                    <Checkbox.Indicator>
+                      <LuCheck />
+                    </Checkbox.Indicator>
+                  </Checkbox.Control>
+                  <Checkbox.Label>
+                    <Text fontWeight="medium" color={textColor}>
+                      메뉴 노출
+                    </Text>
+                  </Checkbox.Label>
+                </Checkbox.Root>
+              )}
+            />
           </Flex>
 
-          <Flex justify="flex-end" gap={2} mt={4}>
-            <Button
-              variant="outline"
-              onClick={onClose}
-              borderColor={borderColor}
-              color={textColor}
-              _hover={{ bg: useColorModeValue("gray.100", "gray.700") }}
-            >
-              취소
-            </Button>
-            <Button
-              type="submit"
-              bg={buttonBg}
-              color="white"
-              _hover={{ bg: buttonHoverBg }}
-            >
-              저장
-            </Button>
+          <Flex justify="space-between" gap={2} mt={4}>
+            {menu && menu.name !== "홈" && (
+              <Button
+                borderColor={colors.accent.delete.default}
+                color={colors.accent.delete.default}
+                onClick={handleDelete}
+                variant="outline"
+                _hover={{
+                  bg: colors.accent.delete.bg,
+                  borderColor: colors.accent.delete.hover,
+                  color: colors.accent.delete.hover,
+                  transform: "translateY(-1px)",
+                }}
+                _active={{ transform: "translateY(0)" }}
+                transition="all 0.2s ease"
+              >
+                삭제
+              </Button>
+            )}
+            <Flex justify="flex-end" gap={2} mt={4}>
+              <Button
+                borderColor={borderColor}
+                color={textColor}
+                onClick={onClose}
+                variant="outline"
+                _hover={{ bg: colors.secondary.hover }}
+              >
+                취소
+              </Button>
+              <Button
+                type="submit"
+                bg={buttonBg}
+                color="white"
+                _hover={{ bg: colors.primary.hover }}
+              >
+                저장
+              </Button>
+            </Flex>
           </Flex>
         </VStack>
       </form>

@@ -9,45 +9,128 @@ export const useColors = () => {
     darkBg: COLORS.dark.bg,
     border: useColorModeValue(COLORS.light.border, COLORS.dark.border),
     primary: {
-      default: useColorModeValue(COLORS.light.primary.default, COLORS.dark.primary.default),
-      hover: useColorModeValue(COLORS.light.primary.hover, COLORS.dark.primary.hover),
-      light: useColorModeValue(COLORS.light.primary.light, COLORS.dark.primary.light),
-      dark: useColorModeValue(COLORS.light.primary.dark, COLORS.dark.primary.dark),
-      alpha: useColorModeValue(COLORS.light.primary.alpha, COLORS.dark.primary.alpha),
+      default: useColorModeValue(
+        COLORS.light.primary.default,
+        COLORS.dark.primary.default
+      ),
+      hover: useColorModeValue(
+        COLORS.light.primary.hover,
+        COLORS.dark.primary.hover
+      ),
+      light: useColorModeValue(
+        COLORS.light.primary.light,
+        COLORS.dark.primary.light
+      ),
+      dark: useColorModeValue(
+        COLORS.light.primary.dark,
+        COLORS.dark.primary.dark
+      ),
+      alpha: useColorModeValue(
+        COLORS.light.primary.alpha,
+        COLORS.dark.primary.alpha
+      ),
     },
     secondary: {
-      default: useColorModeValue(COLORS.light.secondary.default, COLORS.dark.secondary.default),
-      hover: useColorModeValue(COLORS.light.secondary.hover, COLORS.dark.secondary.hover),
-      light: useColorModeValue(COLORS.light.secondary.light, COLORS.dark.secondary.light),
-      dark: useColorModeValue(COLORS.light.secondary.dark, COLORS.dark.secondary.dark),
+      default: useColorModeValue(
+        COLORS.light.secondary.default,
+        COLORS.dark.secondary.default
+      ),
+      hover: useColorModeValue(
+        COLORS.light.secondary.hover,
+        COLORS.dark.secondary.hover
+      ),
+      light: useColorModeValue(
+        COLORS.light.secondary.light,
+        COLORS.dark.secondary.light
+      ),
+      dark: useColorModeValue(
+        COLORS.light.secondary.dark,
+        COLORS.dark.secondary.dark
+      ),
     },
     text: {
-      primary: useColorModeValue(COLORS.light.text.primary, COLORS.dark.text.primary),
-      secondary: useColorModeValue(COLORS.light.text.secondary, COLORS.dark.text.secondary),
+      primary: useColorModeValue(
+        COLORS.light.text.primary,
+        COLORS.dark.text.primary
+      ),
+      secondary: useColorModeValue(
+        COLORS.light.text.secondary,
+        COLORS.dark.text.secondary
+      ),
       inverse: useColorModeValue("white", COLORS.light.text.primary),
       muted: useColorModeValue(COLORS.light.text.muted, COLORS.dark.text.muted),
-      accent: useColorModeValue(COLORS.light.primary.hover, COLORS.dark.primary.hover),
+      accent: useColorModeValue(
+        COLORS.light.primary.hover,
+        COLORS.dark.primary.hover
+      ),
     },
     accent: {
       success: {
-        default: useColorModeValue(COLORS.light.accent.success.default, COLORS.dark.accent.success.default),
-        bg: useColorModeValue(COLORS.light.accent.success.bg, COLORS.dark.accent.success.bg),
-        hover: useColorModeValue(COLORS.light.accent.success.hover, COLORS.dark.accent.success.hover),
+        default: useColorModeValue(
+          COLORS.light.accent.success.default,
+          COLORS.dark.accent.success.default
+        ),
+        bg: useColorModeValue(
+          COLORS.light.accent.success.bg,
+          COLORS.dark.accent.success.bg
+        ),
+        hover: useColorModeValue(
+          COLORS.light.accent.success.hover,
+          COLORS.dark.accent.success.hover
+        ),
       },
       warning: {
-        default: useColorModeValue(COLORS.light.accent.warning.default, COLORS.dark.accent.warning.default),
-        bg: useColorModeValue(COLORS.light.accent.warning.bg, COLORS.dark.accent.warning.bg),
-        hover: useColorModeValue(COLORS.light.accent.warning.hover, COLORS.dark.accent.warning.hover),
+        default: useColorModeValue(
+          COLORS.light.accent.warning.default,
+          COLORS.dark.accent.warning.default
+        ),
+        bg: useColorModeValue(
+          COLORS.light.accent.warning.bg,
+          COLORS.dark.accent.warning.bg
+        ),
+        hover: useColorModeValue(
+          COLORS.light.accent.warning.hover,
+          COLORS.dark.accent.warning.hover
+        ),
       },
       info: {
-        default: useColorModeValue(COLORS.light.accent.info.default, COLORS.dark.accent.info.default),
-        bg: useColorModeValue(COLORS.light.accent.info.bg, COLORS.dark.accent.info.bg),
-        hover: useColorModeValue(COLORS.light.accent.info.hover, COLORS.dark.accent.info.hover),
+        default: useColorModeValue(
+          COLORS.light.accent.info.default,
+          COLORS.dark.accent.info.default
+        ),
+        bg: useColorModeValue(
+          COLORS.light.accent.info.bg,
+          COLORS.dark.accent.info.bg
+        ),
+        hover: useColorModeValue(
+          COLORS.light.accent.info.hover,
+          COLORS.dark.accent.info.hover
+        ),
+      },
+      delete: {
+        default: useColorModeValue(
+          COLORS.light.accent.delete.default,
+          COLORS.dark.accent.delete.default
+        ),
+        bg: useColorModeValue(
+          COLORS.light.accent.delete.bg,
+          COLORS.dark.accent.delete.bg
+        ),
+        hover: useColorModeValue(
+          COLORS.light.accent.delete.hover,
+          COLORS.dark.accent.delete.hover
+        ),
       },
     },
     hover: {
-      card: useColorModeValue(COLORS.light.secondary.light, COLORS.dark.secondary.light),
-      link: useColorModeValue(COLORS.light.primary.hover, COLORS.dark.primary.hover),
+      card: useColorModeValue(
+        COLORS.light.secondary.light,
+        COLORS.dark.secondary.light
+      ),
+      link: useColorModeValue(
+        COLORS.light.primary.hover,
+        COLORS.dark.primary.hover
+      ),
     },
     shadow: {
       sm: useColorModeValue(COLORS.light.shadow.sm, COLORS.dark.shadow.sm),
@@ -64,11 +147,14 @@ export const useColors = () => {
       primary: "linear-gradient(135deg, #6366f1, #8b5cf6)",
       secondary: "linear-gradient(135deg, #0ea5e9, #6366f1)",
       accent: "linear-gradient(135deg, #8b5cf6, #ec4899)",
-    }
+    },
   };
 };
 
-export const useStyles = (colors: ReturnType<typeof useColors>, showScrollTop: boolean) => {
+export const useStyles = (
+  colors: ReturnType<typeof useColors>,
+  showScrollTop: boolean
+) => {
   return {
     container: STYLES.container,
     section: STYLES.section,
@@ -101,7 +187,7 @@ export const useStyles = (colors: ReturnType<typeof useColors>, showScrollTop: b
         ...STYLES.button.primary,
         bgGradient: colors.gradient.primary,
         color: colors.text.inverse,
-        _hover: { 
+        _hover: {
           ...STYLES.button.primary._hover,
           bgGradient: "linear-gradient(135deg, #4f46e5, #7c3aed)",
           boxShadow: colors.shadow.md,
@@ -116,7 +202,7 @@ export const useStyles = (colors: ReturnType<typeof useColors>, showScrollTop: b
         bg: "rgba(99, 102, 241, 0.1)",
         color: colors.primary.default,
         borderColor: "transparent",
-        _hover: { 
+        _hover: {
           ...STYLES.button.secondary._hover,
           bg: "rgba(99, 102, 241, 0.15)",
           borderColor: colors.primary.default,
@@ -322,8 +408,10 @@ export const useStyles = (colors: ReturnType<typeof useColors>, showScrollTop: b
       _hover: {
         bg: colors.primary.light,
         color: colors.primary.hover,
-        transform: showScrollTop ? "translateX(0) translateY(-4px)" : "translateX(100px)",
+        transform: showScrollTop
+          ? "translateX(0) translateY(-4px)"
+          : "translateX(100px)",
       },
     },
   };
-}; 
+};

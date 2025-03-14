@@ -39,6 +39,11 @@ export const COLORS = {
         bg: "#f0f9ff",
         hover: "#0284c7",
       },
+      delete: {
+        default: "#ef4444",
+        bg: "#fef2f2",
+        hover: "#dc2626",
+      },
     },
     shadow: {
       sm: "0 2px 8px rgba(15, 23, 42, 0.08)",
@@ -83,6 +88,11 @@ export const COLORS = {
         default: "#38bdf8",
         bg: "#0c4a6e",
         hover: "#7dd3fc",
+      },
+      delete: {
+        default: "#f87171",
+        bg: "#7f1d1d",
+        hover: "#ef4444",
       },
     },
     shadow: {
