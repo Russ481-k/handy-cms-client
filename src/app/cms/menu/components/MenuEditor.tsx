@@ -364,7 +364,7 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
           </Flex>
 
           <Flex justify="space-between" gap={2} mt={4}>
-            {menu && menu.name !== "홈" && (
+            {menu && menu.name !== "홈" ? (
               <Button
                 borderColor={colors.accent.delete.default}
                 color={colors.accent.delete.default}
@@ -381,6 +381,8 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
               >
                 삭제
               </Button>
+            ) : (
+              <Box />
             )}
             <Flex gap={2}>
               <Button

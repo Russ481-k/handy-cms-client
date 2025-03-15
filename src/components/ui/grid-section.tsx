@@ -1,9 +1,9 @@
 "use client";
 
-import { Box, Button, Flex, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, IconButton, Text } from "@chakra-ui/react";
 import { useColorMode, useColorModeValue } from "@/components/ui/color-mode";
 import { Responsive, WidthProvider, Layout, Layouts } from "react-grid-layout";
-import { LuGrip, LuGripHorizontal, LuMaximize2 } from "react-icons/lu";
+import { LuGrip, LuGripHorizontal, LuMaximize2, LuPlus } from "react-icons/lu";
 import * as React from "react";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
@@ -261,6 +261,7 @@ export function GridSection({
                 flex="1"
                 p="3"
                 overflow="auto"
+                h={"calc(100% - 80px)"}
                 maxH="calc(100% - 80px)"
                 minH="60px"
                 css={{
@@ -284,12 +285,7 @@ export function GridSection({
 
               {/* Section Footer with Resize Handle */}
               {!isStatic && (
-                <Flex
-                  p="3"
-                  borderTop="1px solid"
-                  borderColor={borderColor}
-                  justify="flex-end"
-                >
+                <Flex h="30px" borderTop="1px solid" borderColor={borderColor}>
                   <Button
                     aria-label="Resize section"
                     size="sm"
