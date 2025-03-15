@@ -10,27 +10,18 @@ import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-
-export interface Menu {
-  id: number;
-  name: string;
-  type: "LINK" | "FOLDER" | "BOARD" | "CONTENT";
-  url?: string;
-  targetId?: number;
-  displayPosition: string;
-  visible: boolean;
-  sortOrder: number;
-  parentId?: number;
-  children?: Menu[];
-  createdAt: string;
-  updatedAt: string;
-}
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Menu } from "./types";
+import { menuApi } from "./api";
+import { toaster } from "@/components/ui/toaster";
+import { MenuForm } from "./components/MenuForm";
 
 export default function MenuManagementPage() {
   const [selectedMenu, setSelectedMenu] = useState<Menu | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const colors = useColors();
   const bg = useColorModeValue(colors.bg, colors.darkBg);
+  const queryClient = useQueryClient();
 
   // 테마 색상 적용
   const headingColor = useColorModeValue(
@@ -56,6 +47,96 @@ export default function MenuManagementPage() {
     colors.primary.default
   );
 
+  // 메뉴 목록 조회
+  const { data: menus = [], isLoading } = useQuery({
+    queryKey: ["menus"],
+    queryFn: menuApi.getMenus,
+    refetchOnWindowFocus: true,
+    staleTime: 1000 * 60 * 5, // 5분 동안 데이터를 신선한 상태로 유지
+    gcTime: 1000 * 60 * 30, // 30분 동안 캐시 유지
+  });
+
+  // 메뉴 생성
+  const createMenuMutation = useMutation({
+    mutationFn: (menu: Omit<Menu, "id" | "createdAt" | "updatedAt">) =>
+      menuApi.createMenu(menu),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["menus"] });
+      toaster.success({
+        description: "메뉴가 생성되었습니다.",
+        duration: 2000,
+      });
+    },
+    onError: (error) => {
+      toaster.error({
+        description: "메뉴 생성에 실패했습니다.",
+        duration: 3000,
+      });
+    },
+  });
+
+  // 메뉴 수정
+  const updateMenuMutation = useMutation({
+    mutationFn: ({
+      id,
+      menu,
+    }: {
+      id: number;
+      menu: Omit<Menu, "id" | "createdAt" | "updatedAt">;
+    }) => menuApi.updateMenu(id, menu),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["menus"] });
+      setSelectedMenu(null);
+      toaster.success({
+        description: "메뉴가 수정되었습니다.",
+        duration: 2000,
+      });
+    },
+    onError: (error) => {
+      toaster.error({
+        description: "메뉴 수정에 실패했습니다.",
+        duration: 3000,
+      });
+    },
+  });
+
+  // 메뉴 삭제
+  const deleteMenuMutation = useMutation({
+    mutationFn: menuApi.deleteMenu,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["menus"] });
+      toaster.success({
+        description: "메뉴가 삭제되었습니다.",
+        duration: 2000,
+      });
+    },
+    onError: (error) => {
+      toaster.error({
+        description: "메뉴 삭제에 실패했습니다.",
+        duration: 3000,
+      });
+    },
+  });
+
+  // 메뉴 순서 변경
+  const updateMenuOrderMutation = useMutation({
+    mutationFn: (menuOrders: { id: number; sortOrder: number }[]) =>
+      menuApi.updateMenuOrder(menuOrders),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["menus"] });
+      toaster.success({
+        description: "메뉴 순서가 변경되었습니다.",
+        duration: 2000,
+      });
+    },
+    onError: (error) => {
+      toaster.error({
+        description: "메뉴 순서 변경에 실패했습니다.",
+        duration: 3000,
+      });
+    },
+  });
+
   const handleAddMenu = () => {
     setSelectedMenu(null);
     setIsEditorOpen(true);
@@ -71,26 +152,25 @@ export default function MenuManagementPage() {
     setSelectedMenu(null);
   };
 
-  const handleDeleteMenu = async (menuId: number) => {
-    try {
-      const response = await fetch(`/api/menus/${menuId}`, {
-        method: "DELETE",
-      });
+  const handleDeleteMenu = (id: number) => {
+    if (window.confirm("정말로 이 메뉴를 삭제하시겠습니까?")) {
+      deleteMenuMutation.mutate(id);
+    }
+  };
 
-      if (!response.ok) {
-        throw new Error("Failed to delete menu");
-      }
+  const handleMoveMenu = (
+    menuId: number,
+    targetId: number,
+    position: "before" | "after" | "inside"
+  ) => {
+    updateMenuOrderMutation.mutate([{ id: menuId, sortOrder: targetId }]);
+  };
 
-      // 메뉴 목록 새로고침을 위해 MenuList 컴포넌트를 다시 렌더링
-      const menuListElement = document.querySelector(
-        '[data-testid="menu-list"]'
-      );
-      if (menuListElement) {
-        menuListElement.dispatchEvent(new Event("refresh"));
-      }
-    } catch (error) {
-      console.error("Failed to delete menu:", error);
-      alert("메뉴 삭제 중 오류가 발생했습니다.");
+  const handleSubmit = (menu: Omit<Menu, "id" | "createdAt" | "updatedAt">) => {
+    if (selectedMenu) {
+      updateMenuMutation.mutate({ id: selectedMenu.id, menu });
+    } else {
+      createMenuMutation.mutate(menu);
     }
   };
 
@@ -171,7 +251,13 @@ export default function MenuManagementPage() {
 
           <Box>
             <DndProvider backend={HTML5Backend}>
-              <MenuList onEditMenu={handleEditMenu} />
+              <MenuList
+                menus={menus}
+                onEditMenu={handleEditMenu}
+                onDeleteMenu={handleDeleteMenu}
+                onMoveMenu={handleMoveMenu}
+                isLoading={isLoading}
+              />
             </DndProvider>
           </Box>
 

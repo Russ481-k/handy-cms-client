@@ -15,7 +15,7 @@ import {
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
 import { LuCheck } from "react-icons/lu";
-import { Menu } from "@/app/cms/menu/page";
+import { Menu } from "../types";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
