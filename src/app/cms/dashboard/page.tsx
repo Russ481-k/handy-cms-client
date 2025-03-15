@@ -1,9 +1,9 @@
 "use client";
 
-import { CCTVGridSection } from "@/components/sections/CCTVSection";
-import { EquipmentSection } from "@/components/sections/EquipmentSection";
-import { MonitoringSection } from "@/components/sections/MonitoringSection";
-import { StatisticsSection } from "@/components/sections/StatisticsSection";
+import { CCTVGridSection } from "@/app/cms/dashboard/components/CCTVSection";
+import { EquipmentSection } from "@/app/cms/dashboard/components/EquipmentSection";
+import { MonitoringSection } from "@/app/cms/dashboard/components/MonitoringSection";
+import { StatisticsSection } from "@/app/cms/dashboard/components/StatisticsSection";
 import { GridSection } from "@/components/ui/grid-section";
 
 import { Box, Text } from "@chakra-ui/react";

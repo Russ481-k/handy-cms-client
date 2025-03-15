@@ -3,31 +3,23 @@
 import { useState } from "react";
 import { Box, Flex, Heading, Text, Badge } from "@chakra-ui/react";
 import { Button } from "@/components/ui/button";
-import { MenuList } from "@/app/cms/menu/components/MenuList";
-import { MenuEditor } from "@/app/cms/menu/components/MenuEditor";
 import { GridSection } from "@/components/ui/grid-section";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
 
-export interface Menu {
+interface Content {
   id: number;
-  name: string;
-  type: "LINK" | "FOLDER" | "BOARD" | "CONTENT";
-  url?: string;
-  targetId?: number;
-  displayPosition: string;
-  visible: boolean;
-  sortOrder: number;
-  parentId?: number;
-  children?: Menu[];
+  title: string;
+  type: "PAGE" | "POST" | "NOTICE";
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  author: string;
   createdAt: string;
   updatedAt: string;
+  publishedAt?: string;
 }
 
-export default function MenuManagementPage() {
-  const [selectedMenu, setSelectedMenu] = useState<Menu | null>(null);
+export default function ContentManagementPage() {
+  const [selectedContent, setSelectedContent] = useState<Content | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const colors = useColors();
   const bg = useColorModeValue(colors.bg, colors.darkBg);
@@ -45,57 +37,85 @@ export default function MenuManagementPage() {
     colors.primary.hover,
     colors.primary.hover
   );
-
-  const emptyMessageColor = useColorModeValue(
-    colors.text.secondary,
-    colors.text.secondary
-  );
   const badgeBg = useColorModeValue(colors.primary.light, colors.primary.light);
   const badgeColor = useColorModeValue(
     colors.primary.default,
     colors.primary.default
   );
 
-  const handleAddMenu = () => {
-    setSelectedMenu(null);
+  const handleAddContent = () => {
+    setSelectedContent(null);
     setIsEditorOpen(true);
   };
 
-  const handleEditMenu = (menu: Menu) => {
-    setSelectedMenu(menu);
+  const handleEditContent = (content: Content) => {
+    setSelectedContent(content);
     setIsEditorOpen(true);
   };
 
   const handleCloseEditor = () => {
     setIsEditorOpen(false);
-    setSelectedMenu(null);
+    setSelectedContent(null);
   };
 
-  const handleDeleteMenu = async (menuId: number) => {
+  const handleDeleteContent = async (contentId: number) => {
     try {
-      const response = await fetch(`/api/menus/${menuId}`, {
+      const response = await fetch(`/api/content/${contentId}`, {
         method: "DELETE",
       });
 
       if (!response.ok) {
-        throw new Error("Failed to delete menu");
+        throw new Error("Failed to delete content");
       }
 
-      // 메뉴 목록 새로고침을 위해 MenuList 컴포넌트를 다시 렌더링
-      const menuListElement = document.querySelector(
-        '[data-testid="menu-list"]'
+      // 컨텐츠 목록 새로고침
+      const contentListElement = document.querySelector(
+        '[data-testid="content-list"]'
       );
-      if (menuListElement) {
-        menuListElement.dispatchEvent(new Event("refresh"));
+      if (contentListElement) {
+        contentListElement.dispatchEvent(new Event("refresh"));
       }
     } catch (error) {
-      console.error("Failed to delete menu:", error);
-      alert("메뉴 삭제 중 오류가 발생했습니다.");
+      console.error("Failed to delete content:", error);
+      alert("컨텐츠 삭제 중 오류가 발생했습니다.");
     }
   };
 
-  // 메뉴 관리 페이지 레이아웃 정의
-  const menuLayout = [
+  const handleSaveContent = async (
+    contentData: Omit<Content, "id" | "createdAt" | "updatedAt">
+  ) => {
+    try {
+      const response = await fetch("/api/content", {
+        method: selectedContent ? "PUT" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(
+          selectedContent
+            ? { ...contentData, id: selectedContent.id }
+            : contentData
+        ),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save content");
+      }
+
+      // 컨텐츠 목록 새로고침
+      const contentListElement = document.querySelector(
+        '[data-testid="content-list"]'
+      );
+      if (contentListElement) {
+        contentListElement.dispatchEvent(new Event("refresh"));
+      }
+    } catch (error) {
+      console.error("Failed to save content:", error);
+      throw error;
+    }
+  };
+
+  // 컨텐츠 관리 페이지 레이아웃 정의
+  const contentLayout = [
     {
       id: "header",
       x: 0,
@@ -106,22 +126,22 @@ export default function MenuManagementPage() {
       isHeader: true,
     },
     {
-      id: "menuList",
+      id: "contentList",
       x: 0,
       y: 1,
       w: 3,
       h: 5,
-      title: "메뉴 목록",
-      subtitle: "드래그 앤 드롭으로 메뉴 순서를 변경할 수 있습니다.",
+      title: "컨텐츠 목록",
+      subtitle: "컨텐츠를 선택하여 상세 정보를 확인하거나 수정할 수 있습니다.",
     },
     {
-      id: "menuEditor",
+      id: "contentEditor",
       x: 0,
       y: 6,
       w: 3,
       h: 6,
-      title: "메뉴 편집",
-      subtitle: "메뉴의 상세 정보를 수정할 수 있습니다.",
+      title: "컨텐츠 편집",
+      subtitle: "컨텐츠의 상세 정보를 수정할 수 있습니다.",
     },
     {
       id: "preview",
@@ -130,18 +150,18 @@ export default function MenuManagementPage() {
       w: 9,
       h: 11,
       title: "미리보기",
-      subtitle: "메뉴 구조의 실시간 미리보기입니다.",
+      subtitle: "컨텐츠의 실제 모습을 미리 확인할 수 있습니다.",
     },
   ];
 
   return (
     <Box bg={bg} minH="100vh" w="full" position="relative">
       <Box w="full">
-        <GridSection initialLayout={menuLayout}>
+        <GridSection initialLayout={contentLayout}>
           <Flex justify="space-between" align="center" h="36px">
             <Flex align="center" gap={2} px={2}>
               <Heading size="lg" color={headingColor} letterSpacing="tight">
-                메뉴 관리
+                컨텐츠 관리
               </Heading>
               <Badge
                 bg={badgeBg}
@@ -156,7 +176,7 @@ export default function MenuManagementPage() {
               </Badge>
             </Flex>
             <Button
-              onClick={handleAddMenu}
+              onClick={handleAddContent}
               bg={buttonBg}
               color="white"
               _hover={{ bg: buttonHoverBg, transform: "translateY(-2px)" }}
@@ -165,23 +185,55 @@ export default function MenuManagementPage() {
               transition="all 0.3s ease"
               size="sm"
             >
-              새 메뉴 추가
+              새 컨텐츠 추가
             </Button>
           </Flex>
 
           <Box>
-            <DndProvider backend={HTML5Backend}>
-              <MenuList onEditMenu={handleEditMenu} />
-            </DndProvider>
+            {/* ContentList 컴포넌트가 여기에 들어갈 예정 */}
+            <Flex
+              p={8}
+              direction="column"
+              align="center"
+              justify="center"
+              borderRadius="xl"
+              height="100%"
+              gap={4}
+              backdropFilter="blur(8px)"
+            >
+              <Text
+                color={colors.text.secondary}
+                fontSize="lg"
+                fontWeight="medium"
+                textAlign="center"
+              >
+                컨텐츠 목록이 여기에 표시됩니다.
+              </Text>
+            </Flex>
           </Box>
 
           {isEditorOpen ? (
             <Box>
-              <MenuEditor
-                menu={selectedMenu}
-                onClose={handleCloseEditor}
-                onDelete={handleDeleteMenu}
-              />
+              {/* ContentEditor 컴포넌트가 여기에 들어갈 예정 */}
+              <Flex
+                p={8}
+                direction="column"
+                align="center"
+                justify="center"
+                borderRadius="xl"
+                height="100%"
+                gap={4}
+                backdropFilter="blur(8px)"
+              >
+                <Text
+                  color={colors.text.secondary}
+                  fontSize="lg"
+                  fontWeight="medium"
+                  textAlign="center"
+                >
+                  컨텐츠 편집 폼이 여기에 표시됩니다.
+                </Text>
+              </Flex>
             </Box>
           ) : (
             <Flex
@@ -195,15 +247,15 @@ export default function MenuManagementPage() {
               backdropFilter="blur(8px)"
             >
               <Text
-                color={emptyMessageColor}
+                color={colors.text.secondary}
                 fontSize="lg"
                 fontWeight="medium"
                 textAlign="center"
               >
-                메뉴를 선택하거나 새 메뉴를 추가하세요.
+                컨텐츠를 선택하거나 새 컨텐츠를 추가하세요.
               </Text>
               <Button
-                onClick={handleAddMenu}
+                onClick={handleAddContent}
                 variant="outline"
                 borderColor={colors.primary.default}
                 color={colors.primary.default}
@@ -214,7 +266,7 @@ export default function MenuManagementPage() {
                 _active={{ transform: "translateY(0)" }}
                 transition="all 0.3s ease"
               >
-                새 메뉴 추가
+                새 컨텐츠 추가
               </Button>
             </Flex>
           )}
@@ -231,7 +283,7 @@ export default function MenuManagementPage() {
               backdropFilter="blur(8px)"
             >
               <Text
-                color={emptyMessageColor}
+                color={colors.text.secondary}
                 fontSize="lg"
                 fontWeight="medium"
                 textAlign="center"
@@ -243,7 +295,7 @@ export default function MenuManagementPage() {
                 fontSize="sm"
                 textAlign="center"
               >
-                메뉴 구조가 여기에 표시됩니다.
+                선택한 컨텐츠의 실제 모습이 여기에 표시됩니다.
               </Text>
             </Flex>
           </Box>

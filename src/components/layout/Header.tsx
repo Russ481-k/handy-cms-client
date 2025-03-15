@@ -50,7 +50,7 @@ export const Header = () => {
 
       setPrevScrollY(currentScrollY);
 
-      // 메인 콘텐츠 영역의 패딩 업데이트
+      // 메인 컨텐츠 영역의 패딩 업데이트
       updateMainContentPadding();
     };
 

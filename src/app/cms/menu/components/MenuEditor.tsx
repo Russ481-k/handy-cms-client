@@ -106,7 +106,7 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
       try {
         const [boardsResponse, contentsResponse] = await Promise.all([
           fetch("/api/boards"),
-          fetch("/api/contents"),
+          fetch("/api/content"),
         ]);
         const boardsData = await boardsResponse.json();
         const contentsData = await contentsResponse.json();
