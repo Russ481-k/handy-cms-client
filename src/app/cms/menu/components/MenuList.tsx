@@ -2,8 +2,16 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useDrag, useDrop } from "react-dnd";
-import { FiChevronRight, FiChevronDown, FiCircle, FiX } from "react-icons/fi";
-import { Box, Flex, Text, Button, Center } from "@chakra-ui/react";
+import {
+  FiCircle,
+  FiX,
+  FiLink,
+  FiFolder,
+  FiFolderPlus,
+  FiFileText,
+  FiFile,
+} from "react-icons/fi";
+import { Box, Flex, Text, Button, Center, IconButton } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
 import { toaster } from "@/components/ui/toaster";
@@ -173,8 +181,52 @@ const MenuItem = ({
     onDeleteMenu(menu.id);
   };
 
+  const getMenuIcon = () => {
+    const iconStyle = {
+      color: leafColor,
+      opacity: 0.7,
+      transition: "all 0.2s ease",
+    };
+
+    switch (menu.type) {
+      case "LINK":
+        return <FiLink size={14} style={iconStyle} />;
+      case "FOLDER":
+        return expanded ? (
+          <IconButton
+            aria-label="Folder Plus"
+            variant="ghost"
+            size="2xs"
+            colorScheme="gray"
+            borderRadius="full"
+          >
+            <FiFolder size={14} style={{ ...iconStyle }} />
+          </IconButton>
+        ) : (
+          <IconButton
+            aria-label="Folder"
+            variant="ghost"
+            size="2xs"
+            colorScheme="gray"
+            borderRadius="full"
+          >
+            <FiFolderPlus
+              size={14}
+              style={{ ...iconStyle, color: colors.primary.default }}
+            />
+          </IconButton>
+        );
+      case "BOARD":
+        return <FiFileText size={14} style={iconStyle} />;
+      case "CONTENT":
+        return <FiFile size={14} style={iconStyle} />;
+      default:
+        return <FiCircle size={6} style={iconStyle} />;
+    }
+  };
+
   return (
-    <div ref={dragDropRef} style={{ opacity: isDragging ? 0.5 : 1 }}>
+    <div ref={dragDropRef}>
       <Flex
         pl={`${level * 0.5}rem`}
         py={1.5}
@@ -188,6 +240,10 @@ const MenuItem = ({
           boxShadow: "sm",
           backdropFilter: "blur(4px)",
           transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+          "& .menu-icon": {
+            opacity: 1,
+            transform: "scale(1.1)",
+          },
         }}
         transition="all 0.2s ease-out"
         borderRadius="md"
@@ -195,6 +251,7 @@ const MenuItem = ({
         position="relative"
         role="group"
         mb={1}
+        mr={1}
       >
         <Box
           position="absolute"
@@ -236,46 +293,21 @@ const MenuItem = ({
         )}
         <Flex width="100%" alignItems="center">
           <Box width="24px" mr={2} textAlign="center">
-            {menu.children && menu.children.length > 0 ? (
-              <Button
-                size="sm"
-                variant="ghost"
-                p={0}
-                minW="auto"
-                h="auto"
-                onClick={(e) => {
-                  e.stopPropagation();
+            <Flex
+              width="24px"
+              height="24px"
+              alignItems="center"
+              justifyContent="center"
+              className="menu-icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (menu.children && menu.children.length > 0) {
                   onToggle();
-                }}
-                transition="all 0.2s ease"
-                _hover={{ color: arrowHoverColor }}
-                color={arrowColor}
-                borderRadius="full"
-              >
-                {expanded ? (
-                  <FiChevronDown size={16} />
-                ) : (
-                  <FiChevronRight size={16} />
-                )}
-              </Button>
-            ) : (
-              <Flex
-                width="24px"
-                height="24px"
-                alignItems="center"
-                justifyContent="center"
-              >
-                <FiCircle
-                  size={6}
-                  color={leafColor}
-                  style={{
-                    opacity: 0.7,
-                    transition: "all 0.2s ease",
-                  }}
-                  className="group-hover:opacity-100"
-                />
-              </Flex>
-            )}
+                }
+              }}
+            >
+              {getMenuIcon()}
+            </Flex>
           </Box>
           <Flex
             flex="1"
@@ -301,6 +333,7 @@ const MenuItem = ({
                 borderRadius="full"
                 bg={menuBgColor}
                 fontSize="xs"
+                ml={2}
               >
                 <Text fontSize="2xs" color={disabledTextColor}>
                   숨김
