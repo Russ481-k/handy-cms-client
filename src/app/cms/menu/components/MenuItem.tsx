@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useDrag, useDrop } from "react-dnd";
 import {
   FiCircle,
@@ -11,9 +11,20 @@ import {
   FiFileText,
   FiFile,
   FiEdit2,
+  FiCheck,
+  FiLoader,
+  FiCornerDownRight,
 } from "react-icons/fi";
 import { LuPlus } from "react-icons/lu";
-import { Box, Flex, Text, IconButton } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Text,
+  IconButton,
+  Input,
+  Spinner,
+  Kbd,
+} from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
 import { MenuItemProps, DragItem } from "../types";
@@ -28,9 +39,13 @@ export const MenuItem = ({
   onDeleteMenu,
   onAddMenu,
   index,
+  selectedMenuId,
 }: MenuItemProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const colors = useColors();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedName, setEditedName] = useState(menu.name);
+  const [isSaving, setIsSaving] = useState(false);
 
   // 컬러 모드에 맞는 호버 색상 설정
   const hoverBg = useColorModeValue(
@@ -51,6 +66,15 @@ export const MenuItem = ({
   const leafColor = useColorModeValue(
     "rgba(160, 174, 192, 0.6)",
     "rgba(160, 174, 192, 0.4)"
+  );
+
+  const selectedBg = useColorModeValue(
+    "rgba(66, 153, 225, 0.08)",
+    "rgba(99, 179, 237, 0.15)"
+  );
+  const selectedBorderColor = useColorModeValue(
+    colors.primary.default,
+    colors.primary.light
   );
 
   const [{ isDragging }, drag] = useDrag({
@@ -117,9 +141,55 @@ export const MenuItem = ({
   drag(dragDropRef);
   drop(dragDropRef);
 
-  const handleEdit = (e: React.MouseEvent) => {
+  const handleMenuClick = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest(".menu-icon")) {
+      return;
+    }
+    if ((e.target as HTMLElement).closest(".action-buttons")) {
+      return;
+    }
+    if ((e.target as HTMLElement).closest(".action-button")) {
+      return;
+    }
+    e.preventDefault();
     e.stopPropagation();
     onEditMenu(menu);
+  };
+
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsEditing(true);
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEditedName(e.target.value);
+  };
+
+  const handleNameSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (editedName.trim() !== menu.name) {
+      setIsSaving(true);
+      try {
+        await onEditMenu({ ...menu, name: editedName.trim() });
+      } finally {
+        setIsSaving(false);
+        setIsEditing(false);
+      }
+    } else {
+      setIsEditing(false);
+    }
+  };
+
+  const handleNameKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape") {
+      setEditedName(menu.name);
+      setIsEditing(false);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      handleNameSubmit(e);
+    }
   };
 
   const handleDelete = (e: React.MouseEvent) => {
@@ -186,7 +256,17 @@ export const MenuItem = ({
         px={2}
         alignItems="center"
         cursor="pointer"
-        bg={isOver ? dropBg : "transparent"}
+        bg={
+          isOver
+            ? dropBg
+            : selectedMenuId === menu.id
+            ? selectedBg
+            : "transparent"
+        }
+        borderLeft={selectedMenuId === menu.id ? "3px solid" : "none"}
+        borderColor={
+          selectedMenuId === menu.id ? selectedBorderColor : "transparent"
+        }
         _hover={{
           bg: hoverBg,
           transform: "translateX(2px)",
@@ -204,7 +284,7 @@ export const MenuItem = ({
         }}
         transition="all 0.2s ease-out"
         borderRadius="md"
-        onClick={() => onEditMenu(menu)}
+        onClick={handleMenuClick}
         position="relative"
         role="group"
         mb={1}
@@ -273,16 +353,45 @@ export const MenuItem = ({
             position="relative"
             minHeight="24px"
           >
-            <Text
-              color={!menu.visible ? disabledTextColor : textColor}
-              transition="all 0.2s ease"
-              _groupHover={{ fontWeight: "medium" }}
-              fontSize={level === 0 ? "sm" : "xs"}
-              fontWeight={level === 0 ? "medium" : "normal"}
-              lineHeight="short"
-            >
-              {menu.name}
-            </Text>
+            {isEditing ? (
+              <form onSubmit={handleNameSubmit} style={{ width: "100%" }}>
+                <Flex gap={1} alignItems="center">
+                  <Input
+                    value={editedName}
+                    onChange={handleNameChange}
+                    onKeyDown={handleNameKeyDown}
+                    size="sm"
+                    autoFocus
+                    onClick={(e) => e.stopPropagation()}
+                    onBlur={handleNameSubmit}
+                    borderColor={colors.primary.default}
+                    _focus={{
+                      borderColor: colors.primary.default,
+                      boxShadow: `0 0 0 1px ${colors.primary.default}`,
+                    }}
+                    placeholder="Enter to save"
+                  />
+                  {isSaving ? (
+                    <Spinner size="xs" color="blue.500" />
+                  ) : (
+                    <Kbd size="sm" color={colors.primary.default}>
+                      Enter
+                    </Kbd>
+                  )}
+                </Flex>
+              </form>
+            ) : (
+              <Text
+                color={!menu.visible ? disabledTextColor : textColor}
+                transition="all 0.2s ease"
+                _groupHover={{ fontWeight: "medium" }}
+                fontSize={level === 0 ? "sm" : "xs"}
+                fontWeight={level === 0 ? "medium" : "normal"}
+                lineHeight="short"
+              >
+                {menu.name}
+              </Text>
+            )}
             {!menu.visible && (
               <Box
                 px={1.5}
@@ -298,7 +407,7 @@ export const MenuItem = ({
               </Box>
             )}
           </Flex>
-          {menu.name !== "홈" && (
+          {menu.name !== "홈" && !isEditing && (
             <Flex
               className="action-buttons"
               opacity={0}
@@ -311,13 +420,14 @@ export const MenuItem = ({
                 aria-label="Edit menu"
                 size="xs"
                 variant="ghost"
-                onClick={handleEdit}
+                onClick={handleEditClick}
                 color="gray.500"
                 _hover={{ color: "blue.500", bg: "blue.50" }}
                 p={1}
                 minW="auto"
                 h="auto"
                 borderRadius="full"
+                className="action-button"
               >
                 <FiEdit2 size={14} />
               </IconButton>

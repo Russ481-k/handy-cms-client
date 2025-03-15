@@ -15,15 +15,16 @@ import {
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
 import { LuCheck } from "react-icons/lu";
-import { Menu } from "../types";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { Menu } from "../page";
 
 interface MenuEditorProps {
   menu?: Menu | null;
   onClose: () => void;
   onDelete?: (menuId: number) => void;
+  onSubmit: (menu: Omit<Menu, "id" | "createdAt" | "updatedAt">) => void;
 }
 
 const menuSchema = z
@@ -35,6 +36,7 @@ const menuSchema = z
     displayPosition: z.string().min(1, "출력 위치를 선택해주세요."),
     visible: z.boolean().default(true),
     parentId: z.string().optional(),
+    sortOrder: z.number().default(0),
   })
   .refine(
     (data) => {
@@ -54,7 +56,12 @@ const menuSchema = z
 
 type MenuFormData = z.infer<typeof menuSchema>;
 
-export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
+export function MenuEditor({
+  menu,
+  onClose,
+  onDelete,
+  onSubmit,
+}: MenuEditorProps) {
   const [boards, setBoards] = useState<Array<{ id: number; name: string }>>([]);
   const [contents, setContents] = useState<Array<{ id: number; name: string }>>(
     []
@@ -65,6 +72,7 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
     handleSubmit,
     watch,
     formState: { errors },
+    reset,
   } = useForm<MenuFormData>({
     resolver: zodResolver(menuSchema),
     defaultValues: {
@@ -75,10 +83,38 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
       displayPosition: menu?.displayPosition || "HEADER",
       visible: menu?.visible ?? true,
       parentId: menu?.parentId?.toString() || "",
+      sortOrder: menu?.sortOrder || 0,
     },
   });
 
   const menuType = watch("type");
+
+  // menu prop이 변경될 때마다 폼 데이터 업데이트
+  useEffect(() => {
+    if (menu) {
+      reset({
+        name: menu.name,
+        type: menu.type,
+        url: menu.url || "",
+        targetId: menu.targetId?.toString() || "",
+        displayPosition: menu.displayPosition,
+        visible: menu.visible,
+        parentId: menu.parentId?.toString() || "",
+        sortOrder: menu.sortOrder,
+      });
+    } else {
+      reset({
+        name: "",
+        type: "LINK",
+        url: "",
+        targetId: "",
+        displayPosition: "HEADER",
+        visible: true,
+        parentId: "",
+        sortOrder: 0,
+      });
+    }
+  }, [menu, reset]);
 
   // 컬러 모드에 맞는 색상 설정
   const colors = useColors();
@@ -120,34 +156,6 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
     fetchData();
   }, []);
 
-  const onSubmit = async (data: MenuFormData) => {
-    try {
-      const submitData = {
-        ...data,
-        targetId: data.targetId ? Number(data.targetId) : undefined,
-        parentId: data.parentId ? Number(data.parentId) : undefined,
-      };
-
-      const response = await fetch(`/api/menus${menu ? `/${menu.id}` : ""}`, {
-        method: menu ? "PUT" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(submitData),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save menu");
-      }
-
-      alert(menu ? "메뉴가 수정되었습니다." : "메뉴가 추가되었습니다.");
-      onClose();
-    } catch (error) {
-      console.error("Error saving menu:", error);
-      alert("메뉴 저장 중 오류가 발생했습니다.");
-    }
-  };
-
   const handleDelete = async () => {
     if (!menu || !onDelete) return;
 
@@ -157,9 +165,26 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
     }
   };
 
+  const handleFormSubmit = async (data: MenuFormData) => {
+    try {
+      const submitData = {
+        ...data,
+        targetId: data.targetId ? Number(data.targetId) : undefined,
+        parentId: data.parentId ? Number(data.parentId) : undefined,
+        sortOrder: menu?.sortOrder || 0,
+      };
+
+      onSubmit(submitData);
+      onClose();
+    } catch (error) {
+      console.error("Error saving menu:", error);
+      alert("메뉴 저장 중 오류가 발생했습니다.");
+    }
+  };
+
   return (
     <Box>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(handleFormSubmit)}>
         <VStack gap={3} align="stretch">
           <Box>
             <Flex mb={1}>

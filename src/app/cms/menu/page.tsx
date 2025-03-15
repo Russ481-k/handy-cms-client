@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Box, Flex, Heading, Text, Badge } from "@chakra-ui/react";
 import { Button } from "@/components/ui/button";
 import { MenuList } from "@/app/cms/menu/components/MenuList";
@@ -10,18 +10,32 @@ import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Menu } from "./types";
-import { menuApi } from "./api";
-import { toaster } from "@/components/ui/toaster";
-import { MenuForm } from "./components/MenuForm";
+import { getAuthHeader } from "@/lib/auth";
+import { MenuPreview } from "./components/MenuPreview";
+
+export interface Menu {
+  id: number;
+  name: string;
+  type: "LINK" | "FOLDER" | "BOARD" | "CONTENT";
+  url?: string;
+  targetId?: number;
+  displayPosition: string;
+  visible: boolean;
+  sortOrder: number;
+  parentId?: number;
+  children?: Menu[];
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function MenuManagementPage() {
-  const [selectedMenu, setSelectedMenu] = useState<Menu | null>(null);
-  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [selectedMenuId, setSelectedMenuId] = useState<number | undefined>(
+    undefined
+  );
+  const [menus, setMenus] = useState<Menu[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const colors = useColors();
   const bg = useColorModeValue(colors.bg, colors.darkBg);
-  const queryClient = useQueryClient();
 
   // 테마 색상 적용
   const headingColor = useColorModeValue(
@@ -47,130 +61,127 @@ export default function MenuManagementPage() {
     colors.primary.default
   );
 
-  // 메뉴 목록 조회
-  const { data: menus = [], isLoading } = useQuery({
-    queryKey: ["menus"],
-    queryFn: menuApi.getMenus,
-    refetchOnWindowFocus: true,
-    staleTime: 1000 * 60 * 5, // 5분 동안 데이터를 신선한 상태로 유지
-    gcTime: 1000 * 60 * 30, // 30분 동안 캐시 유지
-  });
-
-  // 메뉴 생성
-  const createMenuMutation = useMutation({
-    mutationFn: (menu: Omit<Menu, "id" | "createdAt" | "updatedAt">) =>
-      menuApi.createMenu(menu),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["menus"] });
-      toaster.success({
-        description: "메뉴가 생성되었습니다.",
-        duration: 2000,
+  // 메뉴 목록 새로고침 함수
+  const refreshMenus = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch("/api/cms/menu", {
+        headers: getAuthHeader(),
       });
-    },
-    onError: (error) => {
-      toaster.error({
-        description: "메뉴 생성에 실패했습니다.",
-        duration: 3000,
-      });
-    },
-  });
-
-  // 메뉴 수정
-  const updateMenuMutation = useMutation({
-    mutationFn: ({
-      id,
-      menu,
-    }: {
-      id: number;
-      menu: Omit<Menu, "id" | "createdAt" | "updatedAt">;
-    }) => menuApi.updateMenu(id, menu),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["menus"] });
-      setSelectedMenu(null);
-      toaster.success({
-        description: "메뉴가 수정되었습니다.",
-        duration: 2000,
-      });
-    },
-    onError: (error) => {
-      toaster.error({
-        description: "메뉴 수정에 실패했습니다.",
-        duration: 3000,
-      });
-    },
-  });
-
-  // 메뉴 삭제
-  const deleteMenuMutation = useMutation({
-    mutationFn: menuApi.deleteMenu,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["menus"] });
-      toaster.success({
-        description: "메뉴가 삭제되었습니다.",
-        duration: 2000,
-      });
-    },
-    onError: (error) => {
-      toaster.error({
-        description: "메뉴 삭제에 실패했습니다.",
-        duration: 3000,
-      });
-    },
-  });
-
-  // 메뉴 순서 변경
-  const updateMenuOrderMutation = useMutation({
-    mutationFn: (menuOrders: { id: number; sortOrder: number }[]) =>
-      menuApi.updateMenuOrder(menuOrders),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["menus"] });
-      toaster.success({
-        description: "메뉴 순서가 변경되었습니다.",
-        duration: 2000,
-      });
-    },
-    onError: (error) => {
-      toaster.error({
-        description: "메뉴 순서 변경에 실패했습니다.",
-        duration: 3000,
-      });
-    },
-  });
-
-  const handleAddMenu = () => {
-    setSelectedMenu(null);
-    setIsEditorOpen(true);
-  };
-
-  const handleEditMenu = (menu: Menu) => {
-    setSelectedMenu(menu);
-    setIsEditorOpen(true);
-  };
-
-  const handleCloseEditor = () => {
-    setIsEditorOpen(false);
-    setSelectedMenu(null);
-  };
-
-  const handleDeleteMenu = (id: number) => {
-    if (window.confirm("정말로 이 메뉴를 삭제하시겠습니까?")) {
-      deleteMenuMutation.mutate(id);
+      if (!response.ok) {
+        throw new Error("Failed to fetch menus");
+      }
+      const data = await response.json();
+      setMenus(data);
+    } catch (error) {
+      console.error("Error fetching menus:", error);
+      alert("메뉴 목록을 불러오는데 실패했습니다.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleMoveMenu = (
+  // 메뉴 목록 불러오기
+  useEffect(() => {
+    refreshMenus();
+  }, []);
+
+  // 메뉴 순서 변경 핸들러
+  const handleMoveMenu = async (
     menuId: number,
     targetId: number,
     position: "before" | "after" | "inside"
   ) => {
-    updateMenuOrderMutation.mutate([{ id: menuId, sortOrder: targetId }]);
+    try {
+      const response = await fetch("/api/cms/menu/order", {
+        method: "PUT",
+        headers: {
+          ...getAuthHeader(),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ menuId, targetId, position }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update menu order");
+      }
+
+      await refreshMenus();
+    } catch (error) {
+      console.error("Error updating menu order:", error);
+      alert("메뉴 순서 변경에 실패했습니다.");
+    }
   };
 
-  const handleSubmit = (menu: Omit<Menu, "id" | "createdAt" | "updatedAt">) => {
-    if (selectedMenu) {
-      updateMenuMutation.mutate({ id: selectedMenu.id, menu });
-    } else {
-      createMenuMutation.mutate(menu);
+  const handleAddMenu = () => {
+    setSelectedMenuId(undefined);
+  };
+
+  const handleAddSubMenu = (
+    parentId?: number,
+    position?: "before" | "after" | "inside"
+  ) => {
+    setSelectedMenuId(undefined);
+  };
+
+  const handleEditMenu = (menu: Menu) => {
+    setSelectedMenuId(menu.id);
+  };
+
+  const handleCloseEditor = () => {
+    setSelectedMenuId(undefined);
+  };
+
+  const handleSubmit = async (
+    menuData: Omit<Menu, "id" | "createdAt" | "updatedAt">
+  ) => {
+    try {
+      const url = selectedMenuId
+        ? `/api/cms/menu/${selectedMenuId}`
+        : "/api/cms/menu";
+      const method = selectedMenuId ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          ...getAuthHeader(),
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(menuData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save menu");
+      }
+
+      await refreshMenus();
+      setSelectedMenuId(undefined);
+      alert(
+        selectedMenuId ? "메뉴가 수정되었습니다." : "메뉴가 생성되었습니다."
+      );
+    } catch (error) {
+      console.error("Error saving menu:", error);
+      alert("메뉴 저장에 실패했습니다.");
+    }
+  };
+
+  const handleDeleteMenu = async (menuId: number) => {
+    try {
+      const response = await fetch(`/api/cms/menu/${menuId}`, {
+        method: "DELETE",
+        headers: getAuthHeader(),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete menu");
+      }
+
+      await refreshMenus();
+      setSelectedMenuId(undefined);
+      alert("메뉴가 삭제되었습니다.");
+    } catch (error) {
+      console.error("Error deleting menu:", error);
+      alert("메뉴 삭제에 실패했습니다.");
     }
   };
 
@@ -256,82 +267,24 @@ export default function MenuManagementPage() {
                 onEditMenu={handleEditMenu}
                 onDeleteMenu={handleDeleteMenu}
                 onMoveMenu={handleMoveMenu}
+                onAddMenu={handleAddSubMenu}
                 isLoading={isLoading}
+                selectedMenuId={selectedMenuId}
               />
             </DndProvider>
           </Box>
 
-          {isEditorOpen ? (
-            <Box>
-              <MenuEditor
-                menu={selectedMenu}
-                onClose={handleCloseEditor}
-                onDelete={handleDeleteMenu}
-              />
-            </Box>
-          ) : (
-            <Flex
-              p={8}
-              direction="column"
-              align="center"
-              justify="center"
-              borderRadius="xl"
-              height="100%"
-              gap={4}
-              backdropFilter="blur(8px)"
-            >
-              <Text
-                color={emptyMessageColor}
-                fontSize="lg"
-                fontWeight="medium"
-                textAlign="center"
-              >
-                메뉴를 선택하거나 새 메뉴를 추가하세요.
-              </Text>
-              <Button
-                onClick={handleAddMenu}
-                variant="outline"
-                borderColor={colors.primary.default}
-                color={colors.primary.default}
-                _hover={{
-                  bg: colors.primary.alpha,
-                  transform: "translateY(-2px)",
-                }}
-                _active={{ transform: "translateY(0)" }}
-                transition="all 0.3s ease"
-              >
-                새 메뉴 추가
-              </Button>
-            </Flex>
-          )}
+          <Box>
+            <MenuEditor
+              menu={menus.find((m) => m.id === selectedMenuId) || null}
+              onClose={handleCloseEditor}
+              onDelete={handleDeleteMenu}
+              onSubmit={handleSubmit}
+            />
+          </Box>
 
           <Box>
-            <Flex
-              p={8}
-              direction="column"
-              align="center"
-              justify="center"
-              borderRadius="xl"
-              height="100%"
-              gap={4}
-              backdropFilter="blur(8px)"
-            >
-              <Text
-                color={emptyMessageColor}
-                fontSize="lg"
-                fontWeight="medium"
-                textAlign="center"
-              >
-                미리보기 영역
-              </Text>
-              <Text
-                color={colors.text.secondary}
-                fontSize="sm"
-                textAlign="center"
-              >
-                메뉴 구조가 여기에 표시됩니다.
-              </Text>
-            </Flex>
+            <MenuPreview menus={menus} />
           </Box>
         </GridSection>
       </Box>

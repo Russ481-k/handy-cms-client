@@ -4,13 +4,33 @@ import { useState } from "react";
 import { Box, Flex, Text, Spinner } from "@chakra-ui/react";
 import { MenuItem } from "./MenuItem";
 import { MenuListProps } from "../types";
+import { Menu } from "../page";
+
+interface MenuListProps {
+  menus: Menu[];
+  onEditMenu: (menu: Menu) => void;
+  onDeleteMenu: (menuId: number) => void;
+  onMoveMenu: (
+    menuId: number,
+    targetId: number,
+    position: "before" | "after" | "inside"
+  ) => void;
+  onAddMenu: (
+    parentId?: number,
+    position?: "before" | "after" | "inside"
+  ) => void;
+  isLoading: boolean;
+  selectedMenuId?: number;
+}
 
 export const MenuList = ({
   menus,
   onEditMenu,
   onDeleteMenu,
   onMoveMenu,
+  onAddMenu,
   isLoading,
+  selectedMenuId,
 }: MenuListProps) => {
   const [expandedMenus, setExpandedMenus] = useState<Set<number>>(new Set());
 
@@ -26,7 +46,32 @@ export const MenuList = ({
     });
   };
 
-  const renderMenuItems = (items: typeof menus, level = 0) => {
+  const handleAddMenu = (
+    parentId?: number,
+    position?: "before" | "after" | "inside"
+  ) => {
+    onAddMenu(parentId, position);
+  };
+
+  const renderMenuItem = (menu: Menu, level: number = 0) => {
+    return (
+      <MenuItem
+        key={menu.id}
+        menu={menu}
+        level={level}
+        onEditMenu={onEditMenu}
+        onDeleteMenu={onDeleteMenu}
+        onMoveMenu={onMoveMenu}
+        onAddMenu={handleAddMenu}
+        index={menu.id}
+        selectedMenuId={selectedMenuId}
+        expanded={expandedMenus.has(menu.id)}
+        onToggle={() => toggleMenu(menu.id)}
+      />
+    );
+  };
+
+  const renderMenuItems = (items: Menu[], level = 0) => {
     return items.map((menu, index) => (
       <MenuItem
         key={menu.id}
@@ -39,6 +84,7 @@ export const MenuList = ({
         onDeleteMenu={onDeleteMenu}
         onAddMenu={() => {}}
         index={index}
+        selectedMenuId={selectedMenuId}
       />
     ));
   };

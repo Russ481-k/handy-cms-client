@@ -91,3 +91,13 @@ export const logout = (): void => {
   removeAuthToken();
   // Redirect to login page can be handled by the component
 };
+
+export function getAuthHeader() {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    throw new Error("No authentication token found");
+  }
+  return {
+    Authorization: `Bearer ${token}`,
+  };
+}
