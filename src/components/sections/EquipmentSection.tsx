@@ -3,7 +3,6 @@
 import { Box } from "@chakra-ui/react";
 import { AgGridReact } from "ag-grid-react";
 import { useColorMode } from "@/components/ui/color-mode";
-import { Section } from "@/components/ui/section";
 import { useMemo } from "react";
 import {
   ColDef,
@@ -41,7 +40,10 @@ export function EquipmentSection() {
         headerName: "상태",
         width: 100,
         cellStyle: (params: CellClassParams<EquipmentData>) => ({
-          backgroundColor: params.value === "normal" ? colors.accent.info.default : colors.accent.warning.default,
+          backgroundColor:
+            params.value === "normal"
+              ? colors.accent.info.default
+              : colors.accent.warning.default,
           color: "white",
         }),
       },
@@ -63,18 +65,21 @@ export function EquipmentSection() {
   );
 
   return (
-    <Section title="장비 상태" subtitle="실시간 장비 상태 정보">
-      <Box h="full" borderRadius="xl" overflow="hidden" boxShadow={colors.shadow.sm}>
-        <AgGridReact
-          className="ag-theme-quartz"
-          theme={colorMode === "dark" ? themeDarkMode : themeLightMode}
-          {...defaultGridOptions}
-          columnDefs={columnDefs}
-          rowData={rowData}
-          animateRows={true}
-          domLayout="autoHeight"
-        />
-      </Box>
-    </Section>
+    <Box
+      h="full"
+      borderRadius="xl"
+      overflow="hidden"
+      boxShadow={colors.shadow.sm}
+    >
+      <AgGridReact
+        className="ag-theme-quartz"
+        theme={colorMode === "dark" ? themeDarkMode : themeLightMode}
+        {...defaultGridOptions}
+        columnDefs={columnDefs}
+        rowData={rowData}
+        animateRows={true}
+        domLayout="autoHeight"
+      />
+    </Box>
   );
 }

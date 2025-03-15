@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Box, Flex, Heading, Container, Text, Badge } from "@chakra-ui/react";
+import { Box, Flex, Heading, Text, Badge } from "@chakra-ui/react";
 import { Button } from "@/components/ui/button";
 import { MenuList } from "@/components/menu/MenuList";
 import { MenuEditor } from "@/components/menu/MenuEditor";
@@ -96,14 +96,47 @@ export default function MenuManagementPage() {
 
   // 메뉴 관리 페이지 레이아웃 정의
   const menuLayout = [
-    { id: "header", x: 0, y: 0, w: 12, h: 1, isStatic: true, isHeader: true },
-    { id: "menuList", x: 0, y: 1, w: 4, h: 12 },
-    { id: "menuEditor", x: 4, y: 1, w: 8, h: 12 },
+    {
+      id: "header",
+      x: 0,
+      y: 0,
+      w: 12,
+      h: 1,
+      isStatic: true,
+      isHeader: true,
+    },
+    {
+      id: "menuList",
+      x: 0,
+      y: 1,
+      w: 3,
+      h: 5,
+      title: "메뉴 목록",
+      subtitle: "드래그 앤 드롭으로 메뉴 순서를 변경할 수 있습니다.",
+    },
+    {
+      id: "menuEditor",
+      x: 0,
+      y: 6,
+      w: 3,
+      h: 6,
+      title: "메뉴 편집",
+      subtitle: "메뉴의 상세 정보를 수정할 수 있습니다.",
+    },
+    {
+      id: "preview",
+      x: 3,
+      y: 1,
+      w: 9,
+      h: 11,
+      title: "미리보기",
+      subtitle: "메뉴 구조의 실시간 미리보기입니다.",
+    },
   ];
 
   return (
     <Box bg={bg} minH="100vh" w="full" position="relative">
-      <Container maxW="container.xl" style={{ paddingInline: 0 }}>
+      <Box w="full">
         <GridSection initialLayout={menuLayout}>
           <Flex justify="space-between" align="center" h="36px">
             <Flex align="center" gap={2} px={2}>
@@ -185,8 +218,37 @@ export default function MenuManagementPage() {
               </Button>
             </Flex>
           )}
+
+          <Box>
+            <Flex
+              p={8}
+              direction="column"
+              align="center"
+              justify="center"
+              borderRadius="xl"
+              height="100%"
+              gap={4}
+              backdropFilter="blur(8px)"
+            >
+              <Text
+                color={emptyMessageColor}
+                fontSize="lg"
+                fontWeight="medium"
+                textAlign="center"
+              >
+                미리보기 영역
+              </Text>
+              <Text
+                color={colors.text.secondary}
+                fontSize="sm"
+                textAlign="center"
+              >
+                메뉴 구조가 여기에 표시됩니다.
+              </Text>
+            </Flex>
+          </Box>
         </GridSection>
-      </Container>
+      </Box>
     </Box>
   );
 }

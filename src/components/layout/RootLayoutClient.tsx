@@ -58,8 +58,8 @@ function Layout({ children }: { children: React.ReactNode }) {
         bg={mainBg}
         margin={0}
         padding={0}
-        height="100vh"
-        width="100vw"
+        h="100vh"
+        w="100vw"
         overflow="hidden"
       >
         <Global styles={[getScrollbarStyle(isDark)]} />

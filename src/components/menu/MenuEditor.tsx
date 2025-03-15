@@ -158,21 +158,15 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
   };
 
   return (
-    <Box p={2}>
-      <Flex justify="space-between" align="center" mb={6}>
-        <Heading size="md" color={textColor}>
-          {menu ? "메뉴 수정" : "새 메뉴 추가"}
-        </Heading>
-      </Flex>
-
+    <Box>
       <form onSubmit={handleSubmit(onSubmit)}>
         <VStack gap={3} align="stretch">
           <Box>
             <Flex mb={1}>
-              <Text fontWeight="medium" color={textColor}>
+              <Text fontSize="sm" fontWeight="medium" color={textColor}>
                 메뉴명
               </Text>
-              <Text color={errorColor} ml={1}>
+              <Text fontSize="sm" color={errorColor} ml={1}>
                 *
               </Text>
             </Flex>
@@ -197,10 +191,10 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
 
           <Box>
             <Flex mb={1}>
-              <Text fontWeight="medium" color={textColor}>
+              <Text fontSize="sm" fontWeight="medium" color={textColor}>
                 메뉴 유형
               </Text>
-              <Text color={errorColor} ml={1}>
+              <Text fontSize="sm" color={errorColor} ml={1}>
                 *
               </Text>
             </Flex>
@@ -224,10 +218,10 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
           {menuType === "LINK" && (
             <Box>
               <Flex mb={1}>
-                <Text fontWeight="medium" color={textColor}>
+                <Text fontSize="sm" fontWeight="medium" color={textColor}>
                   URL
                 </Text>
-                <Text color={errorColor} ml={1}>
+                <Text fontSize="sm" color={errorColor} ml={1}>
                   *
                 </Text>
               </Flex>
@@ -254,10 +248,10 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
           {menuType === "BOARD" && (
             <Box>
               <Flex mb={1}>
-                <Text fontWeight="medium" color={textColor}>
+                <Text fontSize="sm" fontWeight="medium" color={textColor}>
                   게시판
                 </Text>
-                <Text color={errorColor} ml={1}>
+                <Text fontSize="sm" color={errorColor} ml={1}>
                   *
                 </Text>
               </Flex>
@@ -294,10 +288,10 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
           {menuType === "CONTENT" && (
             <Box>
               <Flex mb={1}>
-                <Text fontWeight="medium" color={textColor}>
+                <Text fontSize="sm" fontWeight="medium" color={textColor}>
                   컨텐츠
                 </Text>
-                <Text color={errorColor} ml={1}>
+                <Text fontSize="sm" color={errorColor} ml={1}>
                   *
                 </Text>
               </Flex>
@@ -331,7 +325,7 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
             </Box>
           )}
 
-          <Flex alignItems="center" mt={2}>
+          <Flex alignItems="center">
             <Controller
               name="visible"
               control={control}
@@ -340,7 +334,7 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
                   checked={value}
                   onCheckedChange={(e) => onChange(!!e.checked)}
                   colorPalette="blue"
-                  size="md"
+                  size="sm"
                 >
                   <Checkbox.HiddenInput />
                   <Checkbox.Control
@@ -388,7 +382,7 @@ export function MenuEditor({ menu, onClose, onDelete }: MenuEditorProps) {
                 삭제
               </Button>
             )}
-            <Flex justify="flex-end" gap={2} mt={4}>
+            <Flex gap={2}>
               <Button
                 borderColor={borderColor}
                 color={textColor}

@@ -10,7 +10,6 @@ import {
   AgAxisLabelFormatterParams,
 } from "ag-charts-community";
 import { AgCharts } from "ag-charts-react";
-import { Section } from "@/components/ui/section";
 import { useColors } from "@/styles/theme";
 
 interface ChartData {
@@ -109,18 +108,8 @@ export function StatisticsSection() {
   );
 
   return (
-    <Section
-      title="시간별 통계"
-      subtitle="24시간 동안의 데이터 분포"
-      headerRight={
-        <Text fontSize="xs" color={colors.text.secondary}>
-          총 {totalCount.toLocaleString()}건
-        </Text>
-      }
-    >
-      <Box h="full">
-        <AgCharts options={chartOptions} />
-      </Box>
-    </Section>
+    <Box h="full">
+      <AgCharts options={chartOptions} />
+    </Box>
   );
 }

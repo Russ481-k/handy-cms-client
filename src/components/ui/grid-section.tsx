@@ -1,15 +1,16 @@
 "use client";
 
-import { Box, Button } from "@chakra-ui/react";
+import { Box, Button, Flex, Text } from "@chakra-ui/react";
 import { useColorMode, useColorModeValue } from "@/components/ui/color-mode";
 import { Responsive, WidthProvider, Layout, Layouts } from "react-grid-layout";
-import { LuGrip } from "react-icons/lu";
+import { LuGrip, LuGripHorizontal, LuMaximize2 } from "react-icons/lu";
 import * as React from "react";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import { useState } from "react";
 import { css, Global } from "@emotion/react";
 import { useColors } from "@/styles/theme";
+import { Tooltip } from "./tooltip";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -23,6 +24,8 @@ interface GridSectionProps {
     h: number;
     isStatic?: boolean;
     isHeader?: boolean;
+    title?: string;
+    subtitle?: string;
   }[];
 }
 
@@ -67,6 +70,11 @@ export function GridSection({
   const hoverBg = useColorModeValue(
     "rgba(241, 245, 249, 0.6)",
     "rgba(30, 41, 59, 0.6)"
+  );
+  const textColor = useColorModeValue(colors.text.primary, colors.text.primary);
+  const subtitleColor = useColorModeValue(
+    colors.text.secondary,
+    "whiteAlpha.700"
   );
 
   const childrenArray = React.Children.toArray(children);
@@ -151,7 +159,7 @@ export function GridSection({
               borderRadius="xl"
               borderWidth="1px"
               borderColor={borderColor}
-              p="3"
+              minH="10px"
               shadow={colors.shadow.sm}
               transition="all 0.3s ease-in-out"
               _hover={{
@@ -165,37 +173,153 @@ export function GridSection({
               overflow="hidden"
               className={isStatic ? "static-section" : ""}
             >
-              {!isStatic && (
-                <Button
-                  className="drag-handle"
-                  aria-label="Move section"
-                  size="sm"
-                  variant="ghost"
-                  position="absolute"
-                  top="2"
-                  right="2"
-                  opacity="0.4"
-                  cursor="move"
-                  color={handleColor}
-                  zIndex="100"
-                  bg="transparent"
-                  minW="auto"
-                  h="auto"
-                  p="1"
-                  _hover={{
-                    opacity: 1,
-                    bg: "transparent",
-                    color: handleHoverColor,
-                    transform: "scale(1.1)",
-                  }}
-                  _active={{
-                    transform: "scale(0.95)",
-                  }}
+              {/* Section Header */}
+              {(layout.title || !isStatic) && (
+                <Flex
+                  p="3"
+                  borderBottom="1px solid"
+                  borderColor={borderColor}
+                  justify="space-between"
+                  align="center"
                 >
-                  <LuGrip size={16} />
-                </Button>
+                  {layout.title && (
+                    <Box>
+                      <Flex align="center" gap={2}>
+                        <Text
+                          fontSize="sm"
+                          fontWeight="600"
+                          color={textColor}
+                          letterSpacing="tight"
+                        >
+                          {layout.title}
+                        </Text>
+                        {layout.subtitle && !isHeaderSection && (
+                          <Tooltip
+                            content={layout.subtitle}
+                            positioning={{ placement: "bottom-start" }}
+                            openDelay={50}
+                            closeDelay={200}
+                            contentProps={{
+                              css: {
+                                bg: isDark ? colors.gradient.primary : "white",
+                                color: isDark ? "white" : "gray.800",
+                                borderColor: isDark ? "gray.700" : "gray.200",
+                                boxShadow: colors.shadow.md,
+                                p: 2,
+                                fontSize: "sm",
+                                maxW: "200px",
+                              },
+                            }}
+                          >
+                            <Box
+                              as="span"
+                              color={colors.primary.default}
+                              cursor="help"
+                              transition="0.3s ease-in-out"
+                              _hover={{ color: colors.primary.dark }}
+                            >
+                              ⓘ
+                            </Box>
+                          </Tooltip>
+                        )}
+                      </Flex>
+                    </Box>
+                  )}
+                  <Flex align="center" gap={2}>
+                    {!isStatic && (
+                      <Button
+                        className="drag-handle"
+                        aria-label="Move section"
+                        size="sm"
+                        variant="ghost"
+                        opacity="0.4"
+                        cursor="move"
+                        color={handleColor}
+                        bg="transparent"
+                        minW="auto"
+                        h="auto"
+                        p="1"
+                        _hover={{
+                          opacity: 1,
+                          bg: "transparent",
+                          color: handleHoverColor,
+                          transform: "scale(1.1)",
+                        }}
+                        _active={{
+                          transform: "scale(0.95)",
+                        }}
+                      >
+                        <LuGrip size={16} />
+                      </Button>
+                    )}
+                  </Flex>
+                </Flex>
               )}
-              {childrenArray[index]}
+
+              {/* Section Content */}
+              <Box
+                flex="1"
+                p="3"
+                overflow="auto"
+                maxH="calc(100% - 80px)"
+                minH="60px"
+                css={{
+                  "&::-webkit-scrollbar": {
+                    width: "4px",
+                  },
+                  "&::-webkit-scrollbar-track": {
+                    width: "6px",
+                    background: "transparent",
+                  },
+                  "&::-webkit-scrollbar-thumb": {
+                    background: isDark
+                      ? "rgba(255, 255, 255, 0.2)"
+                      : "rgba(0, 0, 0, 0.1)",
+                    borderRadius: "24px",
+                  },
+                }}
+              >
+                {childrenArray[index]}
+              </Box>
+
+              {/* Section Footer with Resize Handle */}
+              {!isStatic && (
+                <Flex
+                  p="3"
+                  borderTop="1px solid"
+                  borderColor={borderColor}
+                  justify="flex-end"
+                >
+                  <Button
+                    aria-label="Resize section"
+                    size="sm"
+                    variant="ghost"
+                    opacity="0.4"
+                    color={handleColor}
+                    bg="transparent"
+                    minW="auto"
+                    h="auto"
+                    p="1"
+                    cursor="se-resize"
+                    className="react-resizable-handle react-resizable-handle-se"
+                    _hover={{
+                      opacity: 1,
+                      bg: "transparent",
+                      color: handleHoverColor,
+                    }}
+                    borderRadius="full"
+                    width="24px"
+                    height="24px"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                  >
+                    <Box transform="scaleX(-1)">
+                      <LuMaximize2 size={16} />
+                    </Box>
+                  </Button>
+                </Flex>
+              )}
             </Box>
           );
         })}

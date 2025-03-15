@@ -6,7 +6,7 @@ import { useColors } from "@/styles/theme";
 interface LogoProps {
   size?: "sm" | "md" | "lg" | "xl";
   abbreviated?: boolean;
-  isLogin: boolean;
+  isLogin?: boolean;
 }
 
 export function Logo({
@@ -19,7 +19,7 @@ export function Logo({
   // 크기에 따른 폰트 사이즈 설정
   const fontSizes = {
     sm: abbreviated ? "28px" : "24px",
-    md: abbreviated ? "36px" : "32px",
+    md: abbreviated ? "34px" : "30px",
     lg: abbreviated ? "42px" : "36px",
     xl: abbreviated ? "56px" : "48px",
   };

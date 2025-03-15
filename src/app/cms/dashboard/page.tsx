@@ -1,12 +1,12 @@
 "use client";
 
-import { CCTVSection } from "@/components/sections/CCTVSection";
+import { CCTVGridSection } from "@/components/sections/CCTVSection";
 import { EquipmentSection } from "@/components/sections/EquipmentSection";
 import { MonitoringSection } from "@/components/sections/MonitoringSection";
 import { StatisticsSection } from "@/components/sections/StatisticsSection";
 import { GridSection } from "@/components/ui/grid-section";
 
-import { Box } from "@chakra-ui/react";
+import { Box, Text } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
 
@@ -17,17 +17,54 @@ export default function DashboardPage() {
   const bg = useColorModeValue(colors.bg, colors.darkBg);
 
   const dashboardLayout = [
-    { id: "monitoring", x: 0, y: 0, w: 6, h: 4 },
-    { id: "cctv", x: 6, y: 0, w: 6, h: 4 },
-    { id: "equipment", x: 0, y: 4, w: 6, h: 4 },
-    { id: "statistics", x: 6, y: 4, w: 6, h: 4 },
+    {
+      id: "monitoring",
+      x: 0,
+      y: 0,
+      w: 6,
+      h: 4,
+      title: "LED 상태 모니터링",
+      subtitle: "실시간 LED 상태 정보",
+    },
+    {
+      id: "cctv",
+      x: 6,
+      y: 0,
+      w: 6,
+      h: 4,
+      title: "CCTV 모니터링",
+      subtitle: "실시간 현장 영상",
+      headerRight: (
+        <Text fontSize="xs" color={colors.text.secondary}>
+          Camera #1
+        </Text>
+      ),
+    },
+    {
+      id: "equipment",
+      x: 0,
+      y: 4,
+      w: 6,
+      h: 4,
+      title: "장비 상태",
+      subtitle: "실시간 장비 상태 정보",
+    },
+    {
+      id: "statistics",
+      x: 6,
+      y: 4,
+      w: 6,
+      h: 4,
+      title: "시간별 통계",
+      subtitle: "24시간 동안의 데이터 분포",
+    },
   ];
 
   return (
     <Box bg={bg} minH="100vh" w="full" position="relative">
       <GridSection initialLayout={dashboardLayout}>
         <MonitoringSection />
-        <CCTVSection />
+        <CCTVGridSection />
         <EquipmentSection />
         <StatisticsSection />
       </GridSection>
