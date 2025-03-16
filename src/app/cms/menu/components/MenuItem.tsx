@@ -11,11 +11,7 @@ import {
   FiFileText,
   FiFile,
   FiEdit2,
-  FiCheck,
-  FiLoader,
-  FiCornerDownRight,
 } from "react-icons/fi";
-import { LuPlus } from "react-icons/lu";
 import {
   Box,
   Flex,
@@ -28,6 +24,9 @@ import {
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
 import { MenuItemProps, DragItem } from "../types";
+import { getAuthHeader } from "@/lib/auth";
+import { toaster } from "@/components/ui/toaster";
+import { Menu } from "../page";
 
 export const MenuItem = ({
   menu,
@@ -37,9 +36,9 @@ export const MenuItem = ({
   onToggle,
   onMoveMenu,
   onDeleteMenu,
-  onAddMenu,
   index,
   selectedMenuId,
+  refreshMenus,
 }: MenuItemProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const colors = useColors();
@@ -77,7 +76,7 @@ export const MenuItem = ({
     colors.primary.light
   );
 
-  const [{ isDragging }, drag] = useDrag({
+  const [{}, drag] = useDrag({
     type: "MENU_ITEM",
     item: {
       id: menu.id,
@@ -128,11 +127,11 @@ export const MenuItem = ({
   const isChildOf = (
     parentId: number,
     childId: number,
-    menuItem: any
+    menuItem: Menu
   ): boolean => {
     if (!menuItem.children || menuItem.children.length === 0) return false;
     return menuItem.children.some(
-      (child: any) =>
+      (child: Menu) =>
         child.id === childId || isChildOf(parentId, childId, child)
     );
   };
@@ -142,15 +141,28 @@ export const MenuItem = ({
   drop(dragDropRef);
 
   const handleMenuClick = (e: React.MouseEvent) => {
+    // 메뉴 아이콘 클릭 시 토글 동작
     if ((e.target as HTMLElement).closest(".menu-icon")) {
+      e.stopPropagation();
+      if (menu.children && menu.children.length > 0) {
+        onToggle();
+      }
       return;
     }
+
+    // 액션 버튼 클릭 시 이벤트 전파 중단
     if ((e.target as HTMLElement).closest(".action-buttons")) {
+      e.stopPropagation();
       return;
     }
-    if ((e.target as HTMLElement).closest(".action-button")) {
+
+    // 메뉴 편집 모드일 때는 이벤트 전파 중단
+    if (isEditing) {
+      e.stopPropagation();
       return;
     }
+
+    // 메뉴 선택 및 편집기 표시
     e.preventDefault();
     e.stopPropagation();
     onEditMenu(menu);
@@ -169,10 +181,38 @@ export const MenuItem = ({
   const handleNameSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (editedName.trim() !== menu.name) {
+    const newName = editedName.trim();
+    if (newName && newName !== menu.name) {
       setIsSaving(true);
       try {
-        await onEditMenu({ ...menu, name: editedName.trim() });
+        const response = await fetch(`/api/cms/menu/${menu.id}`, {
+          method: "PUT",
+          headers: {
+            ...getAuthHeader(),
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ ...menu, name: newName }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to update menu name");
+        }
+
+        const updatedMenu = await response.json();
+        await onEditMenu(updatedMenu);
+        await refreshMenus();
+        setEditedName(newName);
+        toaster.create({
+          title: "메뉴 이름이 수정되었습니다.",
+          type: "success",
+        });
+      } catch (error) {
+        console.error("Failed to update menu name:", error);
+        setEditedName(menu.name);
+        toaster.create({
+          title: "메뉴 이름 수정에 실패했습니다.",
+          type: "error",
+        });
       } finally {
         setIsSaving(false);
         setIsEditing(false);
@@ -194,12 +234,13 @@ export const MenuItem = ({
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onDeleteMenu(menu.id);
-  };
-
-  const handleAddBefore = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onAddMenu(menu.parentId, "before");
+    if (window.confirm("정말로 이 메뉴를 삭제하시겠습니까?")) {
+      onDeleteMenu(menu.id);
+      toaster.create({
+        title: "메뉴가 삭제되었습니다.",
+        type: "success",
+      });
+    }
   };
 
   const getMenuIcon = () => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Box, Flex, Heading, Text, Badge } from "@chakra-ui/react";
+import { Box, Flex, Heading, Badge } from "@chakra-ui/react";
 import { Button } from "@/components/ui/button";
 import { MenuList } from "@/app/cms/menu/components/MenuList";
 import { MenuEditor } from "@/app/cms/menu/components/MenuEditor";
@@ -12,6 +12,7 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { getAuthHeader } from "@/lib/auth";
 import { MenuPreview } from "./components/MenuPreview";
+import { toaster } from "@/components/ui/toaster";
 
 export interface Menu {
   id: number;
@@ -23,15 +24,14 @@ export interface Menu {
   visible: boolean;
   sortOrder: number;
   parentId?: number;
-  children?: Menu[];
+  children?: Menu[] | null;
   createdAt: string;
   updatedAt: string;
 }
 
 export default function MenuManagementPage() {
-  const [selectedMenuId, setSelectedMenuId] = useState<number | undefined>(
-    undefined
-  );
+  const [selectedMenu, setSelectedMenu] = useState<Menu | null>(null);
+  const [parentMenuId, setParentMenuId] = useState<number | null>(null);
   const [menus, setMenus] = useState<Menu[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const colors = useColors();
@@ -51,10 +51,6 @@ export default function MenuManagementPage() {
     colors.primary.hover
   );
 
-  const emptyMessageColor = useColorModeValue(
-    colors.text.secondary,
-    colors.text.secondary
-  );
   const badgeBg = useColorModeValue(colors.primary.light, colors.primary.light);
   const badgeColor = useColorModeValue(
     colors.primary.default,
@@ -72,7 +68,18 @@ export default function MenuManagementPage() {
         throw new Error("Failed to fetch menus");
       }
       const data = await response.json();
-      setMenus(data);
+
+      // 메뉴를 sortOrder 기준으로 정렬
+      const sortMenus = (menus: Menu[]): Menu[] => {
+        return menus
+          .sort((a, b) => a.sortOrder - b.sortOrder)
+          .map((menu) => ({
+            ...menu,
+            children: menu.children ? sortMenus(menu.children) : undefined,
+          }));
+      };
+
+      setMenus(sortMenus(data));
     } catch (error) {
       console.error("Error fetching menus:", error);
       alert("메뉴 목록을 불러오는데 실패했습니다.");
@@ -80,11 +87,6 @@ export default function MenuManagementPage() {
       setIsLoading(false);
     }
   };
-
-  // 메뉴 목록 불러오기
-  useEffect(() => {
-    refreshMenus();
-  }, []);
 
   // 메뉴 순서 변경 핸들러
   const handleMoveMenu = async (
@@ -114,32 +116,34 @@ export default function MenuManagementPage() {
   };
 
   const handleAddMenu = () => {
-    setSelectedMenuId(undefined);
-  };
-
-  const handleAddSubMenu = (
-    parentId?: number,
-    position?: "before" | "after" | "inside"
-  ) => {
-    setSelectedMenuId(undefined);
+    setSelectedMenu(null);
+    setParentMenuId(null);
   };
 
   const handleEditMenu = (menu: Menu) => {
-    setSelectedMenuId(menu.id);
+    setSelectedMenu(menu);
+    setParentMenuId(menu.parentId || null);
   };
 
   const handleCloseEditor = () => {
-    setSelectedMenuId(undefined);
+    setSelectedMenu(null);
+    setParentMenuId(null);
   };
 
   const handleSubmit = async (
     menuData: Omit<Menu, "id" | "createdAt" | "updatedAt">
   ) => {
     try {
-      const url = selectedMenuId
-        ? `/api/cms/menu/${selectedMenuId}`
+      const url = selectedMenu
+        ? `/api/cms/menu/${selectedMenu.id}`
         : "/api/cms/menu";
-      const method = selectedMenuId ? "PUT" : "POST";
+      const method = selectedMenu ? "PUT" : "POST";
+
+      // 새 메뉴 추가 시 부모 메뉴 ID 설정
+      const menuDataWithParent = {
+        ...menuData,
+        parentId: selectedMenu ? menuData.parentId : parentMenuId,
+      };
 
       const response = await fetch(url, {
         method,
@@ -147,7 +151,7 @@ export default function MenuManagementPage() {
           ...getAuthHeader(),
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(menuData),
+        body: JSON.stringify(menuDataWithParent),
       });
 
       if (!response.ok) {
@@ -155,13 +159,20 @@ export default function MenuManagementPage() {
       }
 
       await refreshMenus();
-      setSelectedMenuId(undefined);
-      alert(
-        selectedMenuId ? "메뉴가 수정되었습니다." : "메뉴가 생성되었습니다."
-      );
+      setSelectedMenu(null);
+      setParentMenuId(null); // 부모 메뉴 ID 초기화
+      toaster.create({
+        title: selectedMenu
+          ? "메뉴가 수정되었습니다."
+          : "메뉴가 생성되었습니다.",
+        type: "success",
+      });
     } catch (error) {
       console.error("Error saving menu:", error);
-      alert("메뉴 저장에 실패했습니다.");
+      toaster.create({
+        title: "메뉴 저장에 실패했습니다.",
+        type: "error",
+      });
     }
   };
 
@@ -177,11 +188,17 @@ export default function MenuManagementPage() {
       }
 
       await refreshMenus();
-      setSelectedMenuId(undefined);
-      alert("메뉴가 삭제되었습니다.");
+      setSelectedMenu(null);
+      toaster.create({
+        title: "메뉴가 삭제되었습니다.",
+        type: "success",
+      });
     } catch (error) {
       console.error("Error deleting menu:", error);
-      alert("메뉴 삭제에 실패했습니다.");
+      toaster.create({
+        title: "메뉴 삭제에 실패했습니다.",
+        type: "error",
+      });
     }
   };
 
@@ -225,6 +242,11 @@ export default function MenuManagementPage() {
     },
   ];
 
+  // 메뉴 목록 불러오기
+  useEffect(() => {
+    refreshMenus();
+  }, []);
+
   return (
     <Box bg={bg} minH="100vh" w="full" position="relative">
       <Box w="full">
@@ -267,19 +289,20 @@ export default function MenuManagementPage() {
                 onEditMenu={handleEditMenu}
                 onDeleteMenu={handleDeleteMenu}
                 onMoveMenu={handleMoveMenu}
-                onAddMenu={handleAddSubMenu}
                 isLoading={isLoading}
-                selectedMenuId={selectedMenuId}
+                selectedMenuId={selectedMenu?.id}
+                refreshMenus={refreshMenus}
               />
             </DndProvider>
           </Box>
 
           <Box>
             <MenuEditor
-              menu={menus.find((m) => m.id === selectedMenuId) || null}
+              menu={selectedMenu}
               onClose={handleCloseEditor}
               onDelete={handleDeleteMenu}
               onSubmit={handleSubmit}
+              parentId={parentMenuId}
             />
           </Box>
 

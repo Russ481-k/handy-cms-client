@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 import { verifyToken } from "@/lib/auth-utils";
 
+interface MenuOrder {
+  id: number;
+  sortOrder: number;
+}
+
 // PUT /api/cms/menu/order
 export async function PUT(request: Request) {
   try {
@@ -15,6 +20,7 @@ export async function PUT(request: Request) {
     try {
       verifyToken(token);
     } catch (error) {
+      console.error("Error verifying token:", error);
       return NextResponse.json({ message: "Invalid token" }, { status: 401 });
     }
 
@@ -33,7 +39,7 @@ export async function PUT(request: Request) {
     try {
       await connection.beginTransaction();
 
-      for (const { id, sortOrder } of menuOrders) {
+      for (const { id, sortOrder } of menuOrders as MenuOrder[]) {
         await connection.execute(
           "UPDATE menus SET sort_order = ? WHERE id = ?",
           [sortOrder, id]

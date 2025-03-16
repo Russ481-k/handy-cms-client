@@ -19,12 +19,9 @@ export interface MenuItemProps {
     position: "inside" | "before" | "after"
   ) => void;
   onDeleteMenu: (menuId: number) => void;
-  onAddMenu: (
-    parentId?: number,
-    position?: "before" | "after" | "inside"
-  ) => void;
   index: number;
   selectedMenuId?: number;
+  refreshMenus: () => Promise<void>;
 }
 
 export interface MenuListProps {
@@ -36,10 +33,7 @@ export interface MenuListProps {
     targetId: number,
     position: "before" | "after" | "inside"
   ) => void;
-  onAddMenu: (
-    parentId?: number,
-    position?: "before" | "after" | "inside"
-  ) => void;
   isLoading: boolean;
   selectedMenuId?: number;
+  refreshMenus: () => Promise<void>;
 }

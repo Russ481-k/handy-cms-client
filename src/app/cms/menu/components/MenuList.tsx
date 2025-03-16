@@ -3,10 +3,9 @@
 import { useState } from "react";
 import { Box, Flex, Text, Spinner } from "@chakra-ui/react";
 import { MenuItem } from "./MenuItem";
-import { MenuListProps } from "../types";
 import { Menu } from "../page";
 
-interface MenuListProps {
+export interface MenuListProps {
   menus: Menu[];
   onEditMenu: (menu: Menu) => void;
   onDeleteMenu: (menuId: number) => void;
@@ -15,12 +14,9 @@ interface MenuListProps {
     targetId: number,
     position: "before" | "after" | "inside"
   ) => void;
-  onAddMenu: (
-    parentId?: number,
-    position?: "before" | "after" | "inside"
-  ) => void;
   isLoading: boolean;
   selectedMenuId?: number;
+  refreshMenus: () => Promise<void>;
 }
 
 export const MenuList = ({
@@ -28,9 +24,9 @@ export const MenuList = ({
   onEditMenu,
   onDeleteMenu,
   onMoveMenu,
-  onAddMenu,
   isLoading,
   selectedMenuId,
+  refreshMenus,
 }: MenuListProps) => {
   const [expandedMenus, setExpandedMenus] = useState<Set<number>>(new Set());
 
@@ -46,14 +42,7 @@ export const MenuList = ({
     });
   };
 
-  const handleAddMenu = (
-    parentId?: number,
-    position?: "before" | "after" | "inside"
-  ) => {
-    onAddMenu(parentId, position);
-  };
-
-  const renderMenuItem = (menu: Menu, level: number = 0) => {
+  const renderMenuItem = (menu: Menu, level: number, index: number) => {
     return (
       <MenuItem
         key={menu.id}
@@ -62,30 +51,25 @@ export const MenuList = ({
         onEditMenu={onEditMenu}
         onDeleteMenu={onDeleteMenu}
         onMoveMenu={onMoveMenu}
-        onAddMenu={handleAddMenu}
-        index={menu.id}
+        index={index}
         selectedMenuId={selectedMenuId}
         expanded={expandedMenus.has(menu.id)}
         onToggle={() => toggleMenu(menu.id)}
+        refreshMenus={refreshMenus}
       />
     );
   };
 
   const renderMenuItems = (items: Menu[], level = 0) => {
     return items.map((menu, index) => (
-      <MenuItem
-        key={menu.id}
-        menu={menu}
-        level={level}
-        onEditMenu={onEditMenu}
-        expanded={expandedMenus.has(menu.id)}
-        onToggle={() => toggleMenu(menu.id)}
-        onMoveMenu={onMoveMenu}
-        onDeleteMenu={onDeleteMenu}
-        onAddMenu={() => {}}
-        index={index}
-        selectedMenuId={selectedMenuId}
-      />
+      <Box key={menu.id}>
+        {renderMenuItem(menu, level, index)}
+        {menu.children &&
+          menu.children.length > 0 &&
+          expandedMenus.has(menu.id) && (
+            <Box ml={4}>{renderMenuItems(menu.children, level + 1)}</Box>
+          )}
+      </Box>
     ));
   };
 

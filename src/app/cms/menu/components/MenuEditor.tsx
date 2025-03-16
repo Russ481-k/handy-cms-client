@@ -6,7 +6,6 @@ import {
   Flex,
   Button,
   VStack,
-  Heading,
   Text,
   Checkbox,
   NativeSelect,
@@ -25,6 +24,7 @@ interface MenuEditorProps {
   onClose: () => void;
   onDelete?: (menuId: number) => void;
   onSubmit: (menu: Omit<Menu, "id" | "createdAt" | "updatedAt">) => void;
+  parentId?: number | null;
 }
 
 const menuSchema = z
@@ -61,6 +61,7 @@ export function MenuEditor({
   onClose,
   onDelete,
   onSubmit,
+  parentId,
 }: MenuEditorProps) {
   const [boards, setBoards] = useState<Array<{ id: number; name: string }>>([]);
   const [contents, setContents] = useState<Array<{ id: number; name: string }>>(
@@ -82,7 +83,7 @@ export function MenuEditor({
       targetId: menu?.targetId?.toString() || "",
       displayPosition: menu?.displayPosition || "HEADER",
       visible: menu?.visible ?? true,
-      parentId: menu?.parentId?.toString() || "",
+      parentId: menu?.parentId?.toString() || parentId?.toString() || "",
       sortOrder: menu?.sortOrder || 0,
     },
   });
@@ -110,11 +111,11 @@ export function MenuEditor({
         targetId: "",
         displayPosition: "HEADER",
         visible: true,
-        parentId: "",
+        parentId: parentId?.toString() || "",
         sortOrder: 0,
       });
     }
-  }, [menu, reset]);
+  }, [menu, reset, parentId]);
 
   // 컬러 모드에 맞는 색상 설정
   const colors = useColors();
