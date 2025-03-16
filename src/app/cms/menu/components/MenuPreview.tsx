@@ -10,10 +10,6 @@ import {
   VStack,
   Container,
   Icon,
-  AspectRatio,
-  Heading,
-  SimpleGrid,
-  Badge,
 } from "@chakra-ui/react";
 import { useColors, useStyles } from "@/styles/theme";
 import { Menu } from "../page";
@@ -22,6 +18,10 @@ import { FiFolder, FiLink, FiFileText, FiFile } from "react-icons/fi";
 import NextLink from "next/link";
 import { useState } from "react";
 import { useColorMode } from "@/components/ui/color-mode";
+import { Hero } from "@/components/section/Hero";
+import { QuickStats } from "@/components/section/QuickStats";
+import { ContentTabs } from "@/components/section/ContentTabs";
+import { ContactInfo } from "@/components/section/ContactInfo";
 
 interface MenuPreviewProps {
   menus: Menu[];
@@ -153,6 +153,21 @@ export function MenuPreview({ menus }: MenuPreviewProps) {
     );
   };
 
+  // 모의 데이터
+  const scheduleData = [
+    { phase: "1차 모집", period: "2024.03.01 - 2024.03.31", status: "진행중" },
+    {
+      phase: "2차 모집",
+      period: "2024.04.01 - 2024.04.30",
+      status: "진행 예정",
+    },
+    {
+      phase: "3차 모집",
+      period: "2024.05.01 - 2024.05.31",
+      status: "진행 예정",
+    },
+  ];
+
   return (
     <Box
       width="100%"
@@ -248,93 +263,17 @@ export function MenuPreview({ menus }: MenuPreviewProps) {
           px={{ base: 4, md: 6, lg: 8 }}
           py={8}
         >
-          {/* 히어로 섹션 */}
-          <Box mb={12}>
-            <AspectRatio ratio={16 / 9} mb={6}>
-              <Box
-                bg={isDark ? "gray.800" : "gray.100"}
-                borderRadius="xl"
-                overflow="hidden"
-                position="relative"
-                boxShadow={colors.shadow.sm}
-                transition="all 0.3s ease-in-out"
-                _hover={{ boxShadow: colors.shadow.md }}
-              >
-                <Flex
-                  position="absolute"
-                  inset={0}
-                  direction="column"
-                  justify="center"
-                  align="center"
-                  p={8}
-                  textAlign="center"
-                >
-                  <Heading
-                    size="2xl"
-                    mb={4}
-                    bgGradient={colors.gradient.primary}
-                    bgClip="text"
-                  >
-                    창업가꿈 4호점
-                  </Heading>
-                  <Text fontSize="xl" color={colors.text.secondary}>
-                    혁신적인 창업 아이디어를 실현하세요
-                  </Text>
-                </Flex>
-              </Box>
-            </AspectRatio>
+          {/* Hero 섹션 */}
+          <Hero scheduleData={scheduleData} />
 
-            {/* 퀵 스탯스 */}
-            <SimpleGrid columns={{ base: 1, md: 3 }} gap={6} mb={12}>
-              {[1, 2, 3].map((i) => (
-                <Box
-                  key={i}
-                  bg={isDark ? "gray.800" : "white"}
-                  p={6}
-                  borderRadius="xl"
-                  boxShadow={colors.shadow.sm}
-                >
-                  <Heading size="lg" mb={2}>
-                    {i * 100}
-                  </Heading>
-                  <Text color={colors.text.secondary}>참여 기업</Text>
-                </Box>
-              ))}
-            </SimpleGrid>
+          {/* QuickStats 섹션 */}
+          <QuickStats />
 
-            {/* 컨텐츠 탭 */}
-            <Box
-              bg={isDark ? "gray.800" : "white"}
-              p={6}
-              borderRadius="xl"
-              boxShadow={colors.shadow.sm}
-            >
-              <Heading size="md" mb={4}>
-                최근 소식
-              </Heading>
-              <SimpleGrid columns={{ base: 1, md: 2 }} gap={6}>
-                {[1, 2].map((i) => (
-                  <Box
-                    key={i}
-                    p={4}
-                    borderWidth="1px"
-                    borderColor={isDark ? "whiteAlpha.200" : colors.border}
-                    borderRadius="md"
-                  >
-                    <Badge colorScheme="blue" mb={2}>
-                      공지사항
-                    </Badge>
-                    <Text fontWeight="medium" mb={2}>
-                      {i}월 창업가꿈 4호점 모집 안내
-                    </Text>
-                    <Text fontSize="sm" color={colors.text.secondary}>
-                      2024.03.{i}
-                    </Text>
-                  </Box>
-                ))}
-              </SimpleGrid>
-            </Box>
-          </Box>
+          {/* ContentTabs 섹션 */}
+          <ContentTabs />
+
+          {/* ContactInfo 섹션 */}
+          <ContactInfo />
         </Container>
       </Box>
     </Box>
