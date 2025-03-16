@@ -46,22 +46,22 @@ export default function Home() {
   const scheduleData = [
     {
       phase: "1차 모집",
-      period: "2024.03.01 - 2024.03.31",
+      period: "2025.03.01 - 2025.03.31",
       status: "진행 예정",
     },
     {
       phase: "1차 심사",
-      period: "2024.04.01 - 2024.04.15",
+      period: "2025.04.01 - 2025.04.15",
       status: "진행 예정",
     },
     {
       phase: "2차 모집",
-      period: "2024.07.01 - 2024.07.31",
+      period: "2025.07.01 - 2025.07.31",
       status: "진행 예정",
     },
     {
       phase: "2차 심사",
-      period: "2024.08.01 - 2024.08.15",
+      period: "2025.08.01 - 2025.08.15",
       status: "진행 예정",
     },
   ];

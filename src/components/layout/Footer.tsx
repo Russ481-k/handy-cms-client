@@ -184,7 +184,7 @@ export const Footer = () => {
         </SimpleGrid>
         <Separator my={8} />
         <Text color={colors.text.muted} fontSize="sm" textAlign="center">
-          © 2024 부산창업가꿈. All rights reserved.
+          © 2025 부산창업가꿈. All rights reserved.
         </Text>
       </Container>
     </Box>

@@ -11,7 +11,13 @@ import {
   Portal,
 } from "@chakra-ui/react";
 import { useDisclosure } from "@chakra-ui/react";
-import { LuExternalLink, LuCalendar, LuInfo, LuDownload, LuCheck } from "react-icons/lu";
+import {
+  LuExternalLink,
+  LuCalendar,
+  LuInfo,
+  LuDownload,
+  LuCheck,
+} from "react-icons/lu";
 import { CustomButton } from "../ui/custom-button";
 import { useColors, useStyles } from "@/styles/theme";
 
@@ -54,26 +60,16 @@ export const Hero: React.FC<HeroProps> = ({ scheduleData }) => {
       />
       <Stack gap={{ base: 6, md: 8 }} w="full">
         <Stack gap={4} direction="row">
-          <Badge 
-            {...styles.badge.info}
-            fontSize="md"
-            py={2}
-            px={4}
-          >
-            2024년 신규사업
+          <Badge {...styles.badge.info} fontSize="md" py={2} px={4}>
+            2025년 신규사업
           </Badge>
-          <Badge 
-            {...styles.badge.success}
-            fontSize="md"
-            py={2}
-            px={4}
-          >
+          <Badge {...styles.badge.success} fontSize="md" py={2} px={4}>
             모집중
           </Badge>
         </Stack>
         <VStack align="start" gap={{ base: 4, md: 6 }} w="full">
-          <Heading 
-            as="h1" 
+          <Heading
+            as="h1"
             fontSize={{ base: "4xl", md: "5xl", lg: "6xl" }}
             fontWeight="black"
             letterSpacing="-0.02em"
@@ -85,19 +81,20 @@ export const Hero: React.FC<HeroProps> = ({ scheduleData }) => {
           >
             부산창업가꿈
           </Heading>
-          <Text 
-            fontSize={{ base: "lg", md: "xl" }} 
+          <Text
+            fontSize={{ base: "lg", md: "xl" }}
             lineHeight="tall"
             color={colors.text.secondary}
             maxW="3xl"
           >
-            청년 창업가를 위한 종합 지원 사업으로, 창업 초기 청년들에게 필요한 공간, 네트워크, 교육 등을 
-            종합적으로 제공하여 안정적인 창업 환경을 구축하고, 지속 가능한 비즈니스 모델 구축을 지원합니다.
+            청년 창업가를 위한 종합 지원 사업으로, 창업 초기 청년들에게 필요한
+            공간, 네트워크, 교육 등을 종합적으로 제공하여 안정적인 창업 환경을
+            구축하고, 지속 가능한 비즈니스 모델 구축을 지원합니다.
           </Text>
         </VStack>
-        <SimpleGrid 
-          columns={{ base: 1, md: 3 }} 
-          gap={{ base: 4, md: 6 }} 
+        <SimpleGrid
+          columns={{ base: 1, md: 3 }}
+          gap={{ base: 4, md: 6 }}
           w="full"
           mt={{ base: 6, md: 8 }}
         >
@@ -115,11 +112,15 @@ export const Hero: React.FC<HeroProps> = ({ scheduleData }) => {
               transform: "translateY(-2px)",
               boxShadow: colors.shadow.md,
             }}
-            onClick={() => window.location.href = '/apply'}
+            onClick={() => (window.location.href = "/apply")}
           >
-            사업 신청하기<Box as={LuExternalLink} ml={2} />
+            사업 신청하기
+            <Box as={LuExternalLink} ml={2} />
           </Button>
-          <Dialog.Root open={scheduleDisclosure.open} onOpenChange={scheduleDisclosure.onToggle}>
+          <Dialog.Root
+            open={scheduleDisclosure.open}
+            onOpenChange={scheduleDisclosure.onToggle}
+          >
             <Dialog.Trigger asChild>
               <Button
                 size="lg"
@@ -137,7 +138,8 @@ export const Hero: React.FC<HeroProps> = ({ scheduleData }) => {
                   boxShadow: colors.shadow.sm,
                 }}
               >
-                모집 일정 확인<Box as={LuCalendar} ml={2} />
+                모집 일정 확인
+                <Box as={LuCalendar} ml={2} />
               </Button>
             </Dialog.Trigger>
             <Portal>
@@ -145,10 +147,12 @@ export const Hero: React.FC<HeroProps> = ({ scheduleData }) => {
               <Dialog.Positioner>
                 <Dialog.Content {...styles.dialog.content}>
                   <Dialog.Header borderBottomColor={colors.border}>
-                    <Dialog.Title {...styles.text.heading}>2024년 모집 일정</Dialog.Title>
-                    <Dialog.CloseTrigger 
-                      position="absolute" 
-                      top={2} 
+                    <Dialog.Title {...styles.text.heading}>
+                      2025년 모집 일정
+                    </Dialog.Title>
+                    <Dialog.CloseTrigger
+                      position="absolute"
+                      top={2}
                       right={2}
                       color={colors.text.secondary}
                       _hover={{ color: colors.text.primary }}
@@ -165,15 +169,23 @@ export const Hero: React.FC<HeroProps> = ({ scheduleData }) => {
                           bg={colors.secondary.light}
                           borderRadius="md"
                         >
-                          <Stack justify="space-between" direction={{ base: "column", md: "row" }}>
+                          <Stack
+                            justify="space-between"
+                            direction={{ base: "column", md: "row" }}
+                          >
                             <VStack align="start" gap="1">
                               <Text fontWeight="bold">{item.phase}</Text>
-                              <Text color={colors.text.secondary}>{item.period}</Text>
+                              <Text color={colors.text.secondary}>
+                                {item.period}
+                              </Text>
                             </VStack>
                             <Badge
                               colorScheme={
-                                item.status === '진행중' ? 'green' :
-                                item.status === '진행 예정' ? 'blue' : 'gray'
+                                item.status === "진행중"
+                                  ? "green"
+                                  : item.status === "진행 예정"
+                                  ? "blue"
+                                  : "gray"
                               }
                             >
                               {item.status}
@@ -187,7 +199,10 @@ export const Hero: React.FC<HeroProps> = ({ scheduleData }) => {
               </Dialog.Positioner>
             </Portal>
           </Dialog.Root>
-          <Dialog.Root open={guideDisclosure.open} onOpenChange={guideDisclosure.onToggle}>
+          <Dialog.Root
+            open={guideDisclosure.open}
+            onOpenChange={guideDisclosure.onToggle}
+          >
             <Dialog.Trigger asChild>
               <Button
                 size="lg"
@@ -205,7 +220,8 @@ export const Hero: React.FC<HeroProps> = ({ scheduleData }) => {
                   boxShadow: colors.shadow.sm,
                 }}
               >
-                신청 가이드<Box as={LuInfo} ml={2} />
+                신청 가이드
+                <Box as={LuInfo} ml={2} />
               </Button>
             </Dialog.Trigger>
             <Portal>
@@ -213,10 +229,12 @@ export const Hero: React.FC<HeroProps> = ({ scheduleData }) => {
               <Dialog.Positioner>
                 <Dialog.Content {...styles.dialog.content}>
                   <Dialog.Header>
-                    <Dialog.Title {...styles.text.heading}>신청 가이드</Dialog.Title>
-                    <Dialog.CloseTrigger 
-                      position="absolute" 
-                      top={2} 
+                    <Dialog.Title {...styles.text.heading}>
+                      신청 가이드
+                    </Dialog.Title>
+                    <Dialog.CloseTrigger
+                      position="absolute"
+                      top={2}
                       right={2}
                       color={colors.text.secondary}
                       _hover={{ color: colors.text.primary }}
@@ -227,7 +245,9 @@ export const Hero: React.FC<HeroProps> = ({ scheduleData }) => {
                   <Dialog.Body>
                     <VStack gap="6" align="stretch">
                       <Box>
-                        <Heading size="sm" mb={3}>준비 서류</Heading>
+                        <Heading size="sm" mb={3}>
+                          준비 서류
+                        </Heading>
                         <Stack gap="2">
                           <Stack direction="row">
                             <LuCheck color={colors.primary.default} />
@@ -244,7 +264,9 @@ export const Hero: React.FC<HeroProps> = ({ scheduleData }) => {
                         </Stack>
                       </Box>
                       <Box>
-                        <Heading size="sm" mb={3}>신청 절차</Heading>
+                        <Heading size="sm" mb={3}>
+                          신청 절차
+                        </Heading>
                         <Stack gap="2">
                           <Stack direction="row">
                             <Text>1.</Text>
@@ -270,7 +292,9 @@ export const Hero: React.FC<HeroProps> = ({ scheduleData }) => {
                       </Box>
                       <CustomButton
                         {...styles.button.primary}
-                        onClick={() => window.location.href = '/download/guide.pdf'}
+                        onClick={() =>
+                          (window.location.href = "/download/guide.pdf")
+                        }
                         rightIcon={<LuDownload />}
                       >
                         상세 가이드 다운로드
@@ -300,11 +324,12 @@ export const Hero: React.FC<HeroProps> = ({ scheduleData }) => {
             transform: "translateY(-2px)",
             boxShadow: colors.shadow.sm,
           }}
-          onClick={() => window.location.href = '/download/brochure.pdf'}
+          onClick={() => (window.location.href = "/download/brochure.pdf")}
         >
-          사업안내 브로셔 다운로드<Box as={LuDownload} ml={2} />
+          사업안내 브로셔 다운로드
+          <Box as={LuDownload} ml={2} />
         </Button>
       </Stack>
     </Box>
   );
-}; 
+};

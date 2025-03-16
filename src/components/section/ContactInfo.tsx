@@ -1,4 +1,11 @@
-import { Box, Heading, SimpleGrid, VStack, Text, Image, HStack } from "@chakra-ui/react";
+import {
+  Box,
+  Heading,
+  SimpleGrid,
+  VStack,
+  Text,
+  HStack,
+} from "@chakra-ui/react";
 import { LuClock, LuMapPin, LuPhone, LuMail } from "react-icons/lu";
 import { CustomButton } from "../ui/custom-button";
 import { useColors, useStyles } from "@/styles/theme";
@@ -8,13 +15,7 @@ export const ContactInfo = () => {
   const styles = useStyles(colors, false);
 
   return (
-    <Box 
-      {...styles.card} 
-      p={8} 
-      mb={16}
-      position="relative"
-      overflow="hidden"
-    >
+    <Box {...styles.card} p={8} mb={16} position="relative" overflow="hidden">
       <Box
         position="absolute"
         top={0}
@@ -23,22 +24,22 @@ export const ContactInfo = () => {
         height="6px"
         bgGradient={colors.gradient.secondary}
       />
-      
-      <Heading 
-        as="h2" 
-        size="lg" 
-        mb={8} 
+
+      <Heading
+        as="h2"
+        size="lg"
+        mb={8}
         bgGradient={colors.gradient.secondary}
         bgClip="text"
       >
         문의 및 위치
       </Heading>
-      
+
       <SimpleGrid columns={{ base: 1, md: 2 }} gap={8}>
         <VStack align="start" gap="6">
-          <Box 
-            w="full" 
-            borderRadius="xl" 
+          <Box
+            w="full"
+            borderRadius="xl"
             overflow="hidden"
             boxShadow={colors.shadow.md}
             transition="all 0.3s"
@@ -47,22 +48,27 @@ export const ContactInfo = () => {
               boxShadow: colors.shadow.lg,
             }}
           >
-            <Image
-              src="/images/location-map.png"
-              alt="부산창업가꿈 위치"
+            <Box
               w="full"
-              h="auto"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = "https://via.placeholder.com/400x300?text=지도+이미지";
-              }}
-            />
+              h="300px"
+              bg={colors.cardBg}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              color={colors.text.secondary}
+              fontSize="lg"
+              borderRadius="md"
+              border="1px dashed"
+              borderColor={colors.border}
+            >
+              지도 이미지가 들어갈 자리입니다
+            </Box>
           </Box>
           <CustomButton
             bgGradient={colors.gradient.secondary}
             color={colors.text.inverse}
             rightIcon={<LuMapPin />}
-            onClick={() => window.open('https://map.naver.com')}
+            onClick={() => window.open("https://map.naver.com")}
             _hover={{
               bgGradient: "linear-gradient(135deg, #0284c7, #4f46e5)",
               transform: "translateY(-2px)",
@@ -88,7 +94,7 @@ export const ContactInfo = () => {
             }}
           >
             <HStack gap={4}>
-              <Box 
+              <Box
                 color={colors.accent.info.default}
                 bg="rgba(14, 165, 233, 0.1)"
                 p={3}
@@ -97,9 +103,13 @@ export const ContactInfo = () => {
                 <LuClock size={24} />
               </Box>
               <VStack align="start" gap={1}>
-                <Text fontWeight="bold" fontSize="lg">운영시간</Text>
+                <Text fontWeight="bold" fontSize="lg">
+                  운영시간
+                </Text>
                 <Text>월~금 09:00 ~ 20:00</Text>
-                <Text fontSize="sm" color="gray.600">(주말·공휴일 상황에 따라 변동)</Text>
+                <Text fontSize="sm" color="gray.600">
+                  (주말·공휴일 상황에 따라 변동)
+                </Text>
               </VStack>
             </HStack>
           </Box>
@@ -119,7 +129,7 @@ export const ContactInfo = () => {
             }}
           >
             <HStack gap={4}>
-              <Box 
+              <Box
                 color={colors.primary.default}
                 bg="rgba(99, 102, 241, 0.1)"
                 p={3}
@@ -128,10 +138,14 @@ export const ContactInfo = () => {
                 <LuMapPin size={24} />
               </Box>
               <VStack align="start" gap={1}>
-                <Text fontWeight="bold" fontSize="lg">위치</Text>
+                <Text fontWeight="bold" fontSize="lg">
+                  위치
+                </Text>
                 <Text>부산광역시 연제구 고분로 170</Text>
                 <Text>부산경상대학교 학생회관 1층</Text>
-                <Text fontSize="sm" color="gray.600">규모: 529.9m² / 기숙사 B동 (303.12m²)</Text>
+                <Text fontSize="sm" color="gray.600">
+                  규모: 529.9m² / 기숙사 B동 (303.12m²)
+                </Text>
               </VStack>
             </HStack>
           </Box>
@@ -151,7 +165,7 @@ export const ContactInfo = () => {
             }}
           >
             <HStack gap={4}>
-              <Box 
+              <Box
                 color="#8b5cf6"
                 bg="rgba(139, 92, 246, 0.1)"
                 p={3}
@@ -160,7 +174,9 @@ export const ContactInfo = () => {
                 <LuPhone size={24} />
               </Box>
               <VStack align="start" gap={1}>
-                <Text fontWeight="bold" fontSize="lg">연락처</Text>
+                <Text fontWeight="bold" fontSize="lg">
+                  연락처
+                </Text>
                 <Text>부산경상대학교 산학협력단: 051-850-1053</Text>
                 <Text>부산창업가꿈: 051-850-1196</Text>
               </VStack>
@@ -182,7 +198,7 @@ export const ContactInfo = () => {
             }}
           >
             <HStack gap={4}>
-              <Box 
+              <Box
                 color="#ec4899"
                 bg="rgba(236, 72, 153, 0.1)"
                 p={3}
@@ -191,7 +207,9 @@ export const ContactInfo = () => {
                 <LuMail size={24} />
               </Box>
               <VStack align="start" gap={1}>
-                <Text fontWeight="bold" fontSize="lg">이메일</Text>
+                <Text fontWeight="bold" fontSize="lg">
+                  이메일
+                </Text>
                 <Text>jyt56@bsks.ac.kr</Text>
               </VStack>
             </HStack>
@@ -200,4 +218,4 @@ export const ContactInfo = () => {
       </SimpleGrid>
     </Box>
   );
-}; 
+};

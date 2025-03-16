@@ -18,6 +18,8 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Menu } from "../page";
+import { getAuthHeader } from "@/lib/auth";
+import { toaster } from "@/components/ui/toaster";
 
 interface MenuEditorProps {
   menu?: Menu | null;
@@ -55,6 +57,31 @@ const menuSchema = z
   );
 
 type MenuFormData = z.infer<typeof menuSchema>;
+
+interface BoardResponse {
+  id: number;
+  name: string;
+  slug: string;
+  type: string;
+  useCategory: boolean;
+  allowComment: boolean;
+  useAttachment: boolean;
+  postsPerPage: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ContentResponse {
+  id: number;
+  name: string;
+  title: string;
+  slug: string;
+  status: string;
+  authorId: number;
+  publishedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export function MenuEditor({
   menu,
@@ -142,15 +169,41 @@ export function MenuEditor({
     const fetchData = async () => {
       try {
         const [boardsResponse, contentsResponse] = await Promise.all([
-          fetch("/api/boards"),
-          fetch("/api/content"),
+          fetch("/api/board", {
+            headers: getAuthHeader(),
+          }),
+          fetch("/api/content", {
+            headers: getAuthHeader(),
+          }),
         ]);
-        const boardsData = await boardsResponse.json();
-        const contentsData = await contentsResponse.json();
-        setBoards(boardsData);
-        setContents(contentsData);
+
+        if (!boardsResponse.ok || !contentsResponse.ok) {
+          throw new Error("Failed to fetch data");
+        }
+
+        const boardsData = (await boardsResponse.json()) as BoardResponse[];
+        const contentsData =
+          (await contentsResponse.json()) as ContentResponse[];
+
+        // 필요한 데이터만 매핑
+        const mappedBoards = boardsData.map((board) => ({
+          id: board.id,
+          name: board.name,
+        }));
+
+        const mappedContents = contentsData.map((content) => ({
+          id: content.id,
+          name: content.name,
+        }));
+
+        setBoards(mappedBoards);
+        setContents(mappedContents);
       } catch (error) {
         console.error("Failed to fetch data:", error);
+        toaster.create({
+          title: "데이터를 불러오는데 실패했습니다.",
+          type: "error",
+        });
       }
     };
 

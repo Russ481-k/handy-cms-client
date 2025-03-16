@@ -5,23 +5,21 @@ import {
   Flex,
   Text,
   Link,
-  Button,
   HStack,
-  VStack,
   Container,
   Icon,
 } from "@chakra-ui/react";
 import { useColors, useStyles } from "@/styles/theme";
 import { Menu } from "../page";
 import { LuChevronDown } from "react-icons/lu";
-import { FiFolder, FiLink, FiFileText, FiFile } from "react-icons/fi";
 import NextLink from "next/link";
-import { useState } from "react";
-import { useColorMode } from "@/components/ui/color-mode";
+import { useColorMode, useColorModeValue } from "@/components/ui/color-mode";
 import { Hero } from "@/components/section/Hero";
 import { QuickStats } from "@/components/section/QuickStats";
 import { ContentTabs } from "@/components/section/ContentTabs";
 import { ContactInfo } from "@/components/section/ContactInfo";
+import { TopBanner } from "@/components/layout/TopBanner";
+import { Footer } from "@/components/layout/Footer";
 
 interface MenuPreviewProps {
   menus: Menu[];
@@ -32,7 +30,8 @@ export function MenuPreview({ menus }: MenuPreviewProps) {
   const styles = useStyles(colors, false);
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
-  const [activeMenu, setActiveMenu] = useState<number | null>(null);
+  const bgColor = useColorModeValue("white", "gray.800");
+  const hoverBgColor = useColorModeValue("gray.100", "gray.700");
 
   // 메뉴를 계층 구조로 변환
   const menuMap = new Map<number, Menu>();
@@ -55,98 +54,54 @@ export function MenuPreview({ menus }: MenuPreviewProps) {
     }
   });
 
-  const getMenuIcon = (type: Menu["type"]) => {
-    const iconStyle = {
-      color: isDark ? "whiteAlpha.700" : "gray.500",
-      opacity: 0.7,
-      transition: "all 0.2s ease",
-    };
-
-    switch (type) {
-      case "LINK":
-        return <Icon as={FiLink} boxSize={4} style={iconStyle} />;
-      case "FOLDER":
-        return <Icon as={FiFolder} boxSize={4} style={iconStyle} />;
-      case "BOARD":
-        return <Icon as={FiFileText} boxSize={4} style={iconStyle} />;
-      case "CONTENT":
-        return <Icon as={FiFile} boxSize={4} style={iconStyle} />;
-      default:
-        return null;
-    }
-  };
-
   const renderMenuItem = (menu: Menu) => {
-    const hasChildren = menu.children && menu.children.length > 0;
-    const isFolder = menu.type === "FOLDER";
+    const hasChildren = menus.some((m) => m.parentId === menu.id);
 
     return (
-      <Box
-        key={menu.id}
-        position="relative"
-        onMouseEnter={() => setActiveMenu(menu.id)}
-        onMouseLeave={() => setActiveMenu(null)}
-      >
-        <Button
-          variant="ghost"
+      <Box key={menu.id} position="relative" role="group">
+        <Flex
           px={4}
           py={2}
-          fontWeight="semibold"
-          color={isDark ? "whiteAlpha.900" : "inherit"}
-          _hover={{
-            bg: isDark ? "whiteAlpha.200" : "rgba(99, 102, 241, 0.1)",
-            color: colors.primary.default,
-          }}
-          fontSize="md"
-          transition="all 0.3s ease-in-out"
-          display="flex"
           alignItems="center"
-          gap={2}
+          cursor="pointer"
+          _hover={{ bg: hoverBgColor }}
         >
-          {getMenuIcon(menu.type)}
-          {menu.name}
-          {(hasChildren || isFolder) && <Icon as={LuChevronDown} ml={1} />}
-        </Button>
+          <Text>{menu.name}</Text>
+          {hasChildren && <Icon as={LuChevronDown} ml={1} />}
+        </Flex>
 
-        {(hasChildren || isFolder) && (
+        {hasChildren && (
           <Box
             position="absolute"
             top="100%"
             left={0}
-            width="240px"
-            bg={isDark ? "rgba(15, 23, 42, 0.95)" : "rgba(255, 255, 255, 0.95)"}
-            borderWidth="1px"
-            borderColor={isDark ? "whiteAlpha.200" : colors.border}
+            bg={bgColor}
+            boxShadow="md"
             borderRadius="md"
-            boxShadow={colors.shadow.md}
-            p={2}
-            display={activeMenu === menu.id ? "block" : "none"}
-            zIndex={10}
-            backdropFilter="blur(8px)"
+            minW="240px"
+            opacity={0}
+            visibility="hidden"
+            transform="translateY(-10px)"
+            transition="all 0.2s"
+            _groupHover={{
+              opacity: 1,
+              visibility: "visible",
+              transform: "translateY(0)",
+            }}
+            zIndex={1000}
           >
-            <VStack align="stretch" gap={0}>
-              {menu.children?.map((child) => (
-                <Link
-                  key={child.id}
-                  as={NextLink}
-                  href={child.url || "#"}
-                  p={3}
-                  borderRadius="md"
-                  display="flex"
-                  alignItems="center"
-                  gap={2}
-                  color={isDark ? "whiteAlpha.900" : "inherit"}
-                  _hover={{
-                    bg: isDark ? "whiteAlpha.200" : "rgba(99, 102, 241, 0.1)",
-                    color: colors.primary.default,
-                    textDecoration: "none",
-                  }}
+            {menus
+              .filter((m) => m.parentId === menu.id)
+              .map((childMenu) => (
+                <Box
+                  key={childMenu.id}
+                  px={4}
+                  py={2}
+                  _hover={{ bg: hoverBgColor }}
                 >
-                  {getMenuIcon(child.type)}
-                  {child.name}
-                </Link>
+                  <Text>{childMenu.name}</Text>
+                </Box>
               ))}
-            </VStack>
           </Box>
         )}
       </Box>
@@ -155,15 +110,15 @@ export function MenuPreview({ menus }: MenuPreviewProps) {
 
   // 모의 데이터
   const scheduleData = [
-    { phase: "1차 모집", period: "2024.03.01 - 2024.03.31", status: "진행중" },
+    { phase: "1차 모집", period: "2025.03.01 - 2025.03.31", status: "진행중" },
     {
       phase: "2차 모집",
-      period: "2024.04.01 - 2024.04.30",
+      period: "2025.04.01 - 2025.04.30",
       status: "진행 예정",
     },
     {
       phase: "3차 모집",
-      period: "2024.05.01 - 2024.05.31",
+      period: "2025.05.01 - 2025.05.31",
       status: "진행 예정",
     },
   ];
@@ -175,9 +130,11 @@ export function MenuPreview({ menus }: MenuPreviewProps) {
       bg={isDark ? "gray.900" : "gray.50"}
       overflow="hidden"
       position="relative"
-      borderRadius="xl"
       boxShadow={colors.shadow.lg}
     >
+      {/* TopBanner */}
+      <TopBanner />
+
       {/* 헤더 */}
       <Box
         boxShadow={colors.shadow.md}
@@ -185,13 +142,12 @@ export function MenuPreview({ menus }: MenuPreviewProps) {
         borderColor={isDark ? "whiteAlpha.200" : colors.border}
         width="100%"
         transition="all 0.3s ease-in-out"
-        py={0}
         backdropFilter="blur(8px)"
         backgroundColor={
           isDark ? "rgba(15, 23, 42, 0.95)" : "rgba(255, 255, 255, 0.95)"
         }
-        margin={0}
-        padding={0}
+        m={0}
+        p={0}
         height="80px"
       >
         <Container
@@ -276,6 +232,9 @@ export function MenuPreview({ menus }: MenuPreviewProps) {
           <ContactInfo />
         </Container>
       </Box>
+
+      {/* Footer */}
+      <Footer />
     </Box>
   );
 }
