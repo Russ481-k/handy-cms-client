@@ -40,7 +40,7 @@ function Layout({ children }: { children: React.ReactNode }) {
       if (isCMSPath) {
         if (isAuthenticated) {
           if (isLoginPage || pathname === "/cms") {
-            router.replace("/cms/dashboard");
+            router.replace("/cms/menu");
           }
         } else {
           if (!isLoginPage) {

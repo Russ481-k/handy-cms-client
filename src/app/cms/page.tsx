@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import DashboardPage from "./dashboard/page";
 import { useAuth } from "@/lib/AuthContext";
+import MenuManagementPage from "./menu/page";
 
 export default function Cms() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -23,5 +23,5 @@ export default function Cms() {
     return null;
   }
 
-  return <DashboardPage />;
+  return <MenuManagementPage />;
 }

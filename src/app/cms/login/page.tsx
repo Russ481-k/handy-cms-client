@@ -36,7 +36,7 @@ export default function LoginPage() {
   const { login } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const from = searchParams.get("from") || "/cms/dashboard";
+  const from = searchParams.get("from") || "/cms/menu";
   const colors = useColors();
   const setUser = useSetRecoilState(userState);
 

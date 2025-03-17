@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // 로그인 페이지나 CMS 루트에서 대시보드로 리다이렉트
       if (pathname === "/cms/login" || pathname === "/cms") {
-        router.replace("/cms/dashboard");
+        router.replace("/cms/menu");
       }
     } catch (error) {
       console.error("Auth check error:", error);
