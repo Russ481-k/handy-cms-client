@@ -8,6 +8,7 @@ import {
   Tag,
   Flex,
   Icon,
+  Link,
 } from "@chakra-ui/react";
 import { LuArrowRight } from "react-icons/lu";
 
@@ -18,6 +19,7 @@ interface CompanyCardProps {
   bgColor: string;
   imageUrl?: string;
   isLarge?: boolean;
+  buttonText?: string;
 }
 
 const CompanyCard = ({
@@ -27,6 +29,7 @@ const CompanyCard = ({
   bgColor,
   imageUrl,
   isLarge,
+  buttonText,
 }: CompanyCardProps) => {
   return (
     <Box
@@ -34,8 +37,7 @@ const CompanyCard = ({
       borderRadius="2xl"
       overflow="hidden"
       position="relative"
-      height={isLarge ? "full" : "260px"}
-      p={8}
+      height={isLarge ? "full" : "320px"}
       cursor="pointer"
       transition="all 0.2s"
       _hover={{
@@ -43,64 +45,6 @@ const CompanyCard = ({
         boxShadow: "xl",
       }}
     >
-      {/* Tags */}
-      <Flex gap={2} mb={6}>
-        {tags.map((tag, index) => (
-          <Box
-            key={index}
-            bg={bgColor === "blue.500" ? "whiteAlpha.900" : "whiteAlpha.300"}
-            color={bgColor === "blue.500" ? "blue.500" : "gray.700"}
-            fontSize="sm"
-            fontWeight="medium"
-            borderRadius="full"
-            px={3}
-            py={1}
-          >
-            #{tag}
-          </Box>
-        ))}
-      </Flex>
-
-      {/* Content */}
-      <Box position="relative" zIndex={1}>
-        <Heading
-          as="h3"
-          fontSize={isLarge ? "3xl" : "2xl"}
-          fontWeight="bold"
-          mb={4}
-          color={isLarge ? "blue.900" : "gray.900"}
-          lineHeight="1.2"
-        >
-          {title}
-        </Heading>
-        <Text
-          fontSize={isLarge ? "lg" : "md"}
-          color={isLarge ? "blue.700" : "gray.600"}
-          mb={isLarge ? 8 : 4}
-          lineHeight="1.5"
-        >
-          {description}
-        </Text>
-        {isLarge && (
-          <Box>
-            <Text
-              as="span"
-              display="inline-flex"
-              alignItems="center"
-              fontSize="lg"
-              fontWeight="medium"
-              color="blue.600"
-              cursor="pointer"
-              transition="all 0.2s"
-              _hover={{ transform: "translateX(4px)" }}
-            >
-              자세히 보기
-              <Box as={LuArrowRight} ml={2} boxSize={5} />
-            </Text>
-          </Box>
-        )}
-      </Box>
-
       {/* Background Image or Icon */}
       {imageUrl && (
         <Box
@@ -115,10 +59,109 @@ const CompanyCard = ({
           backgroundSize="cover"
           backgroundPosition="center"
           backgroundRepeat="no-repeat"
-          opacity={0.9}
           zIndex={0}
         />
       )}
+
+      {/* Overlay */}
+      <Box
+        position="absolute"
+        top={0}
+        left={0}
+        right={0}
+        bottom={0}
+        bg={
+          imageUrl
+            ? "linear-gradient(180deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.6) 100%)"
+            : "transparent"
+        }
+        zIndex={1}
+      />
+
+      {/* Content Wrapper */}
+      <Box position="relative" zIndex={2} height="100%" p={8}>
+        {/* Tags */}
+        <Flex gap={2} mb={6}>
+          {tags.map((tag, index) => (
+            <Box
+              key={index}
+              bg="whiteAlpha.900"
+              color="gray.700"
+              fontSize="sm"
+              fontWeight="medium"
+              borderRadius="full"
+              px={3}
+              py={1}
+            >
+              #{tag}
+            </Box>
+          ))}
+        </Flex>
+
+        {/* Content */}
+        <Box>
+          <Heading
+            as="h2"
+            fontSize={isLarge ? "3xl" : "2xl"}
+            fontWeight="bold"
+            mb={2}
+            color={imageUrl ? "white" : isLarge ? "blue.900" : "gray.900"}
+            lineHeight="1.2"
+          >
+            {title}
+          </Heading>
+          <Text
+            fontSize={isLarge ? "lg" : "md"}
+            color={
+              imageUrl ? "whiteAlpha.900" : isLarge ? "blue.700" : "gray.600"
+            }
+            mb={isLarge ? 8 : 4}
+            lineHeight="1.5"
+          >
+            {description}
+          </Text>
+          {isLarge && (
+            <Box>
+              <Text
+                as="span"
+                display="inline-flex"
+                alignItems="center"
+                fontSize="lg"
+                fontWeight="medium"
+                color={imageUrl ? "white" : "blue.600"}
+                cursor="pointer"
+                transition="all 0.2s"
+                _hover={{ transform: "translateX(4px)" }}
+              >
+                자세히 보기
+                <Box as={LuArrowRight} ml={2} boxSize={5} />
+              </Text>
+            </Box>
+          )}
+          {buttonText && (
+            <Link href={"#"}>
+              <Text
+                as="span"
+                display="inline-flex"
+                alignItems="center"
+                fontSize="lg"
+                fontWeight="medium"
+                color={imageUrl ? "white" : "blue.600"}
+                cursor="pointer"
+                transition="all 0.2s"
+                border="1px solid blue.500"
+                borderRadius="full"
+                px={4}
+                py={2}
+                _hover={{ transform: "translateX(4px)", bg: "blue.600" }}
+              >
+                {buttonText}
+                <Box as={LuArrowRight} ml={2} boxSize={5} />
+              </Text>
+            </Link>
+          )}
+        </Box>
+      </Box>
     </Box>
   );
 };
@@ -158,9 +201,8 @@ export function CompanySection() {
         {/* Cards Grid */}
         <Grid
           templateColumns="1.6fr 1fr 1fr"
-          templateRows="1fr 1fr"
+          templateRows="repeat(2, 320px)"
           gap={6}
-          height="680px"
           px={0}
         >
           {/* Large Card */}
@@ -179,9 +221,10 @@ export function CompanySection() {
           <CompanyCard
             title="입주기업"
             description="성장하는 기업들을 만나보세요"
-            tags={["해외셀러", "해외직구"]}
+            tags={["모아보기"]}
             bgColor="white"
             imageUrl="/images/companies/resident.png"
+            buttonText="전체보기"
           />
           <CompanyCard
             title="유니마스"
@@ -200,7 +243,7 @@ export function CompanySection() {
           <CompanyCard
             title="세로라"
             description="실리카 나노 탈취 방향제"
-            tags={["벤나스", "양키", "친환경 라이프"]}
+            tags={["벤나스", "친환경 라이프"]}
             bgColor="teal.100"
             imageUrl="/images/companies/serora.png"
           />

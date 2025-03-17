@@ -271,6 +271,7 @@ export function GridSection({
                   "&::-webkit-scrollbar-track": {
                     width: "6px",
                     background: "transparent",
+                    paddingRight: "3",
                   },
                   "&::-webkit-scrollbar-thumb": {
                     background: isDark

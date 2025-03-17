@@ -324,8 +324,8 @@ export function MenuPreview({ menus }: MenuPreviewProps) {
 
         <Container maxW="container.xl" py={20}>
           <CompanySection />
-          <EducationSection isDark={isDark} />
-          <NewsSection isDark={isDark} />
+          <EducationSection />
+          <NewsSection />
         </Container>
       </Box>
 

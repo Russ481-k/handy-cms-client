@@ -109,6 +109,11 @@ export const STYLES = {
     maxW: { base: "container.lg", xl: "container.xl" },
     px: { base: 6, md: 8, lg: 12 },
   },
+  fonts: {
+    body: '"Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif',
+    heading:
+      '"Pretendard", -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif',
+  },
   section: {
     py: { base: 20, md: 24, lg: 32 },
   },

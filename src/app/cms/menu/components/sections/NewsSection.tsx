@@ -1,211 +1,236 @@
-import { Box, Text, Grid, GridItem, Flex, Button } from "@chakra-ui/react";
-import { LuArrowRight } from "react-icons/lu";
+import {
+  Box,
+  Text,
+  Flex,
+  Button,
+  VStack,
+  Image,
+  AspectRatio,
+} from "@chakra-ui/react";
+import { LuPlus } from "react-icons/lu";
+import { useColors, useStyles } from "@/styles/theme";
+import { useColorMode } from "@/components/ui/color-mode";
 
 interface News {
   date: string;
   title: string;
-  tag: string;
+  isNew?: boolean;
 }
 
-interface NewsSectionProps {
-  isDark: boolean;
-}
+export function NewsSection() {
+  const { colorMode } = useColorMode();
+  const isDark = colorMode === "dark";
+  const colors = useColors();
+  const styles = useStyles(colors, isDark);
 
-export function NewsSection({ isDark }: NewsSectionProps) {
   const news: News[] = [
     {
-      date: "2025-01-16",
-      title: "2025년 제1차 부산창업기관 세미나 공지",
-      tag: "세미나",
+      date: "2025-03-16",
+      title: "2025년 부산창업기꿈 서류심사 결과 및 면접결과 안내",
+      isNew: true,
     },
     {
-      date: "2025-01-15",
-      title: "스타트업 투자 설명회 개최 안내",
-      tag: "투자",
+      date: "2025-03-16",
+      title:
+        "2025년 해운대 도심형 청년 창업 주거 복합공간 입주자 모집 추가공고",
     },
     {
-      date: "2025-01-14",
-      title: "AI 창업 아이디어 공모전 모집",
-      tag: "공모전",
+      date: "2025-03-16",
+      title: "2025년 해운대 도심형 청년 창업 주거 복합공간 입주자 3차 모집공고",
     },
     {
-      date: "2025-01-13",
-      title: "2025년 창업지원 프로그램 안내",
-      tag: "프로그램",
+      date: "2025-03-16",
+      title: "2025년 해운대 도심형 청년 창업 주거 복합공간 입주자 2차 모집공고",
     },
     {
-      date: "2025-01-12",
-      title: "글로벌 스타트업 컨퍼런스 참가자 모집",
-      tag: "컨퍼런스",
+      date: "2025-03-16",
+      title: "2025년 해운대 도심형 청년 창업 주거 복합공간 입주자 1차 모집공고",
     },
   ];
 
   return (
-    <Box>
-      <Flex justify="space-between" align="center" mb={8}>
-        <Box>
-          <Text
-            fontSize={{ base: "2xl", md: "3xl" }}
-            fontWeight="bold"
-            color={isDark ? "white" : "gray.900"}
-            mb={2}
-          >
-            창업기관 소식
-          </Text>
-          <Text fontSize="lg" color={isDark ? "gray.400" : "gray.600"}>
-            최신 소식과 이벤트를 확인하세요
-          </Text>
-        </Box>
-        <Button
-          variant="ghost"
-          colorScheme="blue"
-          _hover={{
-            transform: "translateX(4px)",
-          }}
-          transition="all 0.2s"
+    <Box width="100%">
+      <Flex>
+        <Text
+          fontSize={{ base: "3xl", md: "4xl" }}
+          fontWeight="bold"
+          color={colors.text.primary}
         >
-          More View
-          <Box as={LuArrowRight} boxSize={4} ml={2} />
-        </Button>
+          창업가꿈
+        </Text>
+        <Text
+          fontSize={{ base: "3xl", md: "4xl" }}
+          fontWeight="bold"
+          color={colors.primary.default}
+          ml={2}
+        >
+          소식
+        </Text>
       </Flex>
-      <Grid
-        templateColumns={{
-          base: "1fr",
-          md: "repeat(2, 1fr)",
-        }}
-        gap={8}
-      >
-        <GridItem>
-          {news.map((item) => (
-            <Box
-              key={item.title}
-              py={5}
-              borderBottom="1px solid"
-              borderColor={isDark ? "gray.700" : "gray.200"}
-              transition="all 0.2s"
+
+      <Flex direction={{ base: "column", md: "row" }} gap={8} width="100%">
+        <Box flex="1" width="100%">
+          <Flex justify="flex-end" mb={2}>
+            <Button
+              variant="ghost"
+              color={colors.text.primary}
+              fontWeight="medium"
+              fontSize="md"
+              p={2}
               _hover={{
-                bg: isDark ? "gray.800" : "gray.50",
+                bg: isDark ? "whiteAlpha.100" : "blackAlpha.50",
               }}
-              cursor="pointer"
-              px={4}
-              borderRadius="md"
             >
-              <Flex justify="space-between" align="center" mb={2}>
-                <Text fontSize="sm" color={isDark ? "gray.400" : "gray.500"}>
-                  {item.date}
-                </Text>
-                <Text
-                  fontSize="xs"
-                  color="blue.500"
-                  px={2}
-                  py={1}
-                  bg={isDark ? "blue.900" : "blue.50"}
-                  borderRadius="full"
-                >
-                  {item.tag}
-                </Text>
-              </Flex>
-              <Text
-                color={isDark ? "white" : "gray.900"}
-                _hover={{ color: "blue.500" }}
-                fontSize="lg"
-                fontWeight="medium"
-              >
-                {item.title}
-              </Text>
-            </Box>
-          ))}
-        </GridItem>
-        <GridItem
-          bg={isDark ? "gray.800" : "gray.100"}
-          borderRadius="2xl"
-          overflow="hidden"
-          position="relative"
-          height="400px"
-          boxShadow="xl"
-        >
-          <Box
-            position="relative"
-            width="100%"
-            height="100%"
-            overflow="hidden"
-            bg={isDark ? "gray.900" : "transparent"}
-            backgroundImage="url('/images/banners/banner_2.jpg')"
-            backgroundSize="cover"
-            backgroundPosition="center"
-            _after={{
-              content: '""',
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              bg: isDark
-                ? "linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.9) 100%)"
-                : "linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 100%)",
-              opacity: isDark ? 0.9 : 0.7,
-            }}
-          >
-            <Box
-              position="absolute"
-              top="50%"
-              left="50%"
-              transform="translate(-50%, -50%)"
-              zIndex={2}
-            >
+              More View
+              <Box as={LuPlus} />
+            </Button>
+          </Flex>
+
+          <VStack gap={0} align="stretch" width="100%">
+            {news.map((item, index) => (
               <Box
-                width="70px"
-                height="70px"
-                borderRadius="full"
-                bg="white"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                cursor="pointer"
-                boxShadow="lg"
-                _hover={{
-                  transform: "scale(1.1)",
-                  boxShadow: "xl",
-                }}
+                key={item.title}
+                py={6}
+                borderTop={index === 0 ? "1px solid" : "none"}
+                borderBottom="1px solid"
+                borderColor={colors.border}
+                width="100%"
                 transition="all 0.2s"
+                _hover={{
+                  bg: isDark ? "whiteAlpha.100" : "blackAlpha.50",
+                }}
+                cursor="pointer"
               >
-                <Box
-                  borderLeft="24px solid"
-                  borderLeftColor="blue.500"
-                  borderTop="14px solid transparent"
-                  borderBottom="14px solid transparent"
-                  ml={2}
-                />
+                <Flex gap={4}>
+                  {item.isNew && (
+                    <Box
+                      bg={colors.primary.default}
+                      color="white"
+                      px={2}
+                      py={1}
+                      borderRadius="full"
+                      fontSize="sm"
+                      fontWeight="bold"
+                    >
+                      N
+                    </Box>
+                  )}
+                  <Flex flex={1} justify="space-between" gap={3}>
+                    <Text
+                      color={colors.text.primary}
+                      fontSize="md"
+                      fontWeight="medium"
+                      overflow="hidden"
+                      textOverflow="ellipsis"
+                      whiteSpace="nowrap"
+                      flex="1"
+                      alignItems="center"
+                    >
+                      {item.title}
+                    </Text>
+                    <Text
+                      color={colors.text.secondary}
+                      fontSize="sm"
+                      flexShrink={0}
+                      alignItems="center"
+                    >
+                      {item.date}
+                    </Text>
+                  </Flex>
+                </Flex>
               </Box>
+            ))}
+          </VStack>
+        </Box>
+
+        <Box
+          width={{ base: "100%", md: "540px" }}
+          minWidth={{ base: "100%", md: "540px" }}
+          maxWidth="100%"
+        >
+          {/* Video container with aspect ratio */}
+          <Box position="relative" width="100%">
+            <AspectRatio ratio={16 / 9} width="100%">
+              <Box position="relative">
+                {/* Blue border background */}
+                <Box
+                  border={`2px solid ${colors.primary.default}`}
+                  borderRadius="20px"
+                  position="absolute"
+                  width="85%"
+                  height="85%"
+                  left="60px"
+                  top="5"
+                  zIndex={1}
+                />
+
+                {/* Video */}
+                <Box
+                  position="absolute"
+                  width="85%"
+                  height="85%"
+                  left="40px"
+                  top="40px"
+                  zIndex={2}
+                >
+                  <video
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      borderRadius: "20px",
+                    }}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    controls={false}
+                    poster="/images/banners/banner_2.jpg"
+                  >
+                    <source src="/videos/video.mp4" type="video/mp4" />
+                  </video>
+                </Box>
+              </Box>
+            </AspectRatio>
+
+            {/* Bottom content */}
+            <Box
+              bg={isDark ? colors.cardBg : "#0C2139"}
+              borderTopRadius="20px"
+              mt={-32}
+              p={8}
+              boxShadow={colors.shadow.md}
+            >
+              <Flex justify="space-between" align="flex-end" height="20vh">
+                <Box lineHeight="1.2">
+                  <Text
+                    fontSize={{ base: "2xl", md: "3xl" }}
+                    fontWeight="bold"
+                    mb={1}
+                    color="white"
+                    letterSpacing="tight"
+                  >
+                    홍보영상
+                  </Text>
+                  <Text
+                    fontSize={{ base: "sm", md: "md" }}
+                    color="whiteAlpha.900"
+                    letterSpacing="tight"
+                  >
+                    창업, 성장, 글로벌 도약까지 함께 만들어가는 미래!
+                  </Text>
+                </Box>
+                <Image
+                  src="/images/logo/logo2.png"
+                  alt="부산창업기꿈"
+                  width={{ base: "80px", md: "100px" }}
+                  height="auto"
+                />
+              </Flex>
             </Box>
           </Box>
-          <Box
-            position="absolute"
-            bottom={0}
-            left={0}
-            right={0}
-            p={8}
-            background={
-              isDark
-                ? "linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0) 100%)"
-                : "linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0) 100%)"
-            }
-            color="white"
-            transform="translateY(0)"
-            transition="transform 0.3s"
-            _groupHover={{
-              transform: "translateY(-8px)",
-            }}
-          >
-            <Text fontSize="2xl" fontWeight="bold" mb={3}>
-              홍보영상
-            </Text>
-            <Text fontSize="md" color="gray.100" lineHeight="1.6">
-              창업, 성장, 성공과 도약까지의 함께 만들어가는 이야기
-            </Text>
-          </Box>
-        </GridItem>
-      </Grid>
+        </Box>
+      </Flex>
     </Box>
   );
 }

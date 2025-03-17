@@ -1,150 +1,152 @@
-import { Box, Text, Grid, GridItem, Flex } from "@chakra-ui/react";
-import { LuArrowRight } from "react-icons/lu";
+import {
+  Box,
+  Container,
+  Flex,
+  Heading,
+  Text,
+  VStack,
+  Image,
+  Separator,
+  HStack,
+} from "@chakra-ui/react";
 
-interface Program {
-  name: string;
-  description: string;
-  icon: string;
-  features: string[];
+interface EducationCardProps {
+  title: string;
+  descriptions: string[];
+  iconUrl: string;
+  bgColor?: string;
 }
 
-interface EducationSectionProps {
-  isDark: boolean;
-}
-
-export function EducationSection({ isDark }: EducationSectionProps) {
-  const programs: Program[] = [
-    {
-      name: "갓생 클래스",
-      description: "창업 필수스킬, 사무실 공간활용 지원",
-      icon: "🚀",
-      features: ["기초 창업 이론", "공간 활용 전략", "네트워킹"],
-    },
-    {
-      name: "그로우업",
-      description: "기술, 마케팅, 특허 등을 제품화, 창업교육 지원",
-      icon: "💡",
-      features: ["기술 상품화", "마케팅 전략", "특허 관리"],
-    },
-    {
-      name: "스케일업",
-      description: "창업자 네트워킹 및사, 신사업 공간활용 지원(창업지원)",
-      icon: "🌱",
-      features: ["사업 확장", "투자 유치", "글로벌 진출"],
-    },
-  ];
-
+const EducationCard = ({
+  title,
+  descriptions,
+  iconUrl,
+  bgColor = "white",
+}: EducationCardProps) => {
   return (
-    <Box mb={20}>
-      <Text
-        fontSize={{ base: "2xl", md: "3xl" }}
-        fontWeight="bold"
-        mb={2}
-        color={isDark ? "white" : "gray.900"}
-        lineHeight="1.3"
+    <Box width="100%">
+      <Box
+        bg={bgColor}
+        p={8}
+        position="relative"
+        _hover={{ transform: "translateY(-4px)" }}
+        transition="all 0.2s"
+        borderTop="1px solid"
+        borderBottom="3px solid"
+        borderColor="#0D344E"
+        overflow="hidden"
+        height="420px"
       >
-        성공적인 창업을 위한
-      </Text>
-      <Text
-        fontSize={{ base: "2xl", md: "3xl" }}
-        fontWeight="bold"
-        mb={4}
-        color={isDark ? "white" : "gray.900"}
-        lineHeight="1.3"
-      >
-        맞춤형 교육 프로그램
-      </Text>
-      <Text
-        fontSize="lg"
-        color={isDark ? "gray.400" : "gray.600"}
-        mb={12}
-        maxW="2xl"
-      >
-        AI 기반 맞춤형 커리큘럼으로 당신의 창업을 가속화하세요. 기초부터
-        실전까지, 모든 것을 제공합니다.
-      </Text>
-      <Grid
-        templateColumns={{
-          base: "1fr",
-          md: "repeat(2, 1fr)",
-          lg: "repeat(3, 1fr)",
-        }}
-        gap={8}
-      >
-        {programs.map((program) => (
-          <GridItem
-            key={program.name}
-            bg={isDark ? "gray.800" : "white"}
-            p={8}
-            borderRadius="2xl"
-            transition="all 0.3s"
-            _hover={{
-              transform: "translateY(-4px)",
-              boxShadow: "xl",
-            }}
-            cursor="pointer"
-            role="group"
-          >
-            <Text fontSize="3xl" mb={4}>
-              {program.icon}
-            </Text>
-            <Text
-              fontSize="xl"
+        <Flex gap={8} align="flex-start" position="relative">
+          <Box flex={1}>
+            <Heading
+              as="h3"
+              fontSize="36px"
               fontWeight="bold"
-              mb={3}
-              color={isDark ? "white" : "gray.900"}
-            >
-              {program.name}
-            </Text>
-            <Text
-              fontSize="md"
-              color={isDark ? "gray.300" : "gray.600"}
-              lineHeight="1.7"
+              color="gray.800"
               mb={6}
             >
-              {program.description}
-            </Text>
-            <Box
-              borderTop="1px solid"
-              borderColor={isDark ? "gray.700" : "gray.200"}
-              pt={4}
-            >
-              {program.features.map((feature, index) => (
-                <Flex
-                  key={feature}
-                  align="center"
-                  mb={index === program.features.length - 1 ? 0 : 2}
-                >
-                  <Box
-                    w={1}
-                    h={1}
-                    bg={isDark ? "blue.400" : "blue.500"}
-                    borderRadius="full"
-                    mr={3}
-                  />
-                  <Text fontSize="sm" color={isDark ? "gray.400" : "gray.600"}>
-                    {feature}
+              {title}
+            </Heading>
+            <VStack align="flex-start" gap={3}>
+              {descriptions.map((desc, index) => (
+                <Flex key={index} gap={3} align="flex-start">
+                  <Text color="gray.600" fontSize="14px" lineHeight="1.7">
+                    {desc}
                   </Text>
                 </Flex>
               ))}
-            </Box>
-            <Flex
-              align="center"
-              color={isDark ? "blue.400" : "blue.500"}
-              mt={6}
-              transition="all 0.3s"
-              _groupHover={{
-                transform: "translateX(8px)",
-              }}
+            </VStack>
+          </Box>
+        </Flex>
+        <Box
+          position="absolute"
+          right={4}
+          bottom={4}
+          width="90px"
+          height="90px"
+        >
+          <Image
+            src={iconUrl}
+            alt={title}
+            width="100%"
+            height="100%"
+            objectFit="contain"
+          />
+        </Box>
+      </Box>
+    </Box>
+  );
+};
+
+export function EducationSection() {
+  return (
+    <Box py={24}>
+      <Container maxW="container.xl">
+        <Flex direction="column" align="stretch" mb={16}>
+          <Box mb={4}>
+            <Text
+              color="gray.500"
+              fontSize="xl"
+              fontWeight="medium"
+              mb={2}
+              letterSpacing="tight"
             >
-              <Text fontSize="sm" fontWeight="semibold" mr={2}>
-                프로그램 신청
-              </Text>
-              <Box as={LuArrowRight} boxSize={4} />
-            </Flex>
-          </GridItem>
-        ))}
-      </Grid>
+              성공적인 창업을 위한
+            </Text>
+            <Heading
+              as="h2"
+              fontSize="5xl"
+              fontWeight="bold"
+              color="blue.400"
+              letterSpacing="tight"
+              lineHeight="1.2"
+            >
+              맞춤형 교육 프로그램
+            </Heading>
+          </Box>
+          <Text
+            fontSize="lg"
+            color="gray.600"
+            textAlign="right"
+            lineHeight="1.7"
+          >
+            AI 기반 맞춤형 커리큘럼으로 당신의 창업을 가속화하세요.
+            <br />
+            기초부터 실전까지, 창업가에게 꼭 필요한 모든 것을 배울 수 있습니다
+          </Text>
+        </Flex>
+
+        <HStack gap={2} align="stretch">
+          <EducationCard
+            title="갓생 클래스"
+            descriptions={[
+              "연계 웹스케어, 자기계발 프로그램 지원",
+              "창업 - 주거 외 정부의 생활 복지 프로그램 추가 운영",
+            ]}
+            iconUrl="/images/education/class.png"
+            bgColor="blue.50"
+          />
+          <EducationCard
+            title="그로우업"
+            descriptions={[
+              "기술, 마케팅, 회계 법률 멘토링, 창업교육 지원",
+              "맞춤형 진단 프로그램 및 시제품 제작 지원",
+              "소비자 반응조사 및 사업화 지원 패키지 연계 운영",
+            ]}
+            iconUrl="/images/education/growth.png"
+          />
+          <EducationCard
+            title="스케일업"
+            descriptions={[
+              "정기적 네트워킹 행사, 신기술 콘텐츠 lab 운영",
+              "정부의 감각으로 재해석하는 신기술 체험 공간조성(협업)",
+              "지역 문화 행사와 연계한 프로그램 추진(참여독려)",
+            ]}
+            iconUrl="/images/education/scale.png"
+          />
+        </HStack>
+      </Container>
     </Box>
   );
 }
