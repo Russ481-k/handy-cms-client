@@ -12,6 +12,7 @@ import {
   GridItem,
   Icon,
   Stack,
+  VStack,
 } from "@chakra-ui/react";
 import { useColors, useStyles } from "@/styles/theme";
 import { Menu } from "../page";
@@ -31,6 +32,7 @@ import { HeroSection } from "./sections/HeroSection";
 import { CompanySection } from "./sections/CompanySection";
 import { EducationSection } from "./sections/EducationSection";
 import { NewsSection } from "./sections/NewsSection";
+import { ApplicationSection } from "./sections/ApplicationSection";
 
 interface MenuPreviewProps {
   menus: Menu[];
@@ -323,9 +325,12 @@ export function MenuPreview({ menus }: MenuPreviewProps) {
         </Box>
 
         <Container maxW="container.xl" py={20}>
-          <CompanySection />
-          <EducationSection />
-          <NewsSection />
+          <VStack gap={20} align="stretch">
+            <CompanySection />
+            <EducationSection />
+            <NewsSection />
+            <ApplicationSection />
+          </VStack>
         </Container>
       </Box>
 
