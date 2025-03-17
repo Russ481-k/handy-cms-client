@@ -1,192 +1,101 @@
 import {
   Box,
   Container,
-  SimpleGrid,
-  VStack,
   Text,
   Link,
-  HStack,
-  IconButton,
   Separator,
+  Flex,
+  Image,
+  Button,
+  Icon,
 } from "@chakra-ui/react";
-import { LuFacebook, LuInstagram, LuYoutube } from "react-icons/lu";
+import { LuChevronDown } from "react-icons/lu";
 import { useColors } from "@/styles/theme";
+import { useColorMode } from "@/components/ui/color-mode";
 
-export const Footer = () => {
-  const colors = useColors();
+export function Footer() {
+  const { colorMode } = useColorMode();
+  const isDark = colorMode === "dark";
+
+  const topMenuItems = [
+    { label: "개인정보처리방침", href: "#" },
+    { label: "이메일무단수집거부", href: "#" },
+    { label: "찾아가는 소식지", href: "#" },
+    { label: "찾아오시는 길", href: "#" },
+  ];
 
   return (
-    <Box
-      bg={colors.cardBg}
-      py={12}
-      borderTop="1px"
-      borderColor={colors.border}
-      position="relative"
-      overflow="hidden"
-    >
-      <Box
-        position="absolute"
-        top={0}
-        left={0}
-        right={0}
-        height="6px"
-        bgGradient={colors.gradient.primary}
-      />
+    <Box as="footer" bg="#1B2A35" color="white" py={0} mt="auto">
+      <Container maxW="container.xl" px={{ base: 4, md: 6 }}>
+        <Flex
+          direction={{ base: "column", md: "row" }}
+          justify="space-between"
+          align={{ base: "flex-start", md: "center" }}
+          borderBottom="1px solid"
+          borderColor="whiteAlpha.200"
+          py={4}
+        >
+          <Flex gap={0} mb={{ base: 4, md: 0 }} align="center">
+            {topMenuItems.map((item, index) => (
+              <Flex key={index} align="center">
+                <Link
+                  href={item.href}
+                  fontSize="14px"
+                  fontWeight="medium"
+                  color="white"
+                  _hover={{ textDecoration: "none", color: "gray.300" }}
+                >
+                  {item.label}
+                </Link>
+                {index < topMenuItems.length - 1 && (
+                  <Text mx={2} color="whiteAlpha.400">
+                    ·
+                  </Text>
+                )}
+              </Flex>
+            ))}
+          </Flex>
+          <Box position="relative">
+            <Flex
+              as="button"
+              align="center"
+              gap={1}
+              color="white"
+              fontSize="14px"
+              _hover={{ color: "gray.300" }}
+              transition="color 0.2s"
+            >
+              패밀리사이트
+            </Flex>
+          </Box>
+        </Flex>
 
-      <Container maxW="container.xl">
-        <SimpleGrid columns={{ base: 1, md: 4 }} gap={8}>
-          <VStack align="start">
-            <Text
-              fontWeight="bold"
-              mb={4}
-              fontSize="lg"
-              bgGradient={colors.gradient.primary}
-              bgClip="text"
-            >
-              관련 사이트
+        <Box py={8}>
+          <Image
+            src="/images/logo/logo3.png"
+            alt="부산창업기꿈 로고"
+            height="24px"
+            mb={4}
+          />
+          <Text fontSize="14px" color="gray.300" mb={2} fontWeight="medium">
+            부산광역시 해운대구 센텀중앙로51번길 36(반여동 216-10번지)
+          </Text>
+          <Flex gap={0} color="gray.300" fontSize="14px" mb={6} align="center">
+            <Text>TEL : 051-343-0109</Text>
+            <Text mx={2} color="whiteAlpha.400">
+              ·
             </Text>
-            <Link
-              href="https://www.busan.go.kr"
-              target="_blank"
-              rel="noopener noreferrer"
-              color={colors.text.secondary}
-              _hover={{
-                color: colors.primary.default,
-                transform: "translateX(4px)",
-              }}
-              transition="all 0.3s"
-              display="flex"
-              alignItems="center"
-            >
-              <Text>부산광역시청</Text>
-            </Link>
-            <Link
-              href="https://www.btp.or.kr"
-              target="_blank"
-              rel="noopener noreferrer"
-              color={colors.text.secondary}
-              _hover={{
-                color: colors.primary.default,
-                transform: "translateX(4px)",
-              }}
-              transition="all 0.3s"
-              display="flex"
-              alignItems="center"
-            >
-              <Text>부산테크노파크</Text>
-            </Link>
-          </VStack>
-          <VStack align="start">
-            <Text
-              fontWeight="bold"
-              mb={4}
-              fontSize="lg"
-              bgGradient={colors.gradient.secondary}
-              bgClip="text"
-            >
-              문의 안내
+            <Text>FAX : 051-343-0109</Text>
+            <Text mx={2} color="whiteAlpha.400">
+              ·
             </Text>
-            <Text color={colors.text.secondary}>평일 09:00 - 18:00</Text>
-            <Text color={colors.text.secondary}>점심시간 12:00 - 13:00</Text>
-          </VStack>
-          <VStack align="start">
-            <Text
-              fontWeight="bold"
-              mb={4}
-              fontSize="lg"
-              bgGradient={colors.gradient.accent}
-              bgClip="text"
-            >
-              개인정보처리방침
-            </Text>
-            <Link
-              href="#"
-              color={colors.text.secondary}
-              _hover={{
-                color: colors.primary.default,
-                transform: "translateX(4px)",
-              }}
-              transition="all 0.3s"
-              display="flex"
-              alignItems="center"
-            >
-              <Text>개인정보처리방침</Text>
-            </Link>
-            <Link
-              href="#"
-              color={colors.text.secondary}
-              _hover={{
-                color: colors.primary.default,
-                transform: "translateX(4px)",
-              }}
-              transition="all 0.3s"
-              display="flex"
-              alignItems="center"
-            >
-              <Text>이용약관</Text>
-            </Link>
-          </VStack>
-          <VStack align="start">
-            <Text
-              fontWeight="bold"
-              mb={4}
-              fontSize="lg"
-              bgGradient="linear-gradient(135deg, #6366f1, #ec4899)"
-              bgClip="text"
-            >
-              SNS
-            </Text>
-            <HStack gap="4">
-              <IconButton
-                aria-label="Facebook"
-                variant="ghost"
-                color="#4267B2"
-                bg="rgba(66, 103, 178, 0.1)"
-                borderRadius="full"
-                _hover={{
-                  bg: "rgba(66, 103, 178, 0.2)",
-                  transform: "translateY(-2px)",
-                }}
-                transition="all 0.3s"
-              >
-                <LuFacebook />
-              </IconButton>
-              <IconButton
-                aria-label="Instagram"
-                variant="ghost"
-                color="#E1306C"
-                bg="rgba(225, 48, 108, 0.1)"
-                borderRadius="full"
-                _hover={{
-                  bg: "rgba(225, 48, 108, 0.2)",
-                  transform: "translateY(-2px)",
-                }}
-                transition="all 0.3s"
-              >
-                <LuInstagram />
-              </IconButton>
-              <IconButton
-                aria-label="Youtube"
-                variant="ghost"
-                color="#FF0000"
-                bg="rgba(255, 0, 0, 0.1)"
-                borderRadius="full"
-                _hover={{
-                  bg: "rgba(255, 0, 0, 0.2)",
-                  transform: "translateY(-2px)",
-                }}
-                transition="all 0.3s"
-              >
-                <LuYoutube />
-              </IconButton>
-            </HStack>
-          </VStack>
-        </SimpleGrid>
-        <Separator my={8} />
-        <Text color={colors.text.muted} fontSize="sm" textAlign="center">
-          © 2025 부산창업가꿈. All rights reserved.
-        </Text>
+            <Text>E-MAIL : buvakim@naver.com</Text>
+          </Flex>
+          <Text fontSize="12px" color="gray.500">
+            COPYRIGHT 2025. Busan Changeop Gakkum. All Rights Reserved.
+          </Text>
+        </Box>
       </Container>
     </Box>
   );
-};
+}
