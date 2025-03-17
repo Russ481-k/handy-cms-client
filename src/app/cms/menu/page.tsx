@@ -68,18 +68,23 @@ export default function MenuManagementPage() {
         throw new Error("Failed to fetch menus");
       }
       const data = await response.json();
+      console.log("API Response:", data);
 
       // 메뉴를 sortOrder 기준으로 정렬
       const sortMenus = (menus: Menu[]): Menu[] => {
-        return menus
+        const sorted = menus
           .sort((a, b) => a.sortOrder - b.sortOrder)
           .map((menu) => ({
             ...menu,
-            children: menu.children ? sortMenus(menu.children) : undefined,
+            children: menu.children ? sortMenus(menu.children) : [],
           }));
+        console.log("Sorted menus:", sorted);
+        return sorted;
       };
 
-      setMenus(sortMenus(data));
+      const sortedMenus = sortMenus(data);
+      console.log("Final menus:", sortedMenus);
+      setMenus(sortedMenus);
     } catch (error) {
       console.error("Error fetching menus:", error);
       alert("메뉴 목록을 불러오는데 실패했습니다.");

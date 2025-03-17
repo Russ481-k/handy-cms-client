@@ -41,6 +41,7 @@ export async function GET(request: Request) {
         SELECT * FROM menus 
         ORDER BY sort_order ASC
       `);
+      console.log("Raw DB menus:", menus);
 
       // 계층 구조로 변환
       const menuMap = new Map<number, Menu>();
@@ -48,7 +49,7 @@ export async function GET(request: Request) {
 
       // 모든 메뉴를 맵에 저장
       (menus as MenuRow[]).forEach((menu) => {
-        menuMap.set(menu.id, {
+        const menuItem: Menu = {
           id: menu.id,
           name: menu.name,
           type: menu.type as Menu["type"],
@@ -58,30 +59,48 @@ export async function GET(request: Request) {
           visible: menu.visible === 1,
           sortOrder: menu.sort_order,
           parentId: menu.parent_id || undefined,
-          children: [],
+          children: [], // 항상 배열로 초기화
           createdAt: menu.created_at,
           updatedAt: menu.updated_at,
-        });
+        };
+        console.log(`Created menu item:`, menuItem);
+        menuMap.set(menu.id, menuItem);
       });
 
       // 계층 구조 구성
-      (menus as MenuRow[]).forEach((menu) => {
-        const menuWithChildren = menuMap.get(menu.id);
-        if (menu.parent_id) {
-          const parent = menuMap.get(menu.parent_id);
-          if (parent && menuWithChildren) {
-            if (!parent.children) {
-              parent.children = [];
-            }
-            parent.children.push(menuWithChildren);
+      menuMap.forEach((menu) => {
+        if (menu.parentId) {
+          const parent = menuMap.get(menu.parentId);
+          if (parent && Array.isArray(parent.children)) {
+            console.log(`Adding menu ${menu.id} to parent ${menu.parentId}`);
+            parent.children.push(menu);
           }
         } else {
-          if (menuWithChildren) {
-            rootMenus.push(menuWithChildren);
-          }
+          console.log(`Adding root menu ${menu.id}`);
+          rootMenus.push(menu);
         }
       });
 
+      // 각 메뉴의 children 배열이 비어있는지 확인하고 정렬
+      const finalizeMenu = (menu: Menu): Menu => {
+        if (Array.isArray(menu.children)) {
+          if (menu.children.length === 0) {
+            menu.children = undefined; // 자식이 없는 경우 undefined로 설정
+          } else {
+            menu.children.sort((a, b) => a.sortOrder - b.sortOrder);
+            menu.children.forEach(finalizeMenu);
+          }
+        }
+        return menu;
+      };
+
+      rootMenus.sort((a, b) => a.sortOrder - b.sortOrder);
+      rootMenus.forEach(finalizeMenu);
+
+      console.log(
+        "Final root menus with hierarchy:",
+        JSON.stringify(rootMenus, null, 2)
+      );
       return NextResponse.json(rootMenus);
     } finally {
       connection.release();

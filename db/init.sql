@@ -1,3 +1,6 @@
+DROP DATABASE IF EXISTS cms_new;
+CREATE DATABASE cms_new CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE cms_new;
 -- Users 테이블
 CREATE TABLE IF NOT EXISTS users (
     uuid VARCHAR(36) PRIMARY KEY,
@@ -39,54 +42,44 @@ CREATE TABLE IF NOT EXISTS menus (
     FOREIGN KEY (updated_by) REFERENCES users(uuid)
 );
 
--- 초기 메뉴 데이터
+-- 초기 메뉴 데이터 (대메뉴)
 INSERT INTO menus (id, name, type, url, display_position, visible, sort_order) VALUES
-(1, '홈', 'LINK', '/', 'HEADER', true, 1),
-(2, '사업소개', 'FOLDER', NULL, 'HEADER', true, 2),
-(3, '지원내용', 'FOLDER', NULL, 'HEADER', true, 3),
-(4, '신청 및 절차', 'FOLDER', NULL, 'HEADER', true, 4),
-(5, '입주기업', 'FOLDER', NULL, 'HEADER', true, 5),
-(6, '커뮤니티', 'FOLDER', NULL, 'HEADER', true, 6);
+(1, '창업가꿈 소개', 'FOLDER', NULL, 'HEADER', true, 1),
+(2, '창업기업 모집', 'FOLDER', NULL, 'HEADER', true, 2),
+(3, '창업기업 소개', 'FOLDER', NULL, 'HEADER', true, 3),
+(4, '커뮤니티', 'FOLDER', NULL, 'HEADER', true, 4);
 
--- 사업소개 하위 메뉴
+-- 창업가꿈 소개 하위 메뉴
 INSERT INTO menus (name, type, url, display_position, visible, sort_order, parent_id) VALUES
-('사업개요', 'LINK', '/about/overview', 'HEADER', true, 1, 2),
-('사업목적', 'LINK', '/about/purpose', 'HEADER', true, 2, 2),
-('사업내용', 'LINK', '/about/contents', 'HEADER', true, 3, 2);
+('비전 및 목표', 'LINK', '/about/vision', 'HEADER', true, 1, 1),
+('주요프로그램', 'LINK', '/about/program', 'HEADER', true, 2, 1),
+('찾아오시는 길', 'LINK', '/about/location', 'HEADER', true, 3, 1);
 
--- 지원내용 하위 메뉴
+-- 창업기업 모집 하위 메뉴
 INSERT INTO menus (name, type, url, display_position, visible, sort_order, parent_id) VALUES
-('공간지원', 'LINK', '/support/space', 'HEADER', true, 1, 3),
-('장비지원', 'LINK', '/support/equipment', 'HEADER', true, 2, 3),
-('교육지원', 'LINK', '/support/education', 'HEADER', true, 3, 3);
+('모집공고', 'LINK', '/recruit/notice', 'HEADER', true, 1, 2),
+('지원안내', 'LINK', '/recruit/guide', 'HEADER', true, 2, 2),
+('교육내용', 'LINK', '/recruit/education', 'HEADER', true, 3, 2),
+('FAQ', 'LINK', '/recruit/faq', 'HEADER', true, 4, 2);
 
--- 신청 및 절차 하위 메뉴
-INSERT INTO menus (name, type, url, display_position, visible, sort_order, parent_id) VALUES
-('신청자격', 'LINK', '/apply/qualification', 'HEADER', true, 1, 4),
-('신청절차', 'LINK', '/apply/process', 'HEADER', true, 2, 4),
-('서류양식', 'LINK', '/apply/forms', 'HEADER', true, 3, 4);
+-- 창업기업 소개 하위 메뉴
+INSERT INTO menus (id, name, type, url, display_position, visible, sort_order, parent_id) VALUES
+(10, '참여기업', 'LINK', '/companies/participants', 'HEADER', true, 1, 3),
+(11, '기업별 소개', 'FOLDER', NULL, 'HEADER', true, 2, 3),
+(12, '참고자료실', 'LINK', '/companies/resources', 'HEADER', true, 3, 3);
 
--- 입주기업 하위 메뉴
+-- 기업별 소개 하위 탭메뉴
 INSERT INTO menus (name, type, url, display_position, visible, sort_order, parent_id) VALUES
-('스튜디오로컬', 'LINK', '/companies/studio-local', 'HEADER', true, 1, 5),
-('S.V.D', 'LINK', '/companies/svd', 'HEADER', true, 2, 5),
-('다이아몬드핸즈', 'LINK', '/companies/diamond-hands', 'HEADER', true, 3, 5),
-('어스아워스', 'LINK', '/companies/earth-hours', 'HEADER', true, 4, 5),
-('페더', 'LINK', '/companies/feather', 'HEADER', true, 5, 5);
+('오늘의 이야기', 'LINK', '/companies/details/today-story', 'HEADER', true, 1, 11),
+('유니마스', 'LINK', '/companies/details/unimas', 'HEADER', true, 2, 11),
+('삼선택', 'LINK', '/companies/details/samseontaek', 'HEADER', true, 3, 11),
+('세로라', 'LINK', '/companies/details/serora', 'HEADER', true, 4, 11);
 
 -- 커뮤니티 하위 메뉴
 INSERT INTO menus (name, type, url, display_position, visible, sort_order, parent_id) VALUES
-('공지사항', 'BOARD', NULL, 'HEADER', true, 1, 6),
-('갤러리', 'BOARD', NULL, 'HEADER', true, 2, 6),
-('FAQ', 'LINK', '/community/faq', 'HEADER', true, 3, 6),
-('QnA', 'BOARD', NULL, 'HEADER', true, 4, 6),
-('입주기업신청', 'LINK', '/community/apply', 'HEADER', true, 5, 6);
+('답변게시판', 'BOARD', '/community/qna', 'HEADER', true, 1, 4);
 
--- 푸터 메뉴
-INSERT INTO menus (name, type, url, display_position, visible, sort_order) VALUES
-('이용약관', 'LINK', '/terms', 'FOOTER', true, 1),
-('개인정보처리방침', 'LINK', '/privacy', 'FOOTER', true, 2),
-('사이트맵', 'LINK', '/sitemap', 'FOOTER', true, 3);
+
 
 -- Equipment 테이블
 CREATE TABLE IF NOT EXISTS equipment (
@@ -122,9 +115,3 @@ CREATE TABLE IF NOT EXISTS monitoring (
     FOREIGN KEY (updated_by) REFERENCES users(uuid)
 );
 
--- 인덱스 생성
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
-CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
-CREATE INDEX IF NOT EXISTS idx_menus_parent_id ON menus(parent_id);
-CREATE INDEX IF NOT EXISTS idx_equipment_status ON equipment(status);
-CREATE INDEX IF NOT EXISTS idx_monitoring_equipment ON monitoring(equipment_id);

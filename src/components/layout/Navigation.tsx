@@ -15,6 +15,7 @@ import NextLink from "next/link";
 import { useColors, useStyles } from "@/styles/theme";
 import { useState } from "react";
 import { useColorMode } from "@/components/ui/color-mode";
+import Image from "next/image";
 
 interface NavigationProps {
   isScrolled?: boolean;
@@ -81,46 +82,13 @@ export const Navigation = ({ isScrolled = false }: NavigationProps) => {
         <Flex justify="space-between" align="center" width="100%" height="100%">
           {/* 로고 */}
           <Link as={NextLink} href="/" _hover={{ textDecoration: "none" }}>
-            <HStack gap={{ base: 2, md: 3 }}>
-              <Box
-                width={
-                  isScrolled
-                    ? { base: "70px", md: "90px" }
-                    : { base: "80px", md: "110px" }
-                }
-                height={
-                  isScrolled
-                    ? { base: "25px", md: "30px" }
-                    : { base: "30px", md: "40px" }
-                }
-                bg={isDark ? "whiteAlpha.200" : "gray.100"}
-                borderRadius="md"
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                transition="all 0.3s ease-in-out"
-              >
-                <Text
-                  fontSize={{ base: "xs", md: "sm" }}
-                  color={isDark ? "whiteAlpha.700" : "gray.500"}
-                >
-                  로고
-                </Text>
-              </Box>
-              <Text
-                fontWeight="bold"
-                fontSize={
-                  isScrolled
-                    ? { base: "md", md: "lg" }
-                    : { base: "lg", md: "xl" }
-                }
-                bgGradient={colors.gradient.primary}
-                bgClip="text"
-                transition="all 0.3s ease-in-out"
-                display="block"
-              >
-                창업가꿈 4호점
-              </Text>
+            <HStack>
+              <Image
+                src="/images/logo/logo.png"
+                alt="logo"
+                width={200}
+                height={40}
+              />
             </HStack>
           </Link>
 

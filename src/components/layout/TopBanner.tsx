@@ -1,8 +1,16 @@
-import { Box, Container, Flex, HStack, Text, Badge } from "@chakra-ui/react";
+import {
+  Box,
+  Container,
+  Flex,
+  HStack,
+  Text,
+  Badge,
+  JsxStyleProps,
+} from "@chakra-ui/react";
 import { useColors, useStyles } from "@/styles/theme";
 import { useColorMode } from "@/components/ui/color-mode";
 
-export const TopBanner = () => {
+export const TopBanner = (props: JsxStyleProps) => {
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
   const colors = useColors();
@@ -20,6 +28,7 @@ export const TopBanner = () => {
       height="40px"
       margin={0}
       padding={0}
+      {...props}
     >
       <Container
         {...styles.container}
