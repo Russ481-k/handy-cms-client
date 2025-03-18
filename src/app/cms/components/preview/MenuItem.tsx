@@ -1,43 +1,10 @@
 "use client";
 
-import {
-  Box,
-  Flex,
-  Text,
-  Link,
-  HStack,
-  Container,
-  Button,
-  Grid,
-  GridItem,
-  Icon,
-  Stack,
-  VStack,
-} from "@chakra-ui/react";
-import { useColors, useStyles } from "@/styles/theme";
-import { Menu } from "../page";
-import { LuChevronDown, LuArrowRight, LuPlus } from "react-icons/lu";
-import NextLink from "next/link";
-import { useColorMode } from "@/components/ui/color-mode";
-import { Hero } from "@/components/section/Hero";
-import { QuickStats } from "@/components/section/QuickStats";
-import { ContentTabs } from "@/components/section/ContentTabs";
-import { ContactInfo } from "@/components/section/ContactInfo";
-import { TopBanner } from "@/components/layout/TopBanner";
-import { Footer } from "@/components/layout/Footer";
-import Image from "next/image";
-import { useState, useMemo, useRef, useEffect } from "react";
-import { IconButton } from "@chakra-ui/react";
-import { HeroSection } from "./sections/HeroSection";
-import { CompanySection } from "./sections/CompanySection";
-import { EducationSection } from "./sections/EducationSection";
-import { NewsSection } from "./sections/NewsSection";
-import { ApplicationSection } from "./sections/ApplicationSection";
-import { PreviewLayout } from "../../components/preview/PreviewLayout";
-
-interface MenuPreviewProps {
-  menus: Menu[];
-}
+import { Box, Flex, Text } from "@chakra-ui/react";
+import { useColors } from "@/styles/theme";
+import { Menu } from "../../menu/page";
+import { LuPlus } from "react-icons/lu";
+import { useRef } from "react";
 
 interface MenuItemProps {
   menu: Menu;
@@ -46,12 +13,12 @@ interface MenuItemProps {
   isDark: boolean;
 }
 
-const MenuItem = ({
+export function MenuItem({
   menu,
   isChild = false,
   isNavHovered,
   isDark,
-}: MenuItemProps) => {
+}: MenuItemProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const hasChildren = menu.children && menu.children.length > 0;
   const colors = useColors();
@@ -161,54 +128,5 @@ const MenuItem = ({
         ))}
       </Box>
     </Box>
-  );
-};
-
-export function MenuPreview({ menus }: MenuPreviewProps) {
-  const colors = useColors();
-  const styles = useStyles(colors, false);
-  const { colorMode } = useColorMode();
-  const isDark = colorMode === "dark";
-
-  useEffect(() => {
-    console.log("Raw menu data:", menus);
-  }, [menus]);
-
-  return (
-    <PreviewLayout currentPage="메뉴" menus={menus}>
-      <Box
-        width="100%"
-        height="100%"
-        bg={isDark ? "gray.900" : "white"}
-        overflow="visible"
-        position="relative"
-      >
-        {/* 메인 컨텐츠 */}
-        <Box
-          bg={isDark ? "gray.900" : "white"}
-          minH="calc(100vh - 60px)"
-          overflowY="auto"
-          margin={0}
-          padding={0}
-          id="main-content"
-        >
-          <Box p={4} height="680px">
-            <HeroSection isDark={isDark} />
-          </Box>
-
-          <Container maxW="container.xl" py={20}>
-            <VStack gap={20} align="stretch">
-              <CompanySection />
-              <EducationSection />
-              <NewsSection />
-              <ApplicationSection />
-            </VStack>
-          </Container>
-        </Box>
-
-        {/* Footer */}
-        <Footer />
-      </Box>
-    </PreviewLayout>
   );
 }

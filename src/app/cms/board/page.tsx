@@ -11,10 +11,14 @@ import { useColors } from "@/styles/theme";
 import { getAuthHeader } from "@/lib/auth";
 import { toaster } from "@/components/ui/toaster";
 import { TreeItem } from "@/components/ui/tree-list";
+import { BoardPreview } from "./components/BoardPreview";
+import { convertTreeItemToBoard } from "./types";
+import { Menu } from "../menu/page";
 
 export default function BoardManagementPage() {
   const [selectedBoard, setSelectedBoard] = useState<TreeItem | null>(null);
   const [boards, setBoards] = useState<TreeItem[]>([]);
+  const [menus, setMenus] = useState<Menu[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const colors = useColors();
   const bg = useColorModeValue(colors.bg, colors.darkBg);
@@ -140,6 +144,26 @@ export default function BoardManagementPage() {
     }
   };
 
+  // 메뉴 목록 불러오기
+  const fetchMenus = async () => {
+    try {
+      const response = await fetch("/api/cms/menu", {
+        headers: getAuthHeader(),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch menus");
+      }
+      const data = await response.json();
+      setMenus(data);
+    } catch (error) {
+      console.error("Error fetching menus:", error);
+      toaster.create({
+        title: "메뉴 목록을 불러오는데 실패했습니다.",
+        type: "error",
+      });
+    }
+  };
+
   // 게시판 관리 페이지 레이아웃 정의
   const boardLayout = [
     {
@@ -155,25 +179,35 @@ export default function BoardManagementPage() {
       id: "boardList",
       x: 0,
       y: 1,
-      w: 6,
-      h: 11,
+      w: 3,
+      h: 5,
       title: "게시판 목록",
       subtitle: "등록된 게시판 목록입니다.",
     },
     {
       id: "boardEditor",
-      x: 6,
-      y: 1,
-      w: 6,
-      h: 11,
+      x: 0,
+      y: 6,
+      w: 3,
+      h: 6,
       title: "게시판 편집",
       subtitle: "게시판의 상세 정보를 수정할 수 있습니다.",
     },
+    {
+      id: "boardPreview",
+      x: 3,
+      y: 1,
+      w: 9,
+      h: 11,
+      title: "게시판 미리보기",
+      subtitle: "게시판의 미리보기를 확인할 수 있습니다.",
+    },
   ];
 
-  // 게시판 목록 불러오기
+  // 초기 데이터 로딩
   useEffect(() => {
     refreshBoards();
+    fetchMenus();
   }, []);
 
   return (
@@ -228,6 +262,14 @@ export default function BoardManagementPage() {
               onClose={handleCloseEditor}
               onDelete={handleDeleteBoard}
               onSubmit={handleSubmit}
+            />
+          </Box>
+          <Box>
+            <BoardPreview
+              board={
+                selectedBoard ? convertTreeItemToBoard(selectedBoard) : null
+              }
+              menus={menus}
             />
           </Box>
         </GridSection>

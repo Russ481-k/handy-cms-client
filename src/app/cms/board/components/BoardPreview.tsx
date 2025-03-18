@@ -1,105 +1,235 @@
 "use client";
 
-import { Box, VStack, Text, Badge, Flex, Heading } from "@chakra-ui/react";
-import { useColorModeValue } from "@/components/ui/color-mode";
+import {
+  Box,
+  Flex,
+  Text,
+  Input,
+  Button,
+  HStack,
+  VStack,
+} from "@chakra-ui/react";
 import { useColors } from "@/styles/theme";
-
-interface Board {
-  id: number;
-  name: string;
-  type: "GENERAL" | "GALLERY" | "QNA" | "NOTICE";
-  description: string;
-  managerId: number;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+import { useColorMode } from "@/components/ui/color-mode";
+import { Board } from "../types";
+import { Menu } from "../../menu/page";
+import { PreviewLayout } from "../../components/preview/PreviewLayout";
+import { AgGridReact } from "ag-grid-react";
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-alpine.css";
+import { useState, useMemo } from "react";
+import type { ColDef, CellStyle } from "ag-grid-community";
+import { LuPlus } from "react-icons/lu";
 
 interface BoardPreviewProps {
   board: Board | null;
+  settings?: {
+    showTitle: boolean;
+    showSearch: boolean;
+    showPagination: boolean;
+    showWriteButton: boolean;
+    layout: "list" | "grid" | "gallery";
+  };
+  menus?: Menu[];
 }
 
-export function BoardPreview({ board }: BoardPreviewProps) {
+interface Post {
+  id: number;
+  title: string;
+  author: string;
+  date: string;
+  views: number;
+}
+
+const SAMPLE_POSTS = [
+  {
+    id: 1,
+    title: "샘플 게시글 제목입니다",
+    author: "작성자",
+    date: "2024-03-21",
+    views: 42,
+  },
+  {
+    id: 2,
+    title: "두 번째 샘플 게시글",
+    author: "작성자2",
+    date: "2024-03-20",
+    views: 31,
+  },
+  {
+    id: 3,
+    title: "세 번째 게시글 입니다",
+    author: "작성자3",
+    date: "2024-03-19",
+    views: 15,
+  },
+];
+
+// 기본 설정값 추가
+const DEFAULT_SETTINGS = {
+  showTitle: true,
+  showSearch: true,
+  showPagination: true,
+  showWriteButton: true,
+  layout: "list" as const,
+};
+
+export function BoardPreview({
+  board,
+  settings = DEFAULT_SETTINGS,
+  menus = [],
+}: BoardPreviewProps) {
   const colors = useColors();
-  const textColor = useColorModeValue(colors.text.primary, colors.text.primary);
-  const emptyMessageColor = useColorModeValue(
-    colors.text.secondary,
-    colors.text.secondary
+  const { colorMode } = useColorMode();
+  const isDark = colorMode === "dark";
+  const [rowData] = useState<Post[]>(SAMPLE_POSTS);
+
+  // 컬럼 정의
+  const columnDefs = useMemo<ColDef<Post>[]>(
+    () => [
+      {
+        field: "title",
+        headerName: "제목",
+        flex: 2,
+        cellStyle: {
+          cursor: "pointer",
+          color: isDark ? colors.text.primary : colors.text.primary,
+        } as CellStyle,
+        onCellClicked: (params) => {
+          console.log("게시글 클릭:", params.data);
+        },
+      },
+      {
+        field: "author",
+        headerName: "작성자",
+        flex: 1,
+        cellStyle: {
+          color: isDark ? colors.text.secondary : colors.text.secondary,
+        } as CellStyle,
+      },
+      {
+        field: "date",
+        headerName: "작성일",
+        flex: 1,
+        cellStyle: {
+          color: isDark ? colors.text.secondary : colors.text.secondary,
+        } as CellStyle,
+      },
+      {
+        field: "views",
+        headerName: "조회",
+        flex: 1,
+        type: "numericColumn",
+        cellStyle: {
+          color: isDark ? colors.text.secondary : colors.text.secondary,
+        } as CellStyle,
+      },
+    ],
+    [isDark, colors]
   );
+
+  // AG Grid 기본 설정
+  const defaultColDef = useMemo(
+    () => ({
+      sortable: true,
+      resizable: true,
+    }),
+    []
+  );
+
+  const gridTheme = isDark ? "ag-theme-alpine-dark" : "ag-theme-alpine";
 
   if (!board) {
     return (
-      <Box p={4}>
-        <Text color={emptyMessageColor}>게시판을 선택해주세요.</Text>
-      </Box>
+      <PreviewLayout menus={menus}>
+        <Box p={6} textAlign="center" color="gray.500">
+          게시판을 선택해주세요.
+        </Box>
+      </PreviewLayout>
     );
   }
 
   return (
-    <Box p={4}>
-      <VStack align="stretch" gap={4}>
-        <Box>
-          <Heading size="md" color={textColor} mb={2}>
-            {board.name}
-          </Heading>
-          <Flex gap={2} mb={2}>
-            <Badge
-              colorScheme={
-                board.type === "NOTICE"
-                  ? "red"
-                  : board.type === "QNA"
-                  ? "green"
-                  : board.type === "GALLERY"
-                  ? "purple"
-                  : "blue"
-              }
+    <PreviewLayout currentPage="게시판" menus={menus}>
+      <Box
+        width="100%"
+        height="100%"
+        bg={isDark ? "gray.900" : "white"}
+        position="relative"
+      >
+        {/* 타이틀 영역 */}
+        <Box
+          width="100%"
+          bg={isDark ? "gray.800" : "gray.50"}
+          py={8}
+          borderBottom="1px solid"
+          borderColor={isDark ? "gray.700" : "gray.100"}
+        >
+          <Box px={6} maxW="container.lg" mx="auto">
+            <Text fontSize="2xl" fontWeight="bold" mb={2}>
+              {board.title}
+            </Text>
+            {board.description && (
+              <Text fontSize="sm" color={colors.text.secondary}>
+                {board.description}
+              </Text>
+            )}
+          </Box>
+        </Box>
+
+        {/* 메인 컨텐츠 */}
+        <Box py={8}>
+          <Box maxW="container.lg" mx="auto" px={6}>
+            {/* 검색 영역 */}
+            {settings.showSearch && (
+              <HStack mb={6} gap={2}>
+                <Input placeholder="검색어를 입력하세요" size="sm" />
+                <Button size="sm" colorScheme="blue">
+                  검색
+                </Button>
+              </HStack>
+            )}
+
+            {/* AG Grid 게시글 목록 */}
+            <Box
+              className={gridTheme}
+              width="100%"
+              height="400px"
+              borderRadius="md"
+              overflow="hidden"
+              boxShadow="sm"
+              mb={4}
             >
-              {board.type === "NOTICE"
-                ? "공지사항"
-                : board.type === "QNA"
-                ? "Q&A"
-                : board.type === "GALLERY"
-                ? "갤러리"
-                : "일반"}
-            </Badge>
-            <Badge colorScheme={board.isActive ? "green" : "gray"}>
-              {board.isActive ? "활성" : "비활성"}
-            </Badge>
-          </Flex>
-        </Box>
+              <AgGridReact<Post>
+                rowData={rowData}
+                columnDefs={columnDefs}
+                defaultColDef={defaultColDef}
+                animateRows={true}
+                pagination={settings.showPagination}
+                paginationAutoPageSize={true}
+                suppressCellFocus={true}
+                domLayout="autoHeight"
+              />
+            </Box>
 
-        <Box borderTopWidth="1px" borderColor="inherit" pt={4}>
-          <Text fontSize="sm" fontWeight="medium" color={textColor} mb={1}>
-            설명
-          </Text>
-          <Text color={textColor}>{board.description}</Text>
+            {/* 하단 영역 (글쓰기 버튼) */}
+            <Flex justify="flex-end">
+              {settings.showWriteButton && (
+                <Button
+                  size="sm"
+                  colorScheme="blue"
+                  display="flex"
+                  alignItems="center"
+                  gap={2}
+                >
+                  <LuPlus />
+                  글쓰기
+                </Button>
+              )}
+            </Flex>
+          </Box>
         </Box>
-
-        <Box borderTopWidth="1px" borderColor="inherit" pt={4}>
-          <Text fontSize="sm" fontWeight="medium" color={textColor} mb={1}>
-            관리자
-          </Text>
-          <Text color={textColor}>ID: {board.managerId}</Text>
-        </Box>
-
-        <Box borderTopWidth="1px" borderColor="inherit" pt={4}>
-          <Text fontSize="sm" fontWeight="medium" color={textColor} mb={1}>
-            생성일
-          </Text>
-          <Text color={textColor}>
-            {new Date(board.createdAt).toLocaleString()}
-          </Text>
-        </Box>
-
-        <Box borderTopWidth="1px" borderColor="inherit" pt={4}>
-          <Text fontSize="sm" fontWeight="medium" color={textColor} mb={1}>
-            수정일
-          </Text>
-          <Text color={textColor}>
-            {new Date(board.updatedAt).toLocaleString()}
-          </Text>
-        </Box>
-      </VStack>
-    </Box>
+      </Box>
+    </PreviewLayout>
   );
 }

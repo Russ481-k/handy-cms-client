@@ -11,10 +11,14 @@ import { useColors } from "@/styles/theme";
 import { getAuthHeader } from "@/lib/auth";
 import { toaster } from "@/components/ui/toaster";
 import { TreeItem } from "@/components/ui/tree-list";
+import { ContentPreview } from "./components/ContentPreview";
+import { convertTreeItemToContent } from "./types";
+import { Menu } from "../menu/page";
 
 export default function ContentManagementPage() {
   const [selectedContent, setSelectedContent] = useState<TreeItem | null>(null);
   const [contents, setContents] = useState<TreeItem[]>([]);
+  const [menus, setMenus] = useState<Menu[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const colors = useColors();
   const bg = useColorModeValue(colors.bg, colors.darkBg);
@@ -60,6 +64,26 @@ export default function ContentManagementPage() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // 메뉴 목록 불러오기
+  const fetchMenus = async () => {
+    try {
+      const response = await fetch("/api/cms/menu", {
+        headers: getAuthHeader(),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch menus");
+      }
+      const data = await response.json();
+      setMenus(data);
+    } catch (error) {
+      console.error("Error fetching menus:", error);
+      toaster.create({
+        title: "메뉴 목록을 불러오는데 실패했습니다.",
+        type: "error",
+      });
     }
   };
 
@@ -155,25 +179,35 @@ export default function ContentManagementPage() {
       id: "contentList",
       x: 0,
       y: 1,
-      w: 6,
-      h: 11,
+      w: 3,
+      h: 5,
       title: "컨텐츠 목록",
       subtitle: "등록된 컨텐츠 목록입니다.",
     },
     {
       id: "contentEditor",
-      x: 6,
-      y: 1,
-      w: 6,
-      h: 11,
+      x: 0,
+      y: 6,
+      w: 3,
+      h: 6,
       title: "컨텐츠 편집",
       subtitle: "컨텐츠의 상세 정보를 수정할 수 있습니다.",
     },
+    {
+      id: "contentPreview",
+      x: 3,
+      y: 1,
+      w: 9,
+      h: 11,
+      title: "컨텐츠 미리보기",
+      subtitle: "컨텐츠의 미리보기를 확인할 수 있습니다.",
+    },
   ];
 
-  // 컨텐츠 목록 불러오기
+  // 초기 데이터 로딩
   useEffect(() => {
     refreshContents();
+    fetchMenus();
   }, []);
 
   return (
@@ -228,6 +262,16 @@ export default function ContentManagementPage() {
               onClose={handleCloseEditor}
               onDelete={handleDeleteContent}
               onSubmit={handleSubmit}
+            />
+          </Box>
+          <Box>
+            <ContentPreview
+              content={
+                selectedContent
+                  ? convertTreeItemToContent(selectedContent)
+                  : null
+              }
+              menus={menus}
             />
           </Box>
         </GridSection>

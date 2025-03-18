@@ -1,22 +1,6 @@
-import {
-  Box,
-  Container,
-  Text,
-  Link,
-  Separator,
-  Flex,
-  Image,
-  Button,
-  Icon,
-} from "@chakra-ui/react";
-import { LuChevronDown } from "react-icons/lu";
-import { useColors } from "@/styles/theme";
-import { useColorMode } from "@/components/ui/color-mode";
+import { Box, Container, Text, Link, Flex, Image } from "@chakra-ui/react";
 
 export function Footer() {
-  const { colorMode } = useColorMode();
-  const isDark = colorMode === "dark";
-
   const topMenuItems = [
     { label: "개인정보처리방침", href: "#" },
     { label: "이메일무단수집거부", href: "#" },
