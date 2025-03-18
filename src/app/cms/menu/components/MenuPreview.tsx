@@ -16,7 +16,7 @@ import {
 } from "@chakra-ui/react";
 import { useColors, useStyles } from "@/styles/theme";
 import { Menu } from "../page";
-import { LuChevronDown, LuArrowRight } from "react-icons/lu";
+import { LuChevronDown, LuArrowRight, LuPlus } from "react-icons/lu";
 import NextLink from "next/link";
 import { useColorMode } from "@/components/ui/color-mode";
 import { Hero } from "@/components/section/Hero";
@@ -71,13 +71,25 @@ const MenuItem = ({
         whiteSpace="nowrap"
         fontSize={isChild ? "sm" : "md"}
         fontWeight={isChild ? "normal" : "semibold"}
-        _hover={{ color: isDark ? "blue.200" : "blue.600" }}
+        _hover={{
+          color: isDark ? "blue.200" : "blue.600",
+          transform: "translateX(4px)",
+          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
         position="relative"
         zIndex={1}
         height="32px"
         width="100%"
       >
         <Text whiteSpace="nowrap">{menu.name}</Text>
+        {hasChildren && (
+          <Box
+            as={LuPlus}
+            ml={1}
+            transition="transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+            transform={isNavHovered ? "rotate(180deg)" : "rotate(0deg)"}
+          />
+        )}
       </Flex>
 
       <Box
@@ -86,7 +98,7 @@ const MenuItem = ({
         opacity={hasChildren && (isChild || isNavHovered) ? 1 : 0}
         maxHeight={hasChildren && (isChild || isNavHovered) ? "2000px" : "0"}
         overflow="hidden"
-        transition="all 0.3s ease-in-out"
+        transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         width="100%"
       >
         {menu.children?.map((childMenu, index, array) => (
@@ -97,7 +109,7 @@ const MenuItem = ({
             transform={`translateY(${
               hasChildren && (isChild || isNavHovered) ? "0" : "-10px"
             })`}
-            transition="all 0.3s ease-in-out"
+            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
             width="100%"
           >
             <Box
@@ -107,7 +119,7 @@ const MenuItem = ({
               bottom={index === array.length - 1 ? "16px" : "0"}
               width="2px"
               bg={lineColor}
-              transition="opacity 0.3s ease-in-out"
+              transition="opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
               opacity={hasChildren && (isChild || isNavHovered) ? 1 : 0}
               borderRadius="full"
             />
@@ -115,11 +127,11 @@ const MenuItem = ({
               position="absolute"
               left={0}
               top="16px"
-              width="20px"
+              width="12px"
               height="2px"
               bg={lineColor}
               transform="translateY(0)"
-              transition="opacity 0.3s ease-in-out"
+              transition="opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
               opacity={hasChildren && (isChild || isNavHovered) ? 1 : 0}
               borderRadius="full"
             />
@@ -131,7 +143,7 @@ const MenuItem = ({
                 height="calc(100% + 8px)"
                 width="2px"
                 bg={lineColor}
-                transition="opacity 0.3s ease-in-out"
+                transition="opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                 opacity={hasChildren && (isChild || isNavHovered) ? 1 : 0}
                 borderRadius="full"
               />
