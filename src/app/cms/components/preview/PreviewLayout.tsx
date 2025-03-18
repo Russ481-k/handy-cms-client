@@ -4,6 +4,7 @@ import { Box } from "@chakra-ui/react";
 import { useColorMode } from "@/components/ui/color-mode";
 import { PreviewHeader } from "./PreviewHeader";
 import { Menu } from "../../menu/page";
+import { Footer } from "@/components/layout/Footer";
 
 interface PreviewLayoutProps {
   children: React.ReactNode;
@@ -30,6 +31,7 @@ export function PreviewLayout({
     >
       <PreviewHeader currentPage={currentPage} menus={menus} />
       {children}
+      <Footer />
     </Box>
   );
 }

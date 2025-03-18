@@ -8,6 +8,9 @@ import {
   Button,
   HStack,
   VStack,
+  Icon,
+  useBreakpointValue,
+  Badge,
 } from "@chakra-ui/react";
 import { useColors } from "@/styles/theme";
 import { useColorMode } from "@/components/ui/color-mode";
@@ -15,11 +18,31 @@ import { Board } from "../types";
 import { Menu } from "../../menu/page";
 import { PreviewLayout } from "../../components/preview/PreviewLayout";
 import { AgGridReact } from "ag-grid-react";
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css";
 import { useState, useMemo } from "react";
-import type { ColDef, CellStyle } from "ag-grid-community";
-import { LuPlus } from "react-icons/lu";
+import {
+  type ColDef,
+  ModuleRegistry,
+  ClientSideRowModelModule,
+  themeQuartz,
+  colorSchemeDark,
+  colorSchemeLight,
+} from "ag-grid-community";
+import {
+  LuPlus,
+  LuSearch,
+  LuFileText,
+  LuUser,
+  LuCalendar,
+  LuEye,
+} from "react-icons/lu";
+import {
+  defaultGridOptions,
+  themeDarkMode,
+  themeLightMode,
+} from "@/lib/ag-grid-config";
+
+// Register required modules
+ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
 interface BoardPreviewProps {
   board: Board | null;
@@ -63,6 +86,90 @@ const SAMPLE_POSTS = [
     date: "2024-03-19",
     views: 15,
   },
+  {
+    id: 1,
+    title: "샘플 게시글 제목입니다",
+    author: "작성자",
+    date: "2024-03-21",
+    views: 42,
+  },
+  {
+    id: 2,
+    title: "두 번째 샘플 게시글",
+    author: "작성자2",
+    date: "2024-03-20",
+    views: 31,
+  },
+  {
+    id: 3,
+    title: "세 번째 게시글 입니다",
+    author: "작성자3",
+    date: "2024-03-19",
+    views: 15,
+  },
+  {
+    id: 1,
+    title: "샘플 게시글 제목입니다",
+    author: "작성자",
+    date: "2024-03-21",
+    views: 42,
+  },
+  {
+    id: 2,
+    title: "두 번째 샘플 게시글",
+    author: "작성자2",
+    date: "2024-03-20",
+    views: 31,
+  },
+  {
+    id: 3,
+    title: "세 번째 게시글 입니다",
+    author: "작성자3",
+    date: "2024-03-19",
+    views: 15,
+  },
+  {
+    id: 1,
+    title: "샘플 게시글 제목입니다",
+    author: "작성자",
+    date: "2024-03-21",
+    views: 42,
+  },
+  {
+    id: 2,
+    title: "두 번째 샘플 게시글",
+    author: "작성자2",
+    date: "2024-03-20",
+    views: 31,
+  },
+  {
+    id: 3,
+    title: "세 번째 게시글 입니다",
+    author: "작성자3",
+    date: "2024-03-19",
+    views: 15,
+  },
+  {
+    id: 1,
+    title: "샘플 게시글 제목입니다",
+    author: "작성자",
+    date: "2024-03-21",
+    views: 42,
+  },
+  {
+    id: 2,
+    title: "두 번째 샘플 게시글",
+    author: "작성자2",
+    date: "2024-03-20",
+    views: 31,
+  },
+  {
+    id: 3,
+    title: "세 번째 게시글 입니다",
+    author: "작성자3",
+    date: "2024-03-19",
+    views: 15,
+  },
 ];
 
 // 기본 설정값 추가
@@ -83,61 +190,104 @@ export function BoardPreview({
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
   const [rowData] = useState<Post[]>(SAMPLE_POSTS);
+  const isMobile = useBreakpointValue({ base: true, md: false });
 
-  // 컬럼 정의
+  // AG Grid 테마 설정
+  const gridTheme = useMemo(
+    () =>
+      themeQuartz
+        .withPart(isDark ? colorSchemeDark : colorSchemeLight)
+        .withParams({
+          // 기본 색상
+          backgroundColor: isDark ? colors.darkBg : colors.bg,
+          foregroundColor: colors.text.primary,
+          accentColor: colors.primary.default,
+
+          // 헤더 관련
+          headerBackgroundColor: isDark ? colors.cardBg : colors.bg,
+          headerTextColor: colors.text.primary,
+
+          // 행 관련
+          oddRowBackgroundColor: isDark ? colors.cardBg : colors.bg,
+          rowHoverColor: isDark ? colors.primary.alpha : colors.primary.light,
+          selectedRowBackgroundColor: isDark
+            ? colors.primary.dark
+            : colors.primary.light,
+
+          // 셀 관련
+          cellTextColor: colors.text.primary,
+          borderColor: colors.border,
+
+          // 기타 UI 요소
+          chromeBackgroundColor: isDark ? colors.cardBg : colors.bg,
+          inputBackgroundColor: isDark ? colors.cardBg : colors.bg,
+          inputTextColor: colors.text.primary,
+          inputBorder: colors.border,
+        }),
+    [isDark, colors]
+  );
+
+  // AG Grid 컬럼 설정
   const columnDefs = useMemo<ColDef<Post>[]>(
     () => [
       {
         field: "title",
         headerName: "제목",
         flex: 2,
-        cellStyle: {
-          cursor: "pointer",
-          color: isDark ? colors.text.primary : colors.text.primary,
-        } as CellStyle,
-        onCellClicked: (params) => {
-          console.log("게시글 클릭:", params.data);
-        },
+        cellRenderer: (params: any) => (
+          <Flex align="center" gap={2} height="100%">
+            <Icon as={LuFileText} color={colors.primary.default} />
+            <Text
+              _hover={{
+                color: colors.primary.default,
+                transform: "translateX(4px)",
+              }}
+              transition="all 0.2s"
+              cursor="pointer"
+              onClick={() => console.log("게시글 클릭:", params.data)}
+            >
+              {params.value}
+            </Text>
+          </Flex>
+        ),
       },
       {
         field: "author",
         headerName: "작성자",
         flex: 1,
-        cellStyle: {
-          color: isDark ? colors.text.secondary : colors.text.secondary,
-        } as CellStyle,
+        cellRenderer: (params: any) => (
+          <Flex align="center" gap={2} height="100%">
+            <Icon as={LuUser} color={colors.text.secondary} />
+            <Text>{params.value}</Text>
+          </Flex>
+        ),
       },
       {
         field: "date",
         headerName: "작성일",
         flex: 1,
-        cellStyle: {
-          color: isDark ? colors.text.secondary : colors.text.secondary,
-        } as CellStyle,
+        cellRenderer: (params: any) => (
+          <Flex align="center" gap={2} height="100%">
+            <Icon as={LuCalendar} color={colors.text.secondary} />
+            <Text>{params.value}</Text>
+          </Flex>
+        ),
       },
       {
         field: "views",
         headerName: "조회",
         flex: 1,
         type: "numericColumn",
-        cellStyle: {
-          color: isDark ? colors.text.secondary : colors.text.secondary,
-        } as CellStyle,
+        cellRenderer: (params: any) => (
+          <Flex align="center" gap={2} height="100%">
+            <Icon as={LuEye} color={colors.text.secondary} />
+            <Text>{params.value}</Text>
+          </Flex>
+        ),
       },
     ],
-    [isDark, colors]
+    [colors]
   );
-
-  // AG Grid 기본 설정
-  const defaultColDef = useMemo(
-    () => ({
-      sortable: true,
-      resizable: true,
-    }),
-    []
-  );
-
-  const gridTheme = isDark ? "ag-theme-alpine-dark" : "ag-theme-alpine";
 
   if (!board) {
     return (
@@ -164,16 +314,48 @@ export function BoardPreview({
           py={8}
           borderBottom="1px solid"
           borderColor={isDark ? "gray.700" : "gray.100"}
+          position="relative"
+          overflow="hidden"
         >
-          <Box px={6} maxW="container.lg" mx="auto">
-            <Text fontSize="2xl" fontWeight="bold" mb={2}>
-              {board.title}
-            </Text>
-            {board.description && (
-              <Text fontSize="sm" color={colors.text.secondary}>
-                {board.description}
-              </Text>
-            )}
+          <Box
+            position="absolute"
+            top={0}
+            left={0}
+            right={0}
+            bottom={0}
+            bg={isDark ? "gray.700" : "gray.100"}
+            opacity={0.1}
+            zIndex={0}
+          />
+          <Box
+            px={6}
+            maxW="container.lg"
+            mx="auto"
+            position="relative"
+            zIndex={1}
+          >
+            <VStack align="flex-start" gap={3}>
+              <Flex align="center" gap={3}>
+                <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold">
+                  {board.title}
+                </Text>
+                <Badge
+                  colorScheme="blue"
+                  variant="subtle"
+                  fontSize="sm"
+                  px={2}
+                  py={1}
+                  borderRadius="full"
+                >
+                  게시판
+                </Badge>
+              </Flex>
+              {board.description && (
+                <Text fontSize="sm" color={colors.text.secondary}>
+                  {board.description}
+                </Text>
+              )}
+            </VStack>
           </Box>
         </Box>
 
@@ -182,32 +364,61 @@ export function BoardPreview({
           <Box maxW="container.lg" mx="auto" px={6}>
             {/* 검색 영역 */}
             {settings.showSearch && (
-              <HStack mb={6} gap={2}>
-                <Input placeholder="검색어를 입력하세요" size="sm" />
-                <Button size="sm" colorScheme="blue">
-                  검색
-                </Button>
-              </HStack>
+              <Box
+                mb={6}
+                p={4}
+                bg={isDark ? "gray.800" : "gray.50"}
+                borderRadius="lg"
+                boxShadow="sm"
+                border="1px solid"
+                borderColor={isDark ? "gray.700" : "gray.200"}
+              >
+                <HStack gap={2}>
+                  <Input
+                    placeholder="검색어를 입력하세요"
+                    size="md"
+                    bg={isDark ? "gray.700" : "white"}
+                    borderColor={isDark ? "gray.600" : "gray.200"}
+                    _hover={{ borderColor: colors.primary.default }}
+                    _focus={{ borderColor: colors.primary.default }}
+                    borderRadius="full"
+                    px={4}
+                  />
+                  <Button
+                    size="md"
+                    colorScheme="blue"
+                    display="flex"
+                    alignItems="center"
+                    gap={2}
+                    borderRadius="full"
+                    px={6}
+                    _hover={{
+                      transform: "translateY(-1px)",
+                      boxShadow: "md",
+                    }}
+                    transition="all 0.2s"
+                  >
+                    <Icon as={LuSearch} />
+                    검색
+                  </Button>
+                </HStack>
+              </Box>
             )}
 
             {/* AG Grid 게시글 목록 */}
             <Box
-              className={gridTheme}
-              width="100%"
-              height="400px"
-              borderRadius="md"
+              h="full"
+              borderRadius="xl"
               overflow="hidden"
-              boxShadow="sm"
-              mb={4}
+              boxShadow={colors.shadow.sm}
             >
-              <AgGridReact<Post>
-                rowData={rowData}
+              <AgGridReact
+                className="ag-theme-quartz"
+                theme={colorMode === "dark" ? themeDarkMode : themeLightMode}
+                {...defaultGridOptions}
                 columnDefs={columnDefs}
-                defaultColDef={defaultColDef}
-                animateRows={true}
-                pagination={settings.showPagination}
-                paginationAutoPageSize={true}
-                suppressCellFocus={true}
+                rowData={rowData}
+                animateRows
                 domLayout="autoHeight"
               />
             </Box>
@@ -216,13 +427,21 @@ export function BoardPreview({
             <Flex justify="flex-end">
               {settings.showWriteButton && (
                 <Button
-                  size="sm"
+                  size="md"
                   colorScheme="blue"
                   display="flex"
                   alignItems="center"
                   gap={2}
+                  px={6}
+                  borderRadius="full"
+                  boxShadow="sm"
+                  _hover={{
+                    transform: "translateY(-1px)",
+                    boxShadow: "md",
+                  }}
+                  transition="all 0.2s"
                 >
-                  <LuPlus />
+                  <Icon as={LuPlus} />
                   글쓰기
                 </Button>
               )}
