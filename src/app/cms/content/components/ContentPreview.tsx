@@ -1,12 +1,27 @@
 "use client";
 
-import { Box, Flex, Text, Image, HStack, VStack, Grid } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Text,
+  Image,
+  HStack,
+  VStack,
+  Grid,
+  Container,
+  Heading,
+  List,
+  ListItem,
+  Separator,
+  Link,
+} from "@chakra-ui/react";
 import { useColors } from "@/styles/theme";
 import { useColorMode } from "@/components/ui/color-mode";
-import { Content } from "../types";
+import { Content, VisionSection } from "../types";
 import { Menu } from "../../menu/page";
 import { PreviewLayout } from "../../components/preview/PreviewLayout";
-import { LuCalendar, LuEye, LuTag } from "react-icons/lu";
+import { LuCalendar, LuEye, LuTag, LuCheck } from "react-icons/lu";
+import { LexicalRenderer } from "./LexicalRenderer";
 
 interface ContentPreviewProps {
   content: Content | null;
@@ -14,235 +29,203 @@ interface ContentPreviewProps {
 }
 
 const SAMPLE_CONTENT = {
-  title: "샘플 컨텐츠 제목",
-  description: "이것은 샘플 컨텐츠의 설명입니다.",
-  content: `
-# 샘플 컨텐츠
-
-이것은 샘플 컨텐츠의 본문입니다. 마크다운 형식으로 작성되었습니다.
-
-## 섹션 1
-
-- 첫 번째 항목
-- 두 번째 항목
-- 세 번째 항목
-
-## 섹션 2
-
-샘플 텍스트가 들어갑니다. 이 텍스트는 미리보기용으로만 사용됩니다.
-  `,
-  thumbnail: "https://via.placeholder.com/800x400",
-  tags: ["태그1", "태그2", "태그3"],
   author: {
-    name: "작성자",
-    avatar: "https://via.placeholder.com/40",
+    name: "김영주",
+    avatar: "/images/avatar.png",
   },
-  date: "2024-03-21",
-  views: 42,
+  date: "2024-03-20",
+  views: 1234,
 };
 
 export function ContentPreview({ content, menus = [] }: ContentPreviewProps) {
   const colors = useColors();
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
+  const bgColor = isDark ? colors.cardBg : "white";
+  const borderColor = isDark ? "gray.700" : "gray.200";
 
   if (!content) {
     return (
-      <PreviewLayout menus={menus}>
-        <Box p={6} textAlign="center" color="gray.500">
-          컨텐츠를 선택해주세요.
-        </Box>
-      </PreviewLayout>
+      <Flex
+        direction="column"
+        align="center"
+        justify="center"
+        h="full"
+        gap={4}
+        p={8}
+        color={colors.text.primary}
+      >
+        <Text fontSize="lg" fontWeight="medium" textAlign="center">
+          컨텐츠를 선택하거나 새 컨텐츠를 추가하세요.
+        </Text>
+      </Flex>
     );
   }
 
-  return (
-    <PreviewLayout currentPage="컨텐츠" menus={menus}>
-      <Box
-        width="100%"
-        height="100%"
-        bg={isDark ? "gray.900" : "white"}
-        position="relative"
-      >
-        {/* 타이틀 영역 */}
-        <Box
-          width="100%"
-          bg={isDark ? "gray.800" : "gray.50"}
-          py={8}
-          borderBottom="1px solid"
-          borderColor={isDark ? "gray.700" : "gray.100"}
-        >
-          <Box px={6} maxW="container.lg" mx="auto">
-            <Text fontSize="2xl" fontWeight="bold" mb={2}>
-              {content.title}
+  const renderSection = (section: VisionSection) => {
+    switch (section.type) {
+      case "quote":
+        return (
+          <Box
+            p={6}
+            bg={colors.cardBg}
+            borderRadius="lg"
+            borderLeft="4px solid"
+            borderColor={colors.primary.default}
+            my={4}
+          >
+            <Text color={colors.text.primary} fontSize="lg" fontStyle="italic">
+              {section.content}
             </Text>
-            {content.description && (
-              <Text fontSize="sm" color={colors.text.secondary}>
-                {content.description}
-              </Text>
-            )}
           </Box>
-        </Box>
-
-        {/* 메인 컨텐츠 */}
-        <Box py={8}>
-          <Box maxW="container.lg" mx="auto" px={6}>
-            {/* 썸네일 */}
-            {content.settings.showThumbnail && SAMPLE_CONTENT.thumbnail && (
-              <Box
-                mb={8}
-                borderRadius="lg"
-                overflow="hidden"
-                boxShadow="sm"
-                bg={isDark ? "gray.800" : "white"}
-              >
-                <Image
-                  src={SAMPLE_CONTENT.thumbnail}
-                  alt={content.title}
-                  width="100%"
-                  height="auto"
-                />
+        );
+      case "list":
+        return (
+          <Box as="ul" listStyleImage="url(/images/check.svg)" my={4}>
+            {section.items?.map((item, index) => (
+              <Box as="li" key={index}>
+                <Text>{item}</Text>
               </Box>
-            )}
+            ))}
+          </Box>
+        );
+      default:
+        return (
+          <Box my={4}>
+            <LexicalRenderer content={section.content} editable={false} />
+          </Box>
+        );
+    }
+  };
 
-            {/* 메타 정보 */}
-            <Flex
-              justify="space-between"
-              align="center"
-              mb={8}
-              pb={4}
-              borderBottom="1px solid"
-              borderColor={isDark ? "gray.700" : "gray.100"}
-            >
-              <HStack gap={4}>
-                {content.settings.showAuthor && (
-                  <HStack gap={2}>
-                    <Box
-                      width="32px"
-                      height="32px"
-                      borderRadius="full"
-                      overflow="hidden"
-                      bg="gray.200"
-                      _dark={{ bg: "gray.700" }}
-                    >
-                      <Image
-                        src={SAMPLE_CONTENT.author.avatar}
-                        alt={SAMPLE_CONTENT.author.name}
-                        width="100%"
-                        height="100%"
-                        objectFit="cover"
-                      />
-                    </Box>
-                    <Text fontSize="sm">{SAMPLE_CONTENT.author.name}</Text>
-                  </HStack>
-                )}
-                {content.settings.showDate && (
-                  <HStack gap={2} color={colors.text.secondary}>
-                    <LuCalendar size={16} />
-                    <Text fontSize="sm">{SAMPLE_CONTENT.date}</Text>
-                  </HStack>
-                )}
-                <HStack gap={2} color={colors.text.secondary}>
-                  <LuEye size={16} />
-                  <Text fontSize="sm">{SAMPLE_CONTENT.views}</Text>
-                </HStack>
-              </HStack>
-              {content.settings.showTags && (
-                <HStack gap={2}>
-                  <LuTag size={16} />
-                  {SAMPLE_CONTENT.tags.map((tag) => (
-                    <Box
-                      key={tag}
-                      px={2}
-                      py={1}
-                      bg="blue.50"
-                      color="blue.600"
-                      fontSize="sm"
-                      borderRadius="md"
-                      _dark={{
-                        bg: "blue.900",
-                        color: "blue.200",
-                      }}
-                    >
-                      {tag}
-                    </Box>
-                  ))}
+  return (
+    <PreviewLayout currentPage={content.name} menus={menus}>
+      <Container maxW="container.xl" py={8}>
+        <VStack gap={8} align="stretch">
+          {/* 헤더 섹션 */}
+          <Box>
+            <Heading as="h1" size="2xl" mb={4}>
+              {content.title}
+            </Heading>
+            <HStack gap={4} color={colors.text.secondary}>
+              {content.settings.showAuthor && content.metadata?.author && (
+                <HStack>
+                  <Box
+                    width="32px"
+                    height="32px"
+                    borderRadius="full"
+                    overflow="hidden"
+                    bg="gray.200"
+                    _dark={{ bg: "gray.700" }}
+                  >
+                    <Image
+                      src={SAMPLE_CONTENT.author.avatar}
+                      alt={content.metadata.author}
+                      width="100%"
+                      height="100%"
+                      objectFit="cover"
+                    />
+                  </Box>
+                  <Text fontSize="sm">{content.metadata.author}</Text>
                 </HStack>
               )}
-            </Flex>
-
-            {/* 본문 */}
-            <VStack align="stretch" gap={4} mb={12}>
-              {SAMPLE_CONTENT.content.split("\n").map((line, index) => {
-                if (line.startsWith("# ")) {
-                  return (
-                    <Text key={index} fontSize="2xl" fontWeight="bold">
-                      {line.replace("# ", "")}
-                    </Text>
-                  );
-                }
-                if (line.startsWith("## ")) {
-                  return (
-                    <Text key={index} fontSize="xl" fontWeight="bold" mt={2}>
-                      {line.replace("## ", "")}
-                    </Text>
-                  );
-                }
-                if (line.startsWith("- ")) {
-                  return (
-                    <Text key={index} pl={4}>
-                      • {line.replace("- ", "")}
-                    </Text>
-                  );
-                }
-                return (
-                  <Text key={index} whiteSpace="pre-wrap">
-                    {line}
-                  </Text>
-                );
-              })}
-            </VStack>
-
-            {/* 관련 컨텐츠 */}
-            {content.settings.showRelatedContent && (
-              <Box>
-                <Text fontSize="xl" fontWeight="bold" mb={4}>
-                  관련 컨텐츠
-                </Text>
-                <Grid
-                  templateColumns="repeat(3, 1fr)"
-                  gap={6}
-                  bg={isDark ? "gray.800" : "gray.50"}
-                  p={6}
-                  borderRadius="lg"
-                >
-                  {[1, 2, 3].map((i) => (
-                    <Box
-                      key={i}
-                      bg={isDark ? "gray.700" : "white"}
-                      p={4}
-                      borderRadius="md"
-                      cursor="pointer"
-                      _hover={{
-                        transform: "translateY(-2px)",
-                        boxShadow: "md",
-                      }}
-                      transition="all 0.2s"
-                    >
-                      <Text fontWeight="bold" mb={2}>
-                        관련 컨텐츠 {i}
-                      </Text>
-                      <Text fontSize="sm" color={colors.text.secondary}>
-                        관련 컨텐츠 {i}의 설명입니다.
-                      </Text>
-                    </Box>
-                  ))}
-                </Grid>
-              </Box>
-            )}
+              {content.settings.showDate && (
+                <HStack>
+                  <LuCalendar size={16} />
+                  <Text fontSize="sm">{SAMPLE_CONTENT.date}</Text>
+                </HStack>
+              )}
+              <HStack>
+                <LuEye size={16} />
+                <Text fontSize="sm">{SAMPLE_CONTENT.views}</Text>
+              </HStack>
+            </HStack>
           </Box>
-        </Box>
-      </Box>
+
+          <Separator />
+
+          {/* 목차 */}
+          {content.settings.showTableOfContents && content.sections && (
+            <Box>
+              <Heading as="h2" size="md" mb={4}>
+                목차
+              </Heading>
+              <Box as="ul" gap={2} listStyleType="none" pl={0}>
+                {content.sections.map((section, index) => (
+                  <Box as="li" key={index} mb={2}>
+                    <Link
+                      href={`#section-${index}`}
+                      color={colors.primary.default}
+                      _hover={{ textDecoration: "underline" }}
+                    >
+                      {section.title}
+                    </Link>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          )}
+
+          {/* 섹션 컨텐츠 */}
+          {content.sections?.map((section, index) => (
+            <Box key={index} id={`section-${index}`}>
+              <Heading as="h2" size="lg" mb={4}>
+                {section.title}
+              </Heading>
+              {renderSection(section)}
+            </Box>
+          ))}
+
+          {/* 메인 컨텐츠 */}
+          {content.content && (
+            <Box>
+              <LexicalRenderer content={content.content} editable={false} />
+            </Box>
+          )}
+
+          {/* 메타데이터 */}
+          {content.metadata && (
+            <Box
+              mt={8}
+              p={4}
+              bg={bgColor}
+              borderRadius="lg"
+              borderWidth={1}
+              borderColor={borderColor}
+            >
+              <Heading as="h3" size="md" mb={4}>
+                작성자 정보
+              </Heading>
+              <Grid templateColumns="repeat(2, 1fr)" gap={4}>
+                {content.metadata.author && (
+                  <Box>
+                    <Text fontWeight="bold">작성자</Text>
+                    <Text>{content.metadata.author}</Text>
+                  </Box>
+                )}
+                {content.metadata.position && (
+                  <Box>
+                    <Text fontWeight="bold">직위</Text>
+                    <Text>{content.metadata.position}</Text>
+                  </Box>
+                )}
+                {content.metadata.department && (
+                  <Box>
+                    <Text fontWeight="bold">부서</Text>
+                    <Text>{content.metadata.department}</Text>
+                  </Box>
+                )}
+                {content.metadata.contact && (
+                  <Box>
+                    <Text fontWeight="bold">연락처</Text>
+                    <Text>{content.metadata.contact}</Text>
+                  </Box>
+                )}
+              </Grid>
+            </Box>
+          )}
+        </VStack>
+      </Container>
     </PreviewLayout>
   );
 }

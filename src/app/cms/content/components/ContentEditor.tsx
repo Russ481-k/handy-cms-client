@@ -1,42 +1,83 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Flex,
   Button,
   VStack,
   Text,
-  Checkbox,
+  Checkbox as ChakraCheckbox,
   Input,
+  Select as ChakraSelect,
+  Textarea,
+  IconButton,
+  HStack,
+  Separator,
+  useDisclosure,
+  Dialog,
+  Portal,
+  CloseButton,
   Select,
+  createListCollection,
+  Checkbox,
 } from "@chakra-ui/react";
-import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
-import { LuCheck } from "react-icons/lu";
-import { useForm, Controller } from "react-hook-form";
+import { LuPlus, LuTrash2, LuPencil, LuCheck } from "react-icons/lu";
+import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { TreeItem } from "@/components/ui/tree-list";
-import { getAuthHeader } from "@/lib/auth";
-import { toaster } from "@/components/ui/toaster";
+import { Content, VisionSection } from "../types";
+import dynamic from "next/dynamic";
 
-interface ContentEditorProps {
-  content?: TreeItem | null;
-  onClose: () => void;
-  onDelete?: (contentId: number) => void;
-  onSubmit: (content: Omit<TreeItem, "id" | "createdAt" | "updatedAt">) => void;
-}
+const LexicalEditor = dynamic(() => import("./LexicalEditor"), { ssr: false });
 
 const contentSchema = z.object({
-  name: z.string().min(1, "컨텐츠명을 입력해주세요."),
-  url: z.string().min(1, "URL을 입력해주세요."),
-  visible: z.boolean().default(true),
-  type: z.literal("CONTENT"),
-  displayPosition: z.string().min(1, "표시 위치를 선택해주세요."),
+  name: z.string().min(1, "제목을 입력해주세요"),
+  description: z.string(),
+  type: z.enum(["page", "vision", "news", "notice"]),
+  content: z.string(),
+  visible: z.boolean(),
+  sections: z
+    .array(
+      z.object({
+        title: z.string(),
+        content: z.string(),
+        type: z.enum(["text", "quote", "list"]),
+        items: z.array(z.string()).optional(),
+      })
+    )
+    .optional(),
+  settings: z.object({
+    layout: z.enum(["default", "wide", "full"]),
+    showThumbnail: z.boolean(),
+    showTags: z.boolean(),
+    showDate: z.boolean(),
+    showAuthor: z.boolean(),
+    showRelatedContent: z.boolean(),
+    showTableOfContents: z.boolean(),
+  }),
+  metadata: z
+    .object({
+      author: z.string().optional(),
+      position: z.string().optional(),
+      department: z.string().optional(),
+      contact: z.string().optional(),
+    })
+    .optional(),
 });
 
-type ContentFormData = z.infer<typeof contentSchema>;
+type ContentFormData = z.infer<typeof contentSchema> & {
+  visible: boolean;
+};
+
+interface ContentEditorProps {
+  content?: Content | null;
+  onClose: () => void;
+  onDelete?: (contentId: number) => void;
+  onSubmit: (content: Omit<Content, "id" | "createdAt" | "updatedAt">) => void;
+}
 
 export function ContentEditor({
   content,
@@ -44,279 +85,574 @@ export function ContentEditor({
   onDelete,
   onSubmit,
 }: ContentEditorProps) {
+  const colors = useColors();
+  const { open, onOpen, onClose: onCloseModal } = useDisclosure();
+  const [selectedSection, setSelectedSection] = useState<VisionSection | null>(
+    null
+  );
+
   const {
-    control,
+    register,
     handleSubmit,
+    control,
+    watch,
     formState: { errors },
-    reset,
   } = useForm<ContentFormData>({
     resolver: zodResolver(contentSchema),
     defaultValues: {
       name: content?.name || "",
-      url: content?.url || "",
+      description: content?.description || "",
+      type: content?.type || "page",
+      content: content?.content || "",
       visible: content?.visible ?? true,
-      type: "CONTENT",
-      displayPosition: content?.displayPosition || "TOP",
+      sections: content?.sections || [],
+      settings: content?.settings || {
+        layout: "default",
+        showThumbnail: true,
+        showTags: true,
+        showDate: true,
+        showAuthor: true,
+        showRelatedContent: true,
+        showTableOfContents: true,
+      },
+      metadata: content?.metadata || {
+        author: "",
+        position: "",
+        department: "",
+        contact: "",
+      },
     },
   });
 
-  // content prop이 변경될 때마다 폼 데이터 업데이트
-  useEffect(() => {
-    if (content) {
-      reset({
-        name: content.name,
-        url: content.url || "",
-        visible: content.visible,
-        type: "CONTENT",
-        displayPosition: content.displayPosition,
-      });
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "sections",
+  });
+
+  const handleAddSection = () => {
+    append({
+      title: "",
+      content: "",
+      type: "text",
+      items: [],
+    });
+  };
+
+  const handleEditSection = (section: VisionSection) => {
+    setSelectedSection(section);
+    onOpen();
+  };
+
+  const handleSaveSection = (section: VisionSection) => {
+    if (selectedSection) {
+      const index = fields.findIndex((f) => f.id === selectedSection.id);
+      if (index !== -1) {
+        fields[index] = { ...section, id: fields[index].id };
+      }
     } else {
-      reset({
-        name: "",
-        url: "",
-        visible: true,
-        type: "CONTENT",
-        displayPosition: "TOP",
-      });
+      append(section);
     }
-  }, [content, reset]);
-
-  // 컬러 모드에 맞는 색상 설정
-  const colors = useColors();
-  const bgColor = useColorModeValue(colors.cardBg, colors.cardBg);
-  const borderColor = useColorModeValue(colors.border, colors.border);
-  const textColor = useColorModeValue(colors.text.primary, colors.text.primary);
-  const errorColor = useColorModeValue("red.500", "red.300");
-  const buttonBg = useColorModeValue(
-    colors.primary.default,
-    colors.primary.default
-  );
-
-  const handleDelete = async () => {
-    if (!content || !onDelete) return;
-
-    if (window.confirm("정말로 이 컨텐츠를 삭제하시겠습니까?")) {
-      onDelete(content.id);
-      onClose();
-    }
+    onCloseModal();
   };
 
-  const handleFormSubmit = async (data: ContentFormData) => {
-    try {
-      const submitData = {
-        ...data,
-        sortOrder: content?.sortOrder || 0,
-      };
-
-      onSubmit(submitData);
-      onClose();
-    } catch (error) {
-      console.error("Error saving content:", error);
-      toaster.error({
-        title: "컨텐츠 저장 중 오류가 발생했습니다.",
-        duration: 3000,
-      });
-    }
+  const handleFormSubmit = (data: ContentFormData) => {
+    onSubmit({
+      ...data,
+      title: data.name,
+      status: data.visible ? "PUBLISHED" : "DRAFT",
+      displayPosition: content?.displayPosition || "0",
+      visible: data.visible,
+      sortOrder: content?.sortOrder || 0,
+    });
   };
-
-  if (!content && !onDelete) {
-    return (
-      <Flex
-        direction="column"
-        align="center"
-        justify="center"
-        h="full"
-        gap={4}
-        p={8}
-        color={textColor}
-      >
-        <Text fontSize="lg" fontWeight="medium" textAlign="center">
-          컨텐츠를 선택하거나 새 컨텐츠를 추가하세요.
-        </Text>
-      </Flex>
-    );
-  }
 
   return (
-    <Box>
+    <Box p={4}>
       <form onSubmit={handleSubmit(handleFormSubmit)}>
-        <VStack gap={3} align="stretch">
+        <VStack gap={4} align="stretch">
           <Box>
-            <Flex mb={1}>
-              <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                컨텐츠명
-              </Text>
-              <Text fontSize="sm" color={errorColor} ml={1}>
-                *
-              </Text>
-            </Flex>
-            <Controller
-              name="name"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  borderColor={errors.name ? errorColor : borderColor}
-                  color={textColor}
-                  bg="transparent"
-                />
-              )}
-            />
+            <Text mb={2}>제목</Text>
+            <Input {...register("name")} />
             {errors.name && (
-              <Text color={errorColor} fontSize="sm" mt={1}>
+              <Text color="red.500" fontSize="sm">
                 {errors.name.message}
               </Text>
             )}
           </Box>
 
           <Box>
-            <Flex mb={1}>
-              <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                URL
-              </Text>
-              <Text fontSize="sm" color={errorColor} ml={1}>
-                *
-              </Text>
-            </Flex>
-            <Controller
-              name="url"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  borderColor={errors.url ? errorColor : borderColor}
-                  color={textColor}
-                  bg="transparent"
-                />
-              )}
-            />
-            {errors.url && (
-              <Text color={errorColor} fontSize="sm" mt={1}>
-                {errors.url.message}
-              </Text>
-            )}
+            <Text mb={2}>설명</Text>
+            <Textarea {...register("description")} />
           </Box>
 
           <Box>
-            <Flex mb={1}>
-              <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                표시 위치
-              </Text>
-              <Text fontSize="sm" color={errorColor} ml={1}>
-                *
-              </Text>
-            </Flex>
-            <Controller
-              name="displayPosition"
-              control={control}
-              render={({ field }) => (
-                <select
-                  {...field}
-                  style={{
-                    width: "100%",
-                    padding: "0.5rem",
-                    borderWidth: "1px",
-                    borderRadius: "0.375rem",
-                    borderColor: errors.displayPosition
-                      ? errorColor
-                      : borderColor,
-                    backgroundColor: "transparent",
-                    color: textColor,
-                  }}
-                >
-                  <option value="TOP">상단</option>
-                  <option value="BOTTOM">하단</option>
-                </select>
-              )}
-            />
-            {errors.displayPosition && (
-              <Text color={errorColor} fontSize="sm" mt={1}>
-                {errors.displayPosition.message}
-              </Text>
-            )}
+            <Text mb={2}>컨텐츠 유형</Text>
+
+            <Select.Root
+              variant="outline"
+              collection={createListCollection({
+                items: [
+                  { value: "page", label: "일반 페이지" },
+                  { value: "vision", label: "비전 및 목표" },
+                  { value: "news", label: "뉴스" },
+                  { value: "notice", label: "공지사항" },
+                ],
+              })}
+            >
+              <Select.HiddenSelect />
+              <Select.Label>Select framework - outline</Select.Label>
+              <Select.Control>
+                <Select.Trigger>
+                  <Select.ValueText placeholder="Select framework" />
+                </Select.Trigger>
+                <Select.IndicatorGroup>
+                  <Select.Indicator />
+                </Select.IndicatorGroup>
+              </Select.Control>
+              <Portal>
+                <Select.Positioner>
+                  <Select.Content>
+                    {[
+                      { value: "page", label: "일반 페이지" },
+                      { value: "vision", label: "비전 및 목표" },
+                      { value: "news", label: "뉴스" },
+                      { value: "notice", label: "공지사항" },
+                    ].map((framework) => (
+                      <Select.Item item={framework} key={framework.value}>
+                        {framework.label}
+                        <Select.ItemIndicator />
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Positioner>
+              </Portal>
+            </Select.Root>
           </Box>
 
-          <Flex alignItems="center" gap={2}>
-            <Controller
-              name="visible"
-              control={control}
-              render={({ field: { value, onChange } }) => (
-                <Checkbox.Root
-                  checked={value}
-                  onCheckedChange={(e) => onChange(!!e.checked)}
-                  colorPalette="blue"
+          {watch("type") === "vision" && (
+            <Box>
+              <Flex justify="space-between" align="center" mb={2}>
+                <Text>섹션</Text>
+                <IconButton
+                  aria-label="섹션 추가"
                   size="sm"
+                  onClick={handleAddSection}
                 >
-                  <Checkbox.HiddenInput />
-                  <Checkbox.Control
-                    borderColor={borderColor}
-                    bg={bgColor}
-                    _checked={{
-                      borderColor: "transparent",
-                      bgGradient: colors.gradient.primary,
-                      color: "white",
-                      _hover: {
-                        opacity: 0.8,
-                      },
-                    }}
-                  >
-                    <Checkbox.Indicator>
-                      <LuCheck />
-                    </Checkbox.Indicator>
-                  </Checkbox.Control>
-                  <Checkbox.Label>
-                    <Text fontWeight="medium" color={textColor}>
-                      컨텐츠 노출
-                    </Text>
-                  </Checkbox.Label>
-                </Checkbox.Root>
+                  <LuPlus />
+                </IconButton>
+              </Flex>
+              <VStack gap={2} align="stretch">
+                {fields.map((field, index) => (
+                  <Box key={field.id} p={4} borderWidth={1} borderRadius="md">
+                    <Flex justify="space-between" align="center" mb={2}>
+                      <Text fontWeight="bold">
+                        {field.title || "제목 없음"}
+                      </Text>
+                      <HStack>
+                        <IconButton
+                          aria-label="섹션 수정"
+                          size="sm"
+                          onClick={() => handleEditSection(field)}
+                        >
+                          <LuPencil />
+                        </IconButton>
+                        <IconButton
+                          aria-label="섹션 삭제"
+                          size="sm"
+                          onClick={() => remove(index)}
+                        >
+                          <LuTrash2 />
+                        </IconButton>
+                      </HStack>
+                    </Flex>
+                    <Text>{field.content}</Text>
+                  </Box>
+                ))}
+              </VStack>
+            </Box>
+          )}
+
+          <Box>
+            <Text mb={2}>내용</Text>
+            <Controller
+              name="content"
+              control={control}
+              render={({ field }) => (
+                <LexicalEditor value={field.value} onChange={field.onChange} />
               )}
             />
-          </Flex>
+          </Box>
 
-          <Flex justify="space-between" mt={4}>
-            {content ? (
+          <Separator />
+
+          <Box>
+            <Text mb={2}>설정</Text>
+            <VStack gap={2} align="stretch">
+              <Controller
+                name="settings.layout"
+                control={control}
+                render={({ field }) => (
+                  <Select.Root
+                    key={field.value}
+                    variant="outline"
+                    value={[field.value]}
+                    onValueChange={({ value }) => field.onChange(value[0])}
+                    collection={createListCollection({
+                      items: [
+                        { value: "default", label: "기본" },
+                        { value: "wide", label: "와이드" },
+                        { value: "full", label: "전체" },
+                      ],
+                    })}
+                  >
+                    <Select.HiddenSelect />
+                    <Select.Label>Select framework - outline</Select.Label>
+                    <Select.Control>
+                      <Select.Trigger>
+                        <Select.ValueText placeholder="Select framework" />
+                      </Select.Trigger>
+                      <Select.IndicatorGroup>
+                        <Select.Indicator />
+                      </Select.IndicatorGroup>
+                    </Select.Control>
+                    <Portal>
+                      <Select.Positioner>
+                        <Select.Content>
+                          {[
+                            { value: "page", label: "일반 페이지" },
+                            { value: "vision", label: "비전 및 목표" },
+                            { value: "news", label: "뉴스" },
+                            { value: "notice", label: "공지사항" },
+                          ].map((framework) => (
+                            <Select.Item item={framework} key={framework.value}>
+                              {framework.label}
+                              <Select.ItemIndicator />
+                            </Select.Item>
+                          ))}
+                        </Select.Content>
+                      </Select.Positioner>
+                    </Portal>
+                  </Select.Root>
+                )}
+              />
+              <Controller
+                name="settings.showThumbnail"
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <Checkbox.Root
+                    checked={value}
+                    onCheckedChange={(e) => onChange(!!e.checked)}
+                    colorPalette="blue"
+                    size="sm"
+                  >
+                    <Checkbox.HiddenInput />
+                    <Checkbox.Control>
+                      <Checkbox.Indicator>
+                        <LuCheck />
+                      </Checkbox.Indicator>
+                    </Checkbox.Control>
+                    <Checkbox.Label>썸네일 표시</Checkbox.Label>
+                  </Checkbox.Root>
+                )}
+              />
+              <Controller
+                name="settings.showTags"
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <Checkbox.Root
+                    checked={value}
+                    onCheckedChange={(e) => onChange(!!e.checked)}
+                    colorPalette="blue"
+                    size="sm"
+                  >
+                    <Checkbox.HiddenInput />
+                    <Checkbox.Control>
+                      <Checkbox.Indicator>
+                        <LuCheck />
+                      </Checkbox.Indicator>
+                    </Checkbox.Control>
+                    <Checkbox.Label>태그 표시</Checkbox.Label>
+                  </Checkbox.Root>
+                )}
+              />
+              <Controller
+                name="settings.showDate"
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <Checkbox.Root
+                    checked={value}
+                    onCheckedChange={(e) => onChange(!!e.checked)}
+                    colorPalette="blue"
+                    size="sm"
+                  >
+                    <Checkbox.HiddenInput />
+                    <Checkbox.Control>
+                      <Checkbox.Indicator>
+                        <LuCheck />
+                      </Checkbox.Indicator>
+                    </Checkbox.Control>
+                    <Checkbox.Label>날짜 표시</Checkbox.Label>
+                  </Checkbox.Root>
+                )}
+              />
+              <Controller
+                name="settings.showAuthor"
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <Checkbox.Root
+                    checked={value}
+                    onCheckedChange={(e) => onChange(!!e.checked)}
+                    colorPalette="blue"
+                    size="sm"
+                  >
+                    <Checkbox.HiddenInput />
+                    <Checkbox.Control>
+                      <Checkbox.Indicator>
+                        <LuCheck />
+                      </Checkbox.Indicator>
+                    </Checkbox.Control>
+                    <Checkbox.Label>작성자 표시</Checkbox.Label>
+                  </Checkbox.Root>
+                )}
+              />
+              <Controller
+                name="settings.showRelatedContent"
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <Checkbox.Root
+                    checked={value}
+                    onCheckedChange={(e) => onChange(!!e.checked)}
+                    colorPalette="blue"
+                    size="sm"
+                  >
+                    <Checkbox.HiddenInput />
+                    <Checkbox.Control>
+                      <Checkbox.Indicator>
+                        <LuCheck />
+                      </Checkbox.Indicator>
+                    </Checkbox.Control>
+                    <Checkbox.Label>관련 컨텐츠 표시</Checkbox.Label>
+                  </Checkbox.Root>
+                )}
+              />
+              <Controller
+                name="settings.showTableOfContents"
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <Checkbox.Root
+                    checked={value}
+                    onCheckedChange={(e) => onChange(!!e.checked)}
+                    colorPalette="blue"
+                    size="sm"
+                  >
+                    <Checkbox.HiddenInput />
+                    <Checkbox.Control>
+                      <Checkbox.Indicator>
+                        <LuCheck />
+                      </Checkbox.Indicator>
+                    </Checkbox.Control>
+                    <Checkbox.Label>목차 표시</Checkbox.Label>
+                  </Checkbox.Root>
+                )}
+              />
+            </VStack>
+          </Box>
+
+          <Separator />
+
+          <Box>
+            <Text mb={2}>메타데이터</Text>
+            <VStack gap={2} align="stretch">
+              <Input placeholder="작성자" {...register("metadata.author")} />
+              <Input placeholder="직위" {...register("metadata.position")} />
+              <Input placeholder="부서" {...register("metadata.department")} />
+              <Input placeholder="연락처" {...register("metadata.contact")} />
+            </VStack>
+          </Box>
+
+          <Flex justify="flex-end" gap={2}>
+            {content && onDelete && (
               <Button
-                borderColor={colors.accent.delete.default}
-                color={colors.accent.delete.default}
-                onClick={handleDelete}
+                colorScheme="red"
                 variant="outline"
-                _hover={{
-                  bg: colors.accent.delete.bg,
-                  borderColor: colors.accent.delete.hover,
-                  color: colors.accent.delete.hover,
-                  transform: "translateY(-1px)",
-                }}
-                _active={{ transform: "translateY(0)" }}
-                transition="all 0.2s ease"
+                onClick={() => onDelete(content.id)}
               >
                 삭제
               </Button>
-            ) : (
-              <Box />
             )}
-            <Flex gap={2}>
-              <Button
-                borderColor={borderColor}
-                color={textColor}
-                onClick={onClose}
-                variant="outline"
-                _hover={{ bg: colors.secondary.hover }}
-              >
-                취소
-              </Button>
-              <Button
-                type="submit"
-                bg={buttonBg}
-                color="white"
-                _hover={{ bg: colors.primary.hover }}
-              >
-                저장
-              </Button>
-            </Flex>
+            <Button type="button" variant="outline" onClick={onClose}>
+              취소
+            </Button>
+            <Button type="submit" colorScheme="blue">
+              저장
+            </Button>
           </Flex>
         </VStack>
       </form>
+
+      <Dialog.Root size="full" motionPreset="slide-in-bottom">
+        <Portal>
+          <Dialog.Backdrop />
+          <Dialog.Positioner>
+            <Dialog.Content>
+              <Dialog.Header>
+                <Dialog.Title>섹션 편집</Dialog.Title>
+                <Dialog.CloseTrigger asChild>
+                  <CloseButton size="sm" />
+                </Dialog.CloseTrigger>
+              </Dialog.Header>
+              <Dialog.Body>
+                <VStack gap={4} align="stretch">
+                  <Box>
+                    <Text mb={2}>제목</Text>
+                    <Input
+                      value={selectedSection?.title || ""}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setSelectedSection((prev) =>
+                          prev ? { ...prev, title: e.target.value } : null
+                        )
+                      }
+                    />
+                  </Box>
+                  <Box>
+                    <Text mb={2}>유형</Text>
+
+                    <Select.Root
+                      variant="outline"
+                      collection={createListCollection({
+                        items: [
+                          { value: "text", label: "텍스트" },
+                          { value: "quote", label: "인용구" },
+                          { value: "list", label: "목록" },
+                        ],
+                      })}
+                    >
+                      <Select.HiddenSelect />
+                      <Select.Label>Select framework - outline</Select.Label>
+                      <Select.Control>
+                        <Select.Trigger>
+                          <Select.ValueText placeholder="Select framework" />
+                        </Select.Trigger>
+                        <Select.IndicatorGroup>
+                          <Select.Indicator />
+                        </Select.IndicatorGroup>
+                      </Select.Control>
+                      <Portal>
+                        <Select.Positioner>
+                          <Select.Content>
+                            {[
+                              { value: "text", label: "텍스트" },
+                              { value: "quote", label: "인용구" },
+                              { value: "list", label: "목록" },
+                            ].map((type) => (
+                              <Select.Item item={type} key={type.value}>
+                                {type.label}
+                                <Select.ItemIndicator />
+                              </Select.Item>
+                            ))}
+                          </Select.Content>
+                        </Select.Positioner>
+                      </Portal>
+                    </Select.Root>
+                  </Box>
+                  <Box>
+                    <Text mb={2}>내용</Text>
+                    <Controller
+                      name="content"
+                      control={control}
+                      render={({ field }) => (
+                        <LexicalEditor
+                          value={selectedSection?.content || ""}
+                          onChange={(value) =>
+                            setSelectedSection((prev) =>
+                              prev ? { ...prev, content: value || "" } : null
+                            )
+                          }
+                        />
+                      )}
+                    />
+                  </Box>
+                  {selectedSection?.type === "list" && (
+                    <Box>
+                      <Text mb={2}>목록 항목</Text>
+                      <VStack gap={2} align="stretch">
+                        {selectedSection.items?.map((item, index) => (
+                          <HStack key={index}>
+                            <Input
+                              value={item}
+                              onChange={(
+                                e: React.ChangeEvent<HTMLInputElement>
+                              ) =>
+                                setSelectedSection((prev) =>
+                                  prev
+                                    ? {
+                                        ...prev,
+                                        items: prev.items?.map((i, idx) =>
+                                          idx === index ? e.target.value : i
+                                        ),
+                                      }
+                                    : null
+                                )
+                              }
+                            />
+                            <IconButton
+                              aria-label="항목 삭제"
+                              size="sm"
+                              onClick={() =>
+                                setSelectedSection((prev) =>
+                                  prev
+                                    ? {
+                                        ...prev,
+                                        items: prev.items?.filter(
+                                          (_, idx) => idx !== index
+                                        ),
+                                      }
+                                    : null
+                                )
+                              }
+                            >
+                              <LuTrash2 />
+                            </IconButton>
+                          </HStack>
+                        ))}
+                        <Button
+                          onClick={() =>
+                            setSelectedSection((prev) =>
+                              prev
+                                ? {
+                                    ...prev,
+                                    items: [...(prev.items || []), ""],
+                                  }
+                                : null
+                            )
+                          }
+                        >
+                          <LuPlus /> 항목 추가
+                        </Button>
+                      </VStack>
+                    </Box>
+                  )}
+                </VStack>
+              </Dialog.Body>
+              <Dialog.Footer>
+                <Dialog.ActionTrigger asChild>
+                  <Button variant="outline" onClick={onCloseModal}>
+                    취소
+                  </Button>
+                </Dialog.ActionTrigger>
+                <Button
+                  colorScheme="blue"
+                  onClick={() =>
+                    selectedSection && handleSaveSection(selectedSection)
+                  }
+                >
+                  저장
+                </Button>
+              </Dialog.Footer>
+            </Dialog.Content>
+          </Dialog.Positioner>
+        </Portal>
+      </Dialog.Root>
     </Box>
   );
 }
