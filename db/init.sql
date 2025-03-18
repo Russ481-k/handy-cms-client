@@ -7,9 +7,10 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(50) NOT NULL UNIQUE,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
     role VARCHAR(20) NOT NULL,
     avatar_url VARCHAR(255),
+    status VARCHAR(20) NOT NULL,
     created_by VARCHAR(36),
     created_ip VARCHAR(45),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -69,11 +70,13 @@ INSERT INTO menus (name, type, url, display_position, visible, sort_order, paren
 ('참고자료실', 'LINK', '/companies/resources', 'HEADER', true, 3, 3);
 
 -- 기업별 소개 하위 탭메뉴
+SET @parent_id := (SELECT id FROM menus WHERE name = '기업별 소개' AND parent_id = 3);
+
 INSERT INTO menus (name, type, url, display_position, visible, sort_order, parent_id) VALUES
-('오늘의 이야기', 'LINK', '/companies/details/today-story', 'HEADER', true, 1, (SELECT id FROM menus WHERE name = '기업별 소개' AND parent_id = 3)),
-('유니마스', 'LINK', '/companies/details/unimas', 'HEADER', true, 2, (SELECT id FROM menus WHERE name = '기업별 소개' AND parent_id = 3)),
-('삼선택', 'LINK', '/companies/details/samseontaek', 'HEADER', true, 3, (SELECT id FROM menus WHERE name = '기업별 소개' AND parent_id = 3)),
-('세로라', 'LINK', '/companies/details/serora', 'HEADER', true, 4, (SELECT id FROM menus WHERE name = '기업별 소개' AND parent_id = 3));
+('오늘의 이야기', 'LINK', '/companies/details/today-story', 'HEADER', true, 1, @parent_id),
+('유니마스', 'LINK', '/companies/details/unimas', 'HEADER', true, 2, @parent_id), 
+('삼선택', 'LINK', '/companies/details/samseontaek', 'HEADER', true, 3, @parent_id),
+('세로라', 'LINK', '/companies/details/serora', 'HEADER', true, 4, @parent_id);
 
 -- 커뮤니티 하위 메뉴
 INSERT INTO menus (name, type, url, display_position, visible, sort_order, parent_id) VALUES

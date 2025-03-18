@@ -36,7 +36,7 @@ export async function createInitialAdmin() {
 
     try {
       // users 테이블이 없으면 생성
-      await connection.execute(`
+      await connection.query(`
         CREATE TABLE IF NOT EXISTS users (
           uuid VARCHAR(36) PRIMARY KEY,
           username VARCHAR(50) NOT NULL UNIQUE,
@@ -45,13 +45,19 @@ export async function createInitialAdmin() {
           password VARCHAR(255) NOT NULL,
           role VARCHAR(20) NOT NULL,
           avatar_url VARCHAR(255),
+          created_by VARCHAR(36),
+          created_ip VARCHAR(45),
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+          updated_by VARCHAR(36),
+          updated_ip VARCHAR(45),
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          FOREIGN KEY (created_by) REFERENCES users(uuid),
+          FOREIGN KEY (updated_by) REFERENCES users(uuid)
         )
       `);
 
       // admin 계정이 있는지 확인
-      const [users] = await connection.execute(
+      const [users] = await connection.query(
         "SELECT * FROM users WHERE username = ?",
         ["admin"]
       );
@@ -59,14 +65,14 @@ export async function createInitialAdmin() {
       if (Array.isArray(users) && users.length === 0) {
         // admin 계정이 없으면 생성
         const hashedPassword = await hashPassword("0000");
-        await connection.execute(
+        await connection.query(
           "INSERT INTO users (uuid, username, name, email, password, role) VALUES (UUID(), ?, ?, ?, ?, ?)",
           [
             "admin",
             "Administrator",
             "admin@example.com",
             hashedPassword,
-            "admin",
+            "ADMIN",
           ]
         );
         console.log("Initial admin account created");
@@ -87,7 +93,7 @@ export async function validateUser(
   try {
     const connection = await pool.getConnection();
     try {
-      const [users] = await connection.execute(
+      const [users] = await connection.query(
         "SELECT * FROM users WHERE username = ?",
         [username]
       );

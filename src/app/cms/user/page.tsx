@@ -1,21 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import { Box, Flex, Heading, Text, Badge } from "@chakra-ui/react";
+import { useState, useEffect } from "react";
+import { Box, Flex, Heading, Badge } from "@chakra-ui/react";
 import { Button } from "@/components/ui/button";
+import { UserList } from "./components/UserList";
+import { UserEditor } from "./components/UserEditor";
 import { GridSection } from "@/components/ui/grid-section";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
-import { UserList } from "@/app/cms/user/components/UserList";
-import { UserEditor } from "@/app/cms/user/components/UserEditor";
-import { UserPermissions } from "@/app/cms/user/components/UserPermissions";
+import { getAuthHeader } from "@/lib/auth";
+import { toaster } from "@/components/ui/toaster";
 
-interface User {
-  id: number;
+export interface User {
+  id: string;
   username: string;
   email: string;
-  role: "ADMIN" | "EDITOR" | "USER";
-  status: "ACTIVE" | "INACTIVE" | "SUSPENDED";
+  role: "ADMIN" | "USER";
+  status: "ACTIVE" | "INACTIVE";
   lastLoginAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -23,7 +24,8 @@ interface User {
 
 export default function UserManagementPage() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const colors = useColors();
   const bg = useColorModeValue(colors.bg, colors.darkBg);
 
@@ -40,78 +42,110 @@ export default function UserManagementPage() {
     colors.primary.hover,
     colors.primary.hover
   );
+
   const badgeBg = useColorModeValue(colors.primary.light, colors.primary.light);
   const badgeColor = useColorModeValue(
     colors.primary.default,
     colors.primary.default
   );
 
+  // 사용자 목록 새로고침 함수
+  const refreshUsers = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch("/api/cms/users", {
+        headers: getAuthHeader(),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch users");
+      }
+      const data = await response.json();
+      setUsers(data);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      toaster.error({
+        title: "사용자 목록을 불러오는데 실패했습니다.",
+        duration: 3000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleAddUser = () => {
     setSelectedUser(null);
-    setIsEditorOpen(true);
   };
 
   const handleEditUser = (user: User) => {
     setSelectedUser(user);
-    setIsEditorOpen(true);
   };
 
   const handleCloseEditor = () => {
-    setIsEditorOpen(false);
     setSelectedUser(null);
   };
 
-  const handleDeleteUser = async (userId: number) => {
-    try {
-      const response = await fetch(`/api/users/${userId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete user");
-      }
-
-      // 사용자 목록 새로고침
-      const userListElement = document.querySelector(
-        '[data-testid="user-list"]'
-      );
-      if (userListElement) {
-        userListElement.dispatchEvent(new Event("refresh"));
-      }
-    } catch (error) {
-      console.error("Failed to delete user:", error);
-      alert("사용자 삭제 중 오류가 발생했습니다.");
-    }
-  };
-
-  const handleSaveUser = async (
-    userData: Omit<User, "id" | "createdAt" | "updatedAt">
+  const handleSubmit = async (
+    userData: Omit<User, "id" | "createdAt" | "updatedAt" | "lastLoginAt">
   ) => {
     try {
-      const response = await fetch("/api/users", {
-        method: selectedUser ? "PUT" : "POST",
+      const url = selectedUser
+        ? `/api/cms/users/${selectedUser.id}`
+        : "/api/cms/users";
+      const method = selectedUser ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
         headers: {
+          ...getAuthHeader(),
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(
-          selectedUser ? { ...userData, id: selectedUser.id } : userData
-        ),
+        body: JSON.stringify(userData),
       });
 
       if (!response.ok) {
         throw new Error("Failed to save user");
       }
 
-      // 사용자 목록 새로고침
-      const userListElement = document.querySelector(
-        '[data-testid="user-list"]'
-      );
-      if (userListElement) {
-        userListElement.dispatchEvent(new Event("refresh"));
-      }
+      await refreshUsers();
+      setSelectedUser(null);
+      toaster.create({
+        title: selectedUser
+          ? "사용자 정보가 수정되었습니다."
+          : "사용자가 생성되었습니다.",
+        type: "success",
+      });
     } catch (error) {
-      console.error("Failed to save user:", error);
-      throw error;
+      console.error("Error saving user:", error);
+      toaster.create({
+        title: "사용자 저장에 실패했습니다.",
+        type: "error",
+      });
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      const response = await fetch(`/api/cms/users/${userId}`, {
+        method: "DELETE",
+        headers: getAuthHeader(),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete user");
+      }
+
+      await refreshUsers();
+      setSelectedUser(null);
+      toaster.create({
+        title: "사용자가 삭제되었습니다.",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      toaster.create({
+        title: "사용자 삭제에 실패했습니다.",
+        type: "error",
+      });
     }
   };
 
@@ -130,30 +164,26 @@ export default function UserManagementPage() {
       id: "userList",
       x: 0,
       y: 1,
-      w: 3,
-      h: 5,
+      w: 6,
+      h: 11,
       title: "사용자 목록",
-      subtitle: "사용자를 선택하여 상세 정보를 확인하거나 수정할 수 있습니다.",
+      subtitle: "등록된 사용자 목록입니다.",
     },
     {
       id: "userEditor",
-      x: 0,
-      y: 6,
-      w: 3,
-      h: 6,
+      x: 6,
+      y: 1,
+      w: 6,
+      h: 11,
       title: "사용자 편집",
       subtitle: "사용자의 상세 정보를 수정할 수 있습니다.",
     },
-    {
-      id: "preview",
-      x: 3,
-      y: 1,
-      w: 9,
-      h: 11,
-      title: "사용자 권한관리",
-      subtitle: "사용자의 권한을 관리할 수 있습니다.",
-    },
   ];
+
+  // 사용자 목록 불러오기
+  useEffect(() => {
+    refreshUsers();
+  }, []);
 
   return (
     <Box bg={bg} minH="100vh" w="full" position="relative">
@@ -173,7 +203,7 @@ export default function UserManagementPage() {
                 fontSize="xs"
                 fontWeight="bold"
               >
-                시스템 관리자
+                관리자
               </Badge>
             </Flex>
             <Button
@@ -190,62 +220,25 @@ export default function UserManagementPage() {
             </Button>
           </Flex>
 
-          <UserList
-            onEditUser={handleEditUser}
-            onDeleteUser={handleDeleteUser}
-          />
+          <Box>
+            <UserList
+              users={users}
+              onEditUser={handleEditUser}
+              onDeleteUser={handleDeleteUser}
+              isLoading={isLoading}
+              selectedUserId={selectedUser?.id}
+              refreshUsers={refreshUsers}
+            />
+          </Box>
 
-          {isEditorOpen ? (
+          <Box>
             <UserEditor
               user={selectedUser}
               onClose={handleCloseEditor}
-              onSave={handleSaveUser}
+              onDelete={handleDeleteUser}
+              onSubmit={handleSubmit}
             />
-          ) : (
-            <Flex
-              p={8}
-              direction="column"
-              align="center"
-              justify="center"
-              borderRadius="xl"
-              height="100%"
-              gap={4}
-              backdropFilter="blur(8px)"
-            >
-              <Text
-                color={colors.text.secondary}
-                fontSize="lg"
-                fontWeight="medium"
-                textAlign="center"
-              >
-                사용자를 선택하거나 새 사용자를 추가하세요.
-              </Text>
-              <Button
-                onClick={handleAddUser}
-                variant="outline"
-                borderColor={colors.primary.default}
-                color={colors.primary.default}
-                _hover={{
-                  bg: colors.primary.alpha,
-                  transform: "translateY(-2px)",
-                }}
-                _active={{ transform: "translateY(0)" }}
-                transition="all 0.3s ease"
-              >
-                새 사용자 추가
-              </Button>
-            </Flex>
-          )}
-
-          {selectedUser && (
-            <UserPermissions
-              user={{
-                id: selectedUser.id,
-                username: selectedUser.username,
-                role: selectedUser.role,
-              }}
-            />
-          )}
+          </Box>
         </GridSection>
       </Box>
     </Box>

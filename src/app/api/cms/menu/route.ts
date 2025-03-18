@@ -22,6 +22,7 @@ export async function GET(request: Request) {
   try {
     // 인증 확인
     const authHeader = request.headers.get("authorization");
+    console.log("Auth header received:", authHeader?.substring(0, 20) + "...");
     if (!authHeader?.startsWith("Bearer ")) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
@@ -34,20 +35,54 @@ export async function GET(request: Request) {
       return NextResponse.json({ message: "Invalid token" }, { status: 401 });
     }
 
-    // 메뉴 목록 조회
+    // URL에서 type 파라미터 추출
+    const url = new URL(request.url);
+    const type = url.searchParams.get("type");
+    console.log("Requested menu type:", type);
+
+    // 데이터베이스 연결
     const connection = await pool.getConnection();
     try {
-      const [menus] = await connection.execute(`
-        SELECT * FROM menus 
-        ORDER BY sort_order ASC
-      `);
-      console.log("Raw DB menus:", menus);
+      // 메뉴 목록 조회 (type이 지정된 경우 필터링)
+      const query = type
+        ? type === "BOARD" || type === "CONTENT"
+          ? "SELECT * FROM menus WHERE type = ? ORDER BY sort_order ASC"
+          : `
+            WITH RECURSIVE menu_tree AS (
+              -- 타입이 일치하는 메뉴 선택
+              SELECT * FROM menus WHERE type = ?
+              UNION
+              -- 부모 메뉴들 추가
+              SELECT m.* 
+              FROM menus m
+              INNER JOIN menu_tree mt ON m.id = mt.parent_id
+            )
+            SELECT * FROM menu_tree
+            ORDER BY sort_order ASC
+          `
+        : "SELECT * FROM menus ORDER BY sort_order ASC";
+      const params = type ? [type] : [];
+      console.log("Executing query for type:", type);
+      console.log("Query:", query.replace(/\s+/g, " "));
+      console.log("Parameters:", params);
+
+      // 데이터베이스 상태 확인
+      const [menuTypes] = await connection.execute(
+        "SELECT type, COUNT(*) as count FROM menus GROUP BY type"
+      );
+      console.log("Available menu types in database:", menuTypes);
+
+      const [menus] = await connection.execute(query, params);
+      console.log("Query result count:", (menus as any[]).length);
+      if (type === "CONTENT") {
+        console.log("Content menus found:", menus);
+      }
 
       // 계층 구조로 변환
       const menuMap = new Map<number, Menu>();
       const rootMenus: Menu[] = [];
 
-      // 모든 메뉴를 맵에 저장
+      // 모든 메뉴를 맵에 저장하고, BOARD/CONTENT 타입인 경우 바로 rootMenus에 추가
       (menus as MenuRow[]).forEach((menu) => {
         const menuItem: Menu = {
           id: menu.id,
@@ -63,44 +98,46 @@ export async function GET(request: Request) {
           createdAt: menu.created_at,
           updatedAt: menu.updated_at,
         };
-        console.log(`Created menu item:`, menuItem);
-        menuMap.set(menu.id, menuItem);
-      });
 
-      // 계층 구조 구성
-      menuMap.forEach((menu) => {
-        if (menu.parentId) {
-          const parent = menuMap.get(menu.parentId);
-          if (parent && Array.isArray(parent.children)) {
-            console.log(`Adding menu ${menu.id} to parent ${menu.parentId}`);
-            parent.children.push(menu);
-          }
+        if (type === "BOARD" || type === "CONTENT") {
+          rootMenus.push(menuItem);
         } else {
-          console.log(`Adding root menu ${menu.id}`);
-          rootMenus.push(menu);
+          menuMap.set(menu.id, menuItem);
         }
       });
 
-      // 각 메뉴의 children 배열이 비어있는지 확인하고 정렬
-      const finalizeMenu = (menu: Menu): Menu => {
-        if (Array.isArray(menu.children)) {
-          if (menu.children.length === 0) {
-            menu.children = undefined; // 자식이 없는 경우 undefined로 설정
+      // BOARD/CONTENT가 아닌 경우에만 계층 구조 구성
+      if (type !== "BOARD" && type !== "CONTENT") {
+        menuMap.forEach((menu) => {
+          if (menu.parentId) {
+            const parent = menuMap.get(menu.parentId);
+            if (parent && Array.isArray(parent.children)) {
+              parent.children.push(menu);
+            }
           } else {
-            menu.children.sort((a, b) => a.sortOrder - b.sortOrder);
-            menu.children.forEach(finalizeMenu);
+            rootMenus.push(menu);
           }
-        }
-        return menu;
-      };
+        });
+
+        // 각 메뉴의 children 배열이 비어있는지 확인하고 정렬
+        const finalizeMenu = (menu: Menu): Menu => {
+          if (Array.isArray(menu.children)) {
+            if (menu.children.length === 0) {
+              menu.children = undefined; // 자식이 없는 경우 undefined로 설정
+            } else {
+              menu.children.sort((a, b) => a.sortOrder - b.sortOrder);
+              menu.children.forEach(finalizeMenu);
+            }
+          }
+          return menu;
+        };
+
+        rootMenus.forEach(finalizeMenu);
+      }
 
       rootMenus.sort((a, b) => a.sortOrder - b.sortOrder);
-      rootMenus.forEach(finalizeMenu);
 
-      console.log(
-        "Final root menus with hierarchy:",
-        JSON.stringify(rootMenus, null, 2)
-      );
+      console.log("Final response:", rootMenus);
       return NextResponse.json(rootMenus);
     } finally {
       connection.release();

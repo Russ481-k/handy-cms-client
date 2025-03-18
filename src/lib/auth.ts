@@ -2,23 +2,24 @@
 
 // Types
 export interface LoginCredentials {
-  email: string;
+  username: string;
   password: string;
 }
 
 export interface AuthResponse {
   token: string;
   user: {
-    id: string;
-    email: string;
+    uuid: string;
+    username: string;
     name: string;
+    email: string;
     role: string;
   };
 }
 
 // Constants
-const TOKEN_KEY = "cms_auth_token";
-const USER_KEY = "cms_user";
+const TOKEN_KEY = "token";
+const USER_KEY = "user";
 
 // Helper functions
 export const setAuthToken = (token: string): void => {
@@ -93,7 +94,7 @@ export const logout = (): void => {
 };
 
 export function getAuthHeader() {
-  const token = localStorage.getItem("token");
+  const token = getAuthToken();
   if (!token) {
     throw new Error("No authentication token found");
   }

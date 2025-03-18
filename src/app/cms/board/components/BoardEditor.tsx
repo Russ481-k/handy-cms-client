@@ -1,72 +1,83 @@
 "use client";
 
+import { useEffect } from "react";
 import {
   Box,
   Flex,
   Button,
   VStack,
-  Heading,
   Text,
-  Input,
-  NativeSelect,
   Checkbox,
+  Input,
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
-import { useState, useEffect } from "react";
+import { LuCheck } from "react-icons/lu";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { TreeItem } from "@/components/ui/tree-list";
+import { getAuthHeader } from "@/lib/auth";
 import { toaster } from "@/components/ui/toaster";
-import { LuCheck } from "react-icons/lu";
-
-interface Board {
-  id: number;
-  name: string;
-  type: "GENERAL" | "GALLERY" | "QNA" | "NOTICE";
-  description: string;
-  managerId: number;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
 
 interface BoardEditorProps {
-  board: Board | null;
+  board?: TreeItem | null;
   onClose: () => void;
-  onSave: (
-    board: Omit<Board, "id" | "createdAt" | "updatedAt">
-  ) => Promise<void>;
+  onDelete?: (boardId: number) => void;
+  onSubmit: (board: Omit<TreeItem, "id" | "createdAt" | "updatedAt">) => void;
 }
 
 const boardSchema = z.object({
   name: z.string().min(1, "게시판명을 입력해주세요."),
-  type: z.enum(["GENERAL", "GALLERY", "QNA", "NOTICE"]),
-  description: z.string().min(1, "설명을 입력해주세요."),
-  managerId: z.number(),
-  isActive: z.boolean().default(true),
+  url: z.string().min(1, "URL을 입력해주세요."),
+  visible: z.boolean().default(true),
+  type: z.literal("BOARD"),
 });
 
 type BoardFormData = z.infer<typeof boardSchema>;
 
-export function BoardEditor({ board, onClose, onSave }: BoardEditorProps) {
-  const colors = useColors();
+export function BoardEditor({
+  board,
+  onClose,
+  onDelete,
+  onSubmit,
+}: BoardEditorProps) {
   const {
     control,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<BoardFormData>({
     resolver: zodResolver(boardSchema),
     defaultValues: {
       name: board?.name || "",
-      type: board?.type || "GENERAL",
-      description: board?.description || "",
-      managerId: board?.managerId || 1,
-      isActive: board?.isActive ?? true,
+      url: board?.url || "",
+      visible: board?.visible ?? true,
+      type: "BOARD",
     },
   });
 
+  // board prop이 변경될 때마다 폼 데이터 업데이트
+  useEffect(() => {
+    if (board) {
+      reset({
+        name: board.name,
+        url: board.url || "",
+        visible: board.visible,
+        type: "BOARD",
+      });
+    } else {
+      reset({
+        name: "",
+        url: "",
+        visible: true,
+        type: "BOARD",
+      });
+    }
+  }, [board, reset]);
+
   // 컬러 모드에 맞는 색상 설정
+  const colors = useColors();
   const bgColor = useColorModeValue(colors.cardBg, colors.cardBg);
   const borderColor = useColorModeValue(colors.border, colors.border);
   const textColor = useColorModeValue(colors.text.primary, colors.text.primary);
@@ -76,28 +87,29 @@ export function BoardEditor({ board, onClose, onSave }: BoardEditorProps) {
     colors.primary.default
   );
 
-  // 셀렉트 박스 스타일
-  const selectStyle = {
-    width: "100%",
-    padding: "0.5rem",
-    borderWidth: "1px",
-    borderRadius: "0.375rem",
-    borderColor: "inherit",
-    backgroundColor: "transparent",
+  const handleDelete = async () => {
+    if (!board || !onDelete) return;
+
+    if (window.confirm("정말로 이 게시판을 삭제하시겠습니까?")) {
+      onDelete(board.id);
+      onClose();
+    }
   };
 
-  const onSubmit = async (data: BoardFormData) => {
+  const handleFormSubmit = async (data: BoardFormData) => {
     try {
-      await onSave(data);
-      toaster.success({
-        title: board ? "게시판이 수정되었습니다." : "게시판이 생성되었습니다.",
-        duration: 3000,
-      });
+      const submitData = {
+        ...data,
+        sortOrder: board?.sortOrder || 0,
+        displayPosition: board?.displayPosition || "TOP",
+      };
+
+      onSubmit(submitData);
       onClose();
     } catch (error) {
-      console.error("Failed to save board:", error);
+      console.error("Error saving board:", error);
       toaster.error({
-        title: "게시판 저장에 실패했습니다.",
+        title: "게시판 저장 중 오류가 발생했습니다.",
         duration: 3000,
       });
     }
@@ -105,7 +117,7 @@ export function BoardEditor({ board, onClose, onSave }: BoardEditorProps) {
 
   return (
     <Box>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(handleFormSubmit)}>
         <VStack gap={3} align="stretch">
           <Box>
             <Flex mb={1}>
@@ -138,60 +150,34 @@ export function BoardEditor({ board, onClose, onSave }: BoardEditorProps) {
           <Box>
             <Flex mb={1}>
               <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                게시판 유형
+                URL
               </Text>
               <Text fontSize="sm" color={errorColor} ml={1}>
                 *
               </Text>
             </Flex>
             <Controller
-              name="type"
-              control={control}
-              render={({ field }) => (
-                <NativeSelect.Root>
-                  <NativeSelect.Field {...field} style={selectStyle}>
-                    <option value="GENERAL">일반 게시판</option>
-                    <option value="GALLERY">갤러리 게시판</option>
-                    <option value="QNA">Q&A 게시판</option>
-                    <option value="NOTICE">공지사항</option>
-                  </NativeSelect.Field>
-                  <NativeSelect.Indicator />
-                </NativeSelect.Root>
-              )}
-            />
-          </Box>
-
-          <Box>
-            <Flex mb={1}>
-              <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                설명
-              </Text>
-              <Text fontSize="sm" color={errorColor} ml={1}>
-                *
-              </Text>
-            </Flex>
-            <Controller
-              name="description"
+              name="url"
               control={control}
               render={({ field }) => (
                 <Input
                   {...field}
-                  borderColor={errors.description ? errorColor : borderColor}
+                  borderColor={errors.url ? errorColor : borderColor}
                   color={textColor}
                   bg="transparent"
                 />
               )}
             />
-            {errors.description && (
+            {errors.url && (
               <Text color={errorColor} fontSize="sm" mt={1}>
-                {errors.description.message}
+                {errors.url.message}
               </Text>
             )}
           </Box>
 
-          <Flex alignItems="center">
+          <Flex alignItems="center" gap={2}>
             <Controller
-              name="isActive"
+              name="visible"
               control={control}
               render={({ field: { value, onChange } }) => (
                 <Checkbox.Root
@@ -219,7 +205,7 @@ export function BoardEditor({ board, onClose, onSave }: BoardEditorProps) {
                   </Checkbox.Control>
                   <Checkbox.Label>
                     <Text fontWeight="medium" color={textColor}>
-                      게시판 활성화
+                      게시판 노출
                     </Text>
                   </Checkbox.Label>
                 </Checkbox.Root>
@@ -227,24 +213,46 @@ export function BoardEditor({ board, onClose, onSave }: BoardEditorProps) {
             />
           </Flex>
 
-          <Flex justify="space-between" gap={2} mt={4}>
-            <Button
-              borderColor={borderColor}
-              color={textColor}
-              onClick={onClose}
-              variant="outline"
-              _hover={{ bg: colors.secondary.hover }}
-            >
-              취소
-            </Button>
-            <Button
-              type="submit"
-              bg={buttonBg}
-              color="white"
-              _hover={{ bg: colors.primary.hover }}
-            >
-              {board ? "수정" : "생성"}
-            </Button>
+          <Flex justify="space-between" mt={4}>
+            {board ? (
+              <Button
+                borderColor={colors.accent.delete.default}
+                color={colors.accent.delete.default}
+                onClick={handleDelete}
+                variant="outline"
+                _hover={{
+                  bg: colors.accent.delete.bg,
+                  borderColor: colors.accent.delete.hover,
+                  color: colors.accent.delete.hover,
+                  transform: "translateY(-1px)",
+                }}
+                _active={{ transform: "translateY(0)" }}
+                transition="all 0.2s ease"
+              >
+                삭제
+              </Button>
+            ) : (
+              <Box />
+            )}
+            <Flex gap={2}>
+              <Button
+                borderColor={borderColor}
+                color={textColor}
+                onClick={onClose}
+                variant="outline"
+                _hover={{ bg: colors.secondary.hover }}
+              >
+                취소
+              </Button>
+              <Button
+                type="submit"
+                bg={buttonBg}
+                color="white"
+                _hover={{ bg: colors.primary.hover }}
+              >
+                저장
+              </Button>
+            </Flex>
           </Flex>
         </VStack>
       </form>

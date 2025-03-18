@@ -1,26 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { Box, Flex, Heading, Text, Badge } from "@chakra-ui/react";
+import { useState, useEffect } from "react";
+import { Box, Flex, Heading, Badge } from "@chakra-ui/react";
 import { Button } from "@/components/ui/button";
+import { ContentList } from "./components/ContentList";
+import { ContentEditor } from "./components/ContentEditor";
 import { GridSection } from "@/components/ui/grid-section";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
-
-interface Content {
-  id: number;
-  title: string;
-  type: "PAGE" | "POST" | "NOTICE";
-  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
-  author: string;
-  createdAt: string;
-  updatedAt: string;
-  publishedAt?: string;
-}
+import { getAuthHeader } from "@/lib/auth";
+import { toaster } from "@/components/ui/toaster";
+import { TreeItem } from "@/components/ui/tree-list";
 
 export default function ContentManagementPage() {
-  const [selectedContent, setSelectedContent] = useState<Content | null>(null);
-  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [selectedContent, setSelectedContent] = useState<TreeItem | null>(null);
+  const [contents, setContents] = useState<TreeItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const colors = useColors();
   const bg = useColorModeValue(colors.bg, colors.darkBg);
 
@@ -37,80 +32,111 @@ export default function ContentManagementPage() {
     colors.primary.hover,
     colors.primary.hover
   );
+
   const badgeBg = useColorModeValue(colors.primary.light, colors.primary.light);
   const badgeColor = useColorModeValue(
     colors.primary.default,
     colors.primary.default
   );
 
-  const handleAddContent = () => {
-    setSelectedContent(null);
-    setIsEditorOpen(true);
-  };
-
-  const handleEditContent = (content: Content) => {
-    setSelectedContent(content);
-    setIsEditorOpen(true);
-  };
-
-  const handleCloseEditor = () => {
-    setIsEditorOpen(false);
-    setSelectedContent(null);
-  };
-
-  const handleDeleteContent = async (contentId: number) => {
+  // 컨텐츠 목록 새로고침 함수
+  const refreshContents = async () => {
     try {
-      const response = await fetch(`/api/content/${contentId}`, {
-        method: "DELETE",
+      setIsLoading(true);
+      const response = await fetch("/api/cms/menu?type=CONTENT", {
+        headers: getAuthHeader(),
       });
-
       if (!response.ok) {
-        throw new Error("Failed to delete content");
+        throw new Error("Failed to fetch contents");
       }
-
-      // 컨텐츠 목록 새로고침
-      const contentListElement = document.querySelector(
-        '[data-testid="content-list"]'
-      );
-      if (contentListElement) {
-        contentListElement.dispatchEvent(new Event("refresh"));
-      }
+      const data = await response.json();
+      console.log("API Response:", data);
+      setContents(data);
     } catch (error) {
-      console.error("Failed to delete content:", error);
-      alert("컨텐츠 삭제 중 오류가 발생했습니다.");
+      console.error("Error fetching contents:", error);
+      toaster.error({
+        title: "컨텐츠 목록을 불러오는데 실패했습니다.",
+        duration: 3000,
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleSaveContent = async (
-    contentData: Omit<Content, "id" | "createdAt" | "updatedAt">
+  const handleAddContent = () => {
+    setSelectedContent(null);
+  };
+
+  const handleEditContent = (content: TreeItem) => {
+    setSelectedContent(content);
+  };
+
+  const handleCloseEditor = () => {
+    setSelectedContent(null);
+  };
+
+  const handleSubmit = async (
+    contentData: Omit<TreeItem, "id" | "createdAt" | "updatedAt">
   ) => {
     try {
-      const response = await fetch("/api/content", {
-        method: selectedContent ? "PUT" : "POST",
+      const url = selectedContent
+        ? `/api/cms/menu/${selectedContent.id}`
+        : "/api/cms/menu";
+      const method = selectedContent ? "PUT" : "POST";
+
+      const response = await fetch(url, {
+        method,
         headers: {
+          ...getAuthHeader(),
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(
-          selectedContent
-            ? { ...contentData, id: selectedContent.id }
-            : contentData
-        ),
+        body: JSON.stringify(contentData),
       });
 
       if (!response.ok) {
         throw new Error("Failed to save content");
       }
 
-      // 컨텐츠 목록 새로고침
-      const contentListElement = document.querySelector(
-        '[data-testid="content-list"]'
-      );
-      if (contentListElement) {
-        contentListElement.dispatchEvent(new Event("refresh"));
-      }
+      await refreshContents();
+      setSelectedContent(null);
+      toaster.create({
+        title: selectedContent
+          ? "컨텐츠가 수정되었습니다."
+          : "컨텐츠가 생성되었습니다.",
+        type: "success",
+      });
     } catch (error) {
-      console.error("Failed to save content:", error);
-      throw error;
+      console.error("Error saving content:", error);
+      toaster.create({
+        title: "컨텐츠 저장에 실패했습니다.",
+        type: "error",
+      });
+    }
+  };
+
+  const handleDeleteContent = async (contentId: number) => {
+    try {
+      const response = await fetch(`/api/cms/menu/${contentId}`, {
+        method: "DELETE",
+        headers: getAuthHeader(),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete content");
+      }
+
+      await refreshContents();
+      setSelectedContent(null);
+      toaster.create({
+        title: "컨텐츠가 삭제되었습니다.",
+        type: "success",
+      });
+    } catch (error) {
+      console.error("Error deleting content:", error);
+      toaster.create({
+        title: "컨텐츠 삭제에 실패했습니다.",
+        type: "error",
+      });
     }
   };
 
@@ -129,30 +155,26 @@ export default function ContentManagementPage() {
       id: "contentList",
       x: 0,
       y: 1,
-      w: 3,
-      h: 5,
+      w: 6,
+      h: 11,
       title: "컨텐츠 목록",
-      subtitle: "컨텐츠를 선택하여 상세 정보를 확인하거나 수정할 수 있습니다.",
+      subtitle: "등록된 컨텐츠 목록입니다.",
     },
     {
       id: "contentEditor",
-      x: 0,
-      y: 6,
-      w: 3,
-      h: 6,
+      x: 6,
+      y: 1,
+      w: 6,
+      h: 11,
       title: "컨텐츠 편집",
       subtitle: "컨텐츠의 상세 정보를 수정할 수 있습니다.",
     },
-    {
-      id: "preview",
-      x: 3,
-      y: 1,
-      w: 9,
-      h: 11,
-      title: "미리보기",
-      subtitle: "컨텐츠의 실제 모습을 미리 확인할 수 있습니다.",
-    },
   ];
+
+  // 컨텐츠 목록 불러오기
+  useEffect(() => {
+    refreshContents();
+  }, []);
 
   return (
     <Box bg={bg} minH="100vh" w="full" position="relative">
@@ -190,114 +212,23 @@ export default function ContentManagementPage() {
           </Flex>
 
           <Box>
-            {/* ContentList 컴포넌트가 여기에 들어갈 예정 */}
-            <Flex
-              p={8}
-              direction="column"
-              align="center"
-              justify="center"
-              borderRadius="xl"
-              height="100%"
-              gap={4}
-              backdropFilter="blur(8px)"
-            >
-              <Text
-                color={colors.text.secondary}
-                fontSize="lg"
-                fontWeight="medium"
-                textAlign="center"
-              >
-                컨텐츠 목록이 여기에 표시됩니다.
-              </Text>
-            </Flex>
+            <ContentList
+              menus={contents}
+              onEditContent={handleEditContent}
+              onDeleteContent={handleDeleteContent}
+              isLoading={isLoading}
+              selectedContentId={selectedContent?.id}
+              refreshContents={refreshContents}
+            />
           </Box>
 
-          {isEditorOpen ? (
-            <Box>
-              {/* ContentEditor 컴포넌트가 여기에 들어갈 예정 */}
-              <Flex
-                p={8}
-                direction="column"
-                align="center"
-                justify="center"
-                borderRadius="xl"
-                height="100%"
-                gap={4}
-                backdropFilter="blur(8px)"
-              >
-                <Text
-                  color={colors.text.secondary}
-                  fontSize="lg"
-                  fontWeight="medium"
-                  textAlign="center"
-                >
-                  컨텐츠 편집 폼이 여기에 표시됩니다.
-                </Text>
-              </Flex>
-            </Box>
-          ) : (
-            <Flex
-              p={8}
-              direction="column"
-              align="center"
-              justify="center"
-              borderRadius="xl"
-              height="100%"
-              gap={4}
-              backdropFilter="blur(8px)"
-            >
-              <Text
-                color={colors.text.secondary}
-                fontSize="lg"
-                fontWeight="medium"
-                textAlign="center"
-              >
-                컨텐츠를 선택하거나 새 컨텐츠를 추가하세요.
-              </Text>
-              <Button
-                onClick={handleAddContent}
-                variant="outline"
-                borderColor={colors.primary.default}
-                color={colors.primary.default}
-                _hover={{
-                  bg: colors.primary.alpha,
-                  transform: "translateY(-2px)",
-                }}
-                _active={{ transform: "translateY(0)" }}
-                transition="all 0.3s ease"
-              >
-                새 컨텐츠 추가
-              </Button>
-            </Flex>
-          )}
-
           <Box>
-            <Flex
-              p={8}
-              direction="column"
-              align="center"
-              justify="center"
-              borderRadius="xl"
-              height="100%"
-              gap={4}
-              backdropFilter="blur(8px)"
-            >
-              <Text
-                color={colors.text.secondary}
-                fontSize="lg"
-                fontWeight="medium"
-                textAlign="center"
-              >
-                미리보기 영역
-              </Text>
-              <Text
-                color={colors.text.secondary}
-                fontSize="sm"
-                textAlign="center"
-              >
-                선택한 컨텐츠의 실제 모습이 여기에 표시됩니다.
-              </Text>
-            </Flex>
+            <ContentEditor
+              content={selectedContent}
+              onClose={handleCloseEditor}
+              onDelete={handleDeleteContent}
+              onSubmit={handleSubmit}
+            />
           </Box>
         </GridSection>
       </Box>

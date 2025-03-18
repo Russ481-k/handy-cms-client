@@ -2,8 +2,17 @@
 
 import { useState } from "react";
 import { Box, Flex, Text, Spinner } from "@chakra-ui/react";
-import { MenuItem } from "./MenuItem";
 import { Menu } from "../page";
+import { ListItem } from "@/components/ui/list-item";
+import {
+  LuFolder,
+  LuFolderOpen,
+  LuLink,
+  LuLayoutList,
+  LuFileText,
+} from "react-icons/lu";
+import { useColors } from "@/styles/theme";
+import { useColorModeValue } from "@/components/ui/color-mode";
 
 export interface MenuListProps {
   menus: Menu[];
@@ -29,6 +38,15 @@ export const MenuList = ({
   refreshMenus,
 }: MenuListProps) => {
   const [expandedMenus, setExpandedMenus] = useState<Set<number>>(new Set());
+  const colors = useColors();
+  const iconColor = useColorModeValue(
+    colors.text.secondary,
+    colors.text.secondary
+  );
+  const folderColor = useColorModeValue(
+    colors.primary.default,
+    colors.primary.default
+  );
 
   const toggleMenu = (menuId: number) => {
     setExpandedMenus((prev) => {
@@ -42,35 +60,78 @@ export const MenuList = ({
     });
   };
 
-  const renderMenuItem = (menu: Menu, level: number, index: number) => {
+  const getMenuIcon = (menu: Menu) => {
+    const isExpanded = expandedMenus.has(menu.id);
+    const hasChildren = menu.children && menu.children.length > 0;
+    const color = menu.type === "FOLDER" ? folderColor : iconColor;
+
+    switch (menu.type) {
+      case "FOLDER":
+        return hasChildren && isExpanded ? (
+          <Box color={color}>
+            <LuFolderOpen />
+          </Box>
+        ) : (
+          <Box color={color}>
+            <LuFolder />
+          </Box>
+        );
+      case "LINK":
+        return (
+          <Box color={color}>
+            <LuLink />
+          </Box>
+        );
+      case "BOARD":
+        return (
+          <Box color={color}>
+            <LuLayoutList />
+          </Box>
+        );
+      case "CONTENT":
+        return (
+          <Box color={color}>
+            <LuFileText />
+          </Box>
+        );
+      default:
+        return (
+          <Box color={color}>
+            <LuLink />
+          </Box>
+        );
+    }
+  };
+
+  const renderMenuItem = (menu: Menu, level: number) => {
+    const hasChildren = menu.children && menu.children.length > 0;
+
     return (
-      <MenuItem
-        key={menu.id}
-        menu={menu}
-        level={level}
-        onEditMenu={onEditMenu}
-        onDeleteMenu={onDeleteMenu}
-        onMoveMenu={onMoveMenu}
-        index={index}
-        selectedMenuId={selectedMenuId}
-        expanded={expandedMenus.has(menu.id)}
-        onToggle={() => toggleMenu(menu.id)}
-        refreshMenus={refreshMenus}
-      />
+      <Box key={menu.id} pl={`${level * 24}px`}>
+        <ListItem
+          id={menu.id}
+          name={menu.name}
+          icon={getMenuIcon(menu)}
+          isSelected={menu.id === selectedMenuId}
+          onEdit={() => onEditMenu(menu)}
+          onDelete={() => onDeleteMenu(menu.id)}
+          renderBadges={() => !menu.visible && "비활성"}
+          onClick={() => {
+            onEditMenu(menu);
+            if (hasChildren) {
+              toggleMenu(menu.id);
+            }
+          }}
+        />
+        {hasChildren && expandedMenus.has(menu.id) && menu.children && (
+          <Box>{renderMenuItems(menu.children, level + 1)}</Box>
+        )}
+      </Box>
     );
   };
 
   const renderMenuItems = (items: Menu[], level = 0) => {
-    return items.map((menu, index) => (
-      <Box key={menu.id}>
-        {renderMenuItem(menu, level, index)}
-        {menu.children &&
-          menu.children.length > 0 &&
-          expandedMenus.has(menu.id) && (
-            <Box ml={4}>{renderMenuItems(menu.children, level + 1)}</Box>
-          )}
-      </Box>
-    ));
+    return items.map((menu) => renderMenuItem(menu, level));
   };
 
   if (isLoading) {

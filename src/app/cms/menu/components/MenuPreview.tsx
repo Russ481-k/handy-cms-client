@@ -250,14 +250,14 @@ export function MenuPreview({ menus }: MenuPreviewProps) {
       position="relative"
     >
       {/* TopBanner */}
-      <TopBanner
+      {/* <TopBanner
         bgGradient={colors.gradient.primary}
         color={colors.text.inverse}
         position="sticky"
         top={0}
         zIndex={1000}
         height="40px"
-      />
+      /> */}
 
       {/* 헤더 */}
       <Box

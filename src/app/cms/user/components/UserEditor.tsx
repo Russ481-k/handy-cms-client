@@ -1,55 +1,71 @@
 "use client";
 
+import { useEffect } from "react";
 import {
   Box,
   Flex,
   Button,
   VStack,
-  Heading,
   Text,
   Input,
-  NativeSelect,
+  Select,
+  Portal,
+  createListCollection,
+  Field,
+  Checkbox,
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
-import { useState, useEffect } from "react";
+import { LuCheck } from "react-icons/lu";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { User } from "../page";
 import { toaster } from "@/components/ui/toaster";
 
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  role: "ADMIN" | "EDITOR" | "USER";
-  status: "ACTIVE" | "INACTIVE" | "SUSPENDED";
-  lastLoginAt?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
 interface UserEditorProps {
-  user: User | null;
+  user?: User | null;
   onClose: () => void;
-  onSave: (user: Omit<User, "id" | "createdAt" | "updatedAt">) => Promise<void>;
+  onDelete?: (userId: string) => void;
+  onSubmit: (
+    userData: Omit<User, "id" | "createdAt" | "updatedAt" | "lastLoginAt">
+  ) => void;
 }
 
 const userSchema = z.object({
   username: z.string().min(1, "사용자명을 입력해주세요."),
   email: z.string().email("올바른 이메일 주소를 입력해주세요."),
-  role: z.enum(["ADMIN", "EDITOR", "USER"]),
-  status: z.enum(["ACTIVE", "INACTIVE", "SUSPENDED"]),
+  role: z.enum(["ADMIN", "USER"]),
+  status: z.enum(["ACTIVE", "INACTIVE"]),
 });
 
 type UserFormData = z.infer<typeof userSchema>;
 
-export function UserEditor({ user, onClose, onSave }: UserEditorProps) {
-  const colors = useColors();
+const roleOptions = createListCollection({
+  items: [
+    { label: "관리자", value: "ADMIN" },
+    { label: "일반 사용자", value: "USER" },
+  ],
+});
+
+const statusOptions = createListCollection({
+  items: [
+    { label: "활성", value: "ACTIVE" },
+    { label: "비활성", value: "INACTIVE" },
+  ],
+});
+
+export function UserEditor({
+  user,
+  onClose,
+  onDelete,
+  onSubmit,
+}: UserEditorProps) {
   const {
     control,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
     defaultValues: {
@@ -60,7 +76,25 @@ export function UserEditor({ user, onClose, onSave }: UserEditorProps) {
     },
   });
 
-  // 컬러 모드에 맞는 색상 설정
+  useEffect(() => {
+    if (user) {
+      reset({
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        status: user.status,
+      });
+    } else {
+      reset({
+        username: "",
+        email: "",
+        role: "USER",
+        status: "ACTIVE",
+      });
+    }
+  }, [user, reset]);
+
+  const colors = useColors();
   const bgColor = useColorModeValue(colors.cardBg, colors.cardBg);
   const borderColor = useColorModeValue(colors.border, colors.border);
   const textColor = useColorModeValue(colors.text.primary, colors.text.primary);
@@ -70,36 +104,49 @@ export function UserEditor({ user, onClose, onSave }: UserEditorProps) {
     colors.primary.default
   );
 
-  // 셀렉트 박스 스타일
-  const selectStyle = {
-    width: "100%",
-    padding: "0.5rem",
-    borderWidth: "1px",
-    borderRadius: "0.375rem",
-    borderColor: "inherit",
-    backgroundColor: "transparent",
+  const handleDelete = async () => {
+    if (!user || !onDelete) return;
+
+    if (window.confirm("정말로 이 사용자를 삭제하시겠습니까?")) {
+      onDelete(user.id);
+      onClose();
+    }
   };
 
-  const onSubmit = async (data: UserFormData) => {
+  const handleFormSubmit = async (data: UserFormData) => {
     try {
-      await onSave(data);
-      toaster.success({
-        title: user ? "사용자가 수정되었습니다." : "사용자가 생성되었습니다.",
-        duration: 3000,
-      });
+      onSubmit(data);
       onClose();
     } catch (error) {
-      console.error("Failed to save user:", error);
+      console.error("Error saving user:", error);
       toaster.error({
-        title: "사용자 저장에 실패했습니다.",
+        title: "사용자 저장 중 오류가 발생했습니다.",
         duration: 3000,
       });
     }
   };
 
+  if (!user && !onDelete) {
+    return (
+      <Flex
+        direction="column"
+        align="center"
+        justify="center"
+        h="full"
+        gap={4}
+        p={8}
+        color={textColor}
+      >
+        <Text fontSize="lg" fontWeight="medium" textAlign="center">
+          사용자를 선택하거나 새 사용자를 추가하세요.
+        </Text>
+      </Flex>
+    );
+  }
+
   return (
     <Box>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(handleFormSubmit)}>
         <VStack gap={3} align="stretch">
           <Box>
             <Flex mb={1}>
@@ -144,7 +191,6 @@ export function UserEditor({ user, onClose, onSave }: UserEditorProps) {
               render={({ field }) => (
                 <Input
                   {...field}
-                  type="email"
                   borderColor={errors.email ? errorColor : borderColor}
                   color={textColor}
                   bg="transparent"
@@ -171,14 +217,44 @@ export function UserEditor({ user, onClose, onSave }: UserEditorProps) {
               name="role"
               control={control}
               render={({ field }) => (
-                <NativeSelect.Root>
-                  <NativeSelect.Field {...field} style={selectStyle}>
-                    <option value="ADMIN">관리자</option>
-                    <option value="EDITOR">편집자</option>
-                    <option value="USER">일반 사용자</option>
-                  </NativeSelect.Field>
-                  <NativeSelect.Indicator />
-                </NativeSelect.Root>
+                <Field.Root invalid={!!errors.role}>
+                  <Select.Root
+                    name={field.name}
+                    value={[field.value]}
+                    onValueChange={({ value }) => field.onChange(value[0])}
+                    onInteractOutside={() => field.onBlur()}
+                    collection={roleOptions}
+                  >
+                    <Select.HiddenSelect />
+                    <Select.Control>
+                      <Select.Trigger
+                        borderColor={errors.role ? errorColor : borderColor}
+                        color={textColor}
+                        bg="transparent"
+                      >
+                        <Select.ValueText />
+                      </Select.Trigger>
+                      <Select.IndicatorGroup>
+                        <Select.Indicator />
+                      </Select.IndicatorGroup>
+                    </Select.Control>
+                    <Portal>
+                      <Select.Positioner>
+                        <Select.Content>
+                          {roleOptions.items.map((option) => (
+                            <Select.Item key={option.value} item={option}>
+                              {option.label}
+                              <Select.ItemIndicator />
+                            </Select.Item>
+                          ))}
+                        </Select.Content>
+                      </Select.Positioner>
+                    </Portal>
+                  </Select.Root>
+                  {errors.role && (
+                    <Field.ErrorText>{errors.role.message}</Field.ErrorText>
+                  )}
+                </Field.Root>
               )}
             />
           </Box>
@@ -196,36 +272,88 @@ export function UserEditor({ user, onClose, onSave }: UserEditorProps) {
               name="status"
               control={control}
               render={({ field }) => (
-                <NativeSelect.Root>
-                  <NativeSelect.Field {...field} style={selectStyle}>
-                    <option value="ACTIVE">활성</option>
-                    <option value="INACTIVE">비활성</option>
-                    <option value="SUSPENDED">정지</option>
-                  </NativeSelect.Field>
-                  <NativeSelect.Indicator />
-                </NativeSelect.Root>
+                <Field.Root invalid={!!errors.status}>
+                  <Select.Root
+                    name={field.name}
+                    value={[field.value]}
+                    onValueChange={({ value }) => field.onChange(value[0])}
+                    onInteractOutside={() => field.onBlur()}
+                    collection={statusOptions}
+                  >
+                    <Select.HiddenSelect />
+                    <Select.Control>
+                      <Select.Trigger
+                        borderColor={errors.status ? errorColor : borderColor}
+                        color={textColor}
+                        bg="transparent"
+                      >
+                        <Select.ValueText />
+                      </Select.Trigger>
+                      <Select.IndicatorGroup>
+                        <Select.Indicator />
+                      </Select.IndicatorGroup>
+                    </Select.Control>
+                    <Portal>
+                      <Select.Positioner>
+                        <Select.Content>
+                          {statusOptions.items.map((option) => (
+                            <Select.Item key={option.value} item={option}>
+                              {option.label}
+                              <Select.ItemIndicator />
+                            </Select.Item>
+                          ))}
+                        </Select.Content>
+                      </Select.Positioner>
+                    </Portal>
+                  </Select.Root>
+                  {errors.status && (
+                    <Field.ErrorText>{errors.status.message}</Field.ErrorText>
+                  )}
+                </Field.Root>
               )}
             />
           </Box>
 
-          <Flex justify="space-between" gap={2} mt={4}>
-            <Button
-              borderColor={borderColor}
-              color={textColor}
-              onClick={onClose}
-              variant="outline"
-              _hover={{ bg: colors.secondary.hover }}
-            >
-              취소
-            </Button>
-            <Button
-              type="submit"
-              bg={buttonBg}
-              color="white"
-              _hover={{ bg: colors.primary.hover }}
-            >
-              {user ? "수정" : "생성"}
-            </Button>
+          <Flex justify="space-between" mt={4}>
+            {user ? (
+              <Button
+                borderColor={colors.accent.delete.default}
+                color={colors.accent.delete.default}
+                onClick={handleDelete}
+                variant="outline"
+                _hover={{
+                  bg: colors.accent.delete.bg,
+                  borderColor: colors.accent.delete.hover,
+                  color: colors.accent.delete.hover,
+                  transform: "translateY(-1px)",
+                }}
+                _active={{ transform: "translateY(0)" }}
+                transition="all 0.2s ease"
+              >
+                삭제
+              </Button>
+            ) : (
+              <Box />
+            )}
+            <Flex gap={2}>
+              <Button
+                borderColor={borderColor}
+                color={textColor}
+                onClick={onClose}
+                variant="outline"
+                _hover={{ bg: colors.secondary.hover }}
+              >
+                취소
+              </Button>
+              <Button
+                type="submit"
+                bg={buttonBg}
+                color="white"
+                _hover={{ bg: colors.primary.hover }}
+              >
+                저장
+              </Button>
+            </Flex>
           </Flex>
         </VStack>
       </form>

@@ -1,12 +1,5 @@
 import { NextResponse } from "next/server";
-import {
-  validateUser,
-  generateToken,
-  createInitialAdmin,
-} from "@/lib/auth-utils";
-
-// 서버 시작 시 초기 admin 계정 생성
-createInitialAdmin().catch(console.error);
+import { validateUser, generateToken } from "@/lib/auth-utils";
 
 // This is a mock authentication endpoint
 // In a real application, you would validate credentials against a database

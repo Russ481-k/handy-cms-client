@@ -1,50 +1,39 @@
 "use client";
 
+import { useEffect } from "react";
 import {
   Box,
   Flex,
   Button,
   VStack,
-  Heading,
   Text,
+  Checkbox,
   Input,
-  NativeSelect,
-  Textarea,
+  Select,
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
-import { useState, useEffect } from "react";
+import { LuCheck } from "react-icons/lu";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { TreeItem } from "@/components/ui/tree-list";
+import { getAuthHeader } from "@/lib/auth";
 import { toaster } from "@/components/ui/toaster";
 
-interface Content {
-  id: number;
-  title: string;
-  type: "PAGE" | "POST" | "NOTICE";
-  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
-  author: string;
-  createdAt: string;
-  updatedAt: string;
-  publishedAt?: string;
-  body?: string;
-}
-
 interface ContentEditorProps {
-  content: Content | null;
+  content?: TreeItem | null;
   onClose: () => void;
-  onSave: (
-    content: Omit<Content, "id" | "createdAt" | "updatedAt">
-  ) => Promise<void>;
+  onDelete?: (contentId: number) => void;
+  onSubmit: (content: Omit<TreeItem, "id" | "createdAt" | "updatedAt">) => void;
 }
 
 const contentSchema = z.object({
-  title: z.string().min(1, "제목을 입력해주세요."),
-  type: z.enum(["PAGE", "POST", "NOTICE"]),
-  status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
-  author: z.string(),
-  body: z.string().optional(),
+  name: z.string().min(1, "컨텐츠명을 입력해주세요."),
+  url: z.string().min(1, "URL을 입력해주세요."),
+  visible: z.boolean().default(true),
+  type: z.literal("CONTENT"),
+  displayPosition: z.string().min(1, "표시 위치를 선택해주세요."),
 });
 
 type ContentFormData = z.infer<typeof contentSchema>;
@@ -52,25 +41,48 @@ type ContentFormData = z.infer<typeof contentSchema>;
 export function ContentEditor({
   content,
   onClose,
-  onSave,
+  onDelete,
+  onSubmit,
 }: ContentEditorProps) {
-  const colors = useColors();
   const {
     control,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<ContentFormData>({
     resolver: zodResolver(contentSchema),
     defaultValues: {
-      title: content?.title || "",
-      type: content?.type || "POST",
-      status: content?.status || "DRAFT",
-      author: content?.author || "",
-      body: content?.body || "",
+      name: content?.name || "",
+      url: content?.url || "",
+      visible: content?.visible ?? true,
+      type: "CONTENT",
+      displayPosition: content?.displayPosition || "TOP",
     },
   });
 
+  // content prop이 변경될 때마다 폼 데이터 업데이트
+  useEffect(() => {
+    if (content) {
+      reset({
+        name: content.name,
+        url: content.url || "",
+        visible: content.visible,
+        type: "CONTENT",
+        displayPosition: content.displayPosition,
+      });
+    } else {
+      reset({
+        name: "",
+        url: "",
+        visible: true,
+        type: "CONTENT",
+        displayPosition: "TOP",
+      });
+    }
+  }, [content, reset]);
+
   // 컬러 모드에 맞는 색상 설정
+  const colors = useColors();
   const bgColor = useColorModeValue(colors.cardBg, colors.cardBg);
   const borderColor = useColorModeValue(colors.border, colors.border);
   const textColor = useColorModeValue(colors.text.primary, colors.text.primary);
@@ -80,63 +92,79 @@ export function ContentEditor({
     colors.primary.default
   );
 
-  // 셀렉트 박스 스타일
-  const selectStyle = {
-    width: "100%",
-    padding: "0.5rem",
-    borderWidth: "1px",
-    borderRadius: "0.375rem",
-    borderColor: "inherit",
-    backgroundColor: "transparent",
+  const handleDelete = async () => {
+    if (!content || !onDelete) return;
+
+    if (window.confirm("정말로 이 컨텐츠를 삭제하시겠습니까?")) {
+      onDelete(content.id);
+      onClose();
+    }
   };
 
-  const onSubmit = async (data: ContentFormData) => {
+  const handleFormSubmit = async (data: ContentFormData) => {
     try {
-      await onSave(data);
-      toaster.success({
-        title: content
-          ? "컨텐츠가 수정되었습니다."
-          : "컨텐츠가 생성되었습니다.",
-        duration: 3000,
-      });
+      const submitData = {
+        ...data,
+        sortOrder: content?.sortOrder || 0,
+      };
+
+      onSubmit(submitData);
       onClose();
     } catch (error) {
-      console.error("Failed to save content:", error);
+      console.error("Error saving content:", error);
       toaster.error({
-        title: "컨텐츠 저장에 실패했습니다.",
+        title: "컨텐츠 저장 중 오류가 발생했습니다.",
         duration: 3000,
       });
     }
   };
 
+  if (!content && !onDelete) {
+    return (
+      <Flex
+        direction="column"
+        align="center"
+        justify="center"
+        h="full"
+        gap={4}
+        p={8}
+        color={textColor}
+      >
+        <Text fontSize="lg" fontWeight="medium" textAlign="center">
+          컨텐츠를 선택하거나 새 컨텐츠를 추가하세요.
+        </Text>
+      </Flex>
+    );
+  }
+
   return (
     <Box>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(handleFormSubmit)}>
         <VStack gap={3} align="stretch">
           <Box>
             <Flex mb={1}>
               <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                제목
+                컨텐츠명
               </Text>
               <Text fontSize="sm" color={errorColor} ml={1}>
                 *
               </Text>
             </Flex>
             <Controller
-              name="title"
+              name="name"
               control={control}
               render={({ field }) => (
                 <Input
                   {...field}
-                  borderColor={errors.title ? errorColor : borderColor}
+                  borderColor={errors.name ? errorColor : borderColor}
                   color={textColor}
                   bg="transparent"
                 />
               )}
             />
-            {errors.title && (
+            {errors.name && (
               <Text color={errorColor} fontSize="sm" mt={1}>
-                {errors.title.message}
+                {errors.name.message}
               </Text>
             )}
           </Box>
@@ -144,78 +172,27 @@ export function ContentEditor({
           <Box>
             <Flex mb={1}>
               <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                유형
+                URL
               </Text>
               <Text fontSize="sm" color={errorColor} ml={1}>
                 *
               </Text>
             </Flex>
             <Controller
-              name="type"
-              control={control}
-              render={({ field }) => (
-                <NativeSelect.Root>
-                  <NativeSelect.Field {...field} style={selectStyle}>
-                    <option value="PAGE">페이지</option>
-                    <option value="POST">게시글</option>
-                    <option value="NOTICE">공지사항</option>
-                  </NativeSelect.Field>
-                  <NativeSelect.Indicator />
-                </NativeSelect.Root>
-              )}
-            />
-          </Box>
-
-          <Box>
-            <Flex mb={1}>
-              <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                상태
-              </Text>
-              <Text fontSize="sm" color={errorColor} ml={1}>
-                *
-              </Text>
-            </Flex>
-            <Controller
-              name="status"
-              control={control}
-              render={({ field }) => (
-                <NativeSelect.Root>
-                  <NativeSelect.Field {...field} style={selectStyle}>
-                    <option value="DRAFT">임시저장</option>
-                    <option value="PUBLISHED">발행</option>
-                    <option value="ARCHIVED">보관</option>
-                  </NativeSelect.Field>
-                  <NativeSelect.Indicator />
-                </NativeSelect.Root>
-              )}
-            />
-          </Box>
-
-          <Box>
-            <Flex mb={1}>
-              <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                작성자
-              </Text>
-              <Text fontSize="sm" color={errorColor} ml={1}>
-                *
-              </Text>
-            </Flex>
-            <Controller
-              name="author"
+              name="url"
               control={control}
               render={({ field }) => (
                 <Input
                   {...field}
-                  borderColor={errors.author ? errorColor : borderColor}
+                  borderColor={errors.url ? errorColor : borderColor}
                   color={textColor}
                   bg="transparent"
-                  readOnly
                 />
               )}
             />
-            {errors.author && (
+            {errors.url && (
               <Text color={errorColor} fontSize="sm" mt={1}>
-                {errors.author.message}
+                {errors.url.message}
               </Text>
             )}
           </Box>
@@ -223,47 +200,120 @@ export function ContentEditor({
           <Box>
             <Flex mb={1}>
               <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                내용
+                표시 위치
+              </Text>
+              <Text fontSize="sm" color={errorColor} ml={1}>
+                *
               </Text>
             </Flex>
             <Controller
-              name="body"
+              name="displayPosition"
               control={control}
               render={({ field }) => (
-                <Textarea
+                <select
                   {...field}
-                  borderColor={errors.body ? errorColor : borderColor}
-                  color={textColor}
-                  bg="transparent"
-                  rows={10}
-                />
+                  style={{
+                    width: "100%",
+                    padding: "0.5rem",
+                    borderWidth: "1px",
+                    borderRadius: "0.375rem",
+                    borderColor: errors.displayPosition
+                      ? errorColor
+                      : borderColor,
+                    backgroundColor: "transparent",
+                    color: textColor,
+                  }}
+                >
+                  <option value="TOP">상단</option>
+                  <option value="BOTTOM">하단</option>
+                </select>
               )}
             />
-            {errors.body && (
+            {errors.displayPosition && (
               <Text color={errorColor} fontSize="sm" mt={1}>
-                {errors.body.message}
+                {errors.displayPosition.message}
               </Text>
             )}
           </Box>
 
-          <Flex justify="space-between" gap={2} mt={4}>
-            <Button
-              borderColor={borderColor}
-              color={textColor}
-              onClick={onClose}
-              variant="outline"
-              _hover={{ bg: colors.secondary.hover }}
-            >
-              취소
-            </Button>
-            <Button
-              type="submit"
-              bg={buttonBg}
-              color="white"
-              _hover={{ bg: colors.primary.hover }}
-            >
-              {content ? "수정" : "생성"}
-            </Button>
+          <Flex alignItems="center" gap={2}>
+            <Controller
+              name="visible"
+              control={control}
+              render={({ field: { value, onChange } }) => (
+                <Checkbox.Root
+                  checked={value}
+                  onCheckedChange={(e) => onChange(!!e.checked)}
+                  colorPalette="blue"
+                  size="sm"
+                >
+                  <Checkbox.HiddenInput />
+                  <Checkbox.Control
+                    borderColor={borderColor}
+                    bg={bgColor}
+                    _checked={{
+                      borderColor: "transparent",
+                      bgGradient: colors.gradient.primary,
+                      color: "white",
+                      _hover: {
+                        opacity: 0.8,
+                      },
+                    }}
+                  >
+                    <Checkbox.Indicator>
+                      <LuCheck />
+                    </Checkbox.Indicator>
+                  </Checkbox.Control>
+                  <Checkbox.Label>
+                    <Text fontWeight="medium" color={textColor}>
+                      컨텐츠 노출
+                    </Text>
+                  </Checkbox.Label>
+                </Checkbox.Root>
+              )}
+            />
+          </Flex>
+
+          <Flex justify="space-between" mt={4}>
+            {content ? (
+              <Button
+                borderColor={colors.accent.delete.default}
+                color={colors.accent.delete.default}
+                onClick={handleDelete}
+                variant="outline"
+                _hover={{
+                  bg: colors.accent.delete.bg,
+                  borderColor: colors.accent.delete.hover,
+                  color: colors.accent.delete.hover,
+                  transform: "translateY(-1px)",
+                }}
+                _active={{ transform: "translateY(0)" }}
+                transition="all 0.2s ease"
+              >
+                삭제
+              </Button>
+            ) : (
+              <Box />
+            )}
+            <Flex gap={2}>
+              <Button
+                borderColor={borderColor}
+                color={textColor}
+                onClick={onClose}
+                variant="outline"
+                _hover={{ bg: colors.secondary.hover }}
+              >
+                취소
+              </Button>
+              <Button
+                type="submit"
+                bg={buttonBg}
+                color="white"
+                _hover={{ bg: colors.primary.hover }}
+              >
+                저장
+              </Button>
+            </Flex>
           </Flex>
         </VStack>
       </form>

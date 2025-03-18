@@ -92,7 +92,7 @@ export const Header = () => {
         position="relative"
         zIndex={101}
       >
-        <TopBanner />
+        {/* <TopBanner /> */}
       </Box>
       <Box
         boxShadow={isScrolled ? colors.shadow.md : "none"}
