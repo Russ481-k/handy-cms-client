@@ -90,7 +90,7 @@ export function NewsSection() {
             {news.map((item, index) => (
               <Box
                 key={item.title}
-                py={6}
+                p={6}
                 borderTop={index === 0 ? "1px solid" : "none"}
                 borderBottom="1px solid"
                 borderColor={colors.border}

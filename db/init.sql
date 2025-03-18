@@ -63,23 +63,27 @@ INSERT INTO menus (name, type, url, display_position, visible, sort_order, paren
 ('FAQ', 'LINK', '/recruit/faq', 'HEADER', true, 4, 2);
 
 -- 창업기업 소개 하위 메뉴
-INSERT INTO menus (id, name, type, url, display_position, visible, sort_order, parent_id) VALUES
-(10, '참여기업', 'LINK', '/companies/participants', 'HEADER', true, 1, 3),
-(11, '기업별 소개', 'FOLDER', NULL, 'HEADER', true, 2, 3),
-(12, '참고자료실', 'LINK', '/companies/resources', 'HEADER', true, 3, 3);
+INSERT INTO menus (name, type, url, display_position, visible, sort_order, parent_id) VALUES
+('참여기업', 'LINK', '/companies/participants', 'HEADER', true, 1, 3),
+('기업별 소개', 'FOLDER', NULL, 'HEADER', true, 2, 3),
+('참고자료실', 'LINK', '/companies/resources', 'HEADER', true, 3, 3);
 
 -- 기업별 소개 하위 탭메뉴
 INSERT INTO menus (name, type, url, display_position, visible, sort_order, parent_id) VALUES
-('오늘의 이야기', 'LINK', '/companies/details/today-story', 'HEADER', true, 1, 11),
-('유니마스', 'LINK', '/companies/details/unimas', 'HEADER', true, 2, 11),
-('삼선택', 'LINK', '/companies/details/samseontaek', 'HEADER', true, 3, 11),
-('세로라', 'LINK', '/companies/details/serora', 'HEADER', true, 4, 11);
+('오늘의 이야기', 'LINK', '/companies/details/today-story', 'HEADER', true, 1, (SELECT id FROM menus WHERE name = '기업별 소개' AND parent_id = 3)),
+('유니마스', 'LINK', '/companies/details/unimas', 'HEADER', true, 2, (SELECT id FROM menus WHERE name = '기업별 소개' AND parent_id = 3)),
+('삼선택', 'LINK', '/companies/details/samseontaek', 'HEADER', true, 3, (SELECT id FROM menus WHERE name = '기업별 소개' AND parent_id = 3)),
+('세로라', 'LINK', '/companies/details/serora', 'HEADER', true, 4, (SELECT id FROM menus WHERE name = '기업별 소개' AND parent_id = 3));
 
 -- 커뮤니티 하위 메뉴
 INSERT INTO menus (name, type, url, display_position, visible, sort_order, parent_id) VALUES
 ('답변게시판', 'BOARD', '/community/qna', 'HEADER', true, 1, 4);
 
-
+-- 푸터 메뉴
+INSERT INTO menus (name, type, url, display_position, visible, sort_order) VALUES
+('이용약관', 'LINK', '/terms', 'FOOTER', true, 1),
+('개인정보처리방침', 'LINK', '/privacy', 'FOOTER', true, 2),
+('사이트맵', 'LINK', '/sitemap', 'FOOTER', true, 3);
 
 -- Equipment 테이블
 CREATE TABLE IF NOT EXISTS equipment (

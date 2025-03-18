@@ -42,7 +42,7 @@
     "@types/node": "^20.17.9",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.2",
-    "eslint": "^8",
+    "eslint": "^9",
     "eslint-config-next": "15.0.4",
     "typescript": "^5.7.2"
   }
