@@ -186,19 +186,19 @@ export default function ContentManagementPage() {
     },
     {
       id: "contentEditor",
-      x: 0,
-      y: 6,
-      w: 3,
-      h: 6,
+      x: 3,
+      y: 1,
+      w: 9,
+      h: 5,
       title: "컨텐츠 편집",
       subtitle: "컨텐츠의 상세 정보를 수정할 수 있습니다.",
     },
     {
       id: "contentPreview",
-      x: 3,
-      y: 1,
-      w: 9,
-      h: 11,
+      x: 0,
+      y: 6,
+      w: 12,
+      h: 5,
       title: "컨텐츠 미리보기",
       subtitle: "컨텐츠의 미리보기를 확인할 수 있습니다.",
     },
@@ -258,7 +258,11 @@ export default function ContentManagementPage() {
 
           <Box>
             <ContentEditor
-              content={selectedContent}
+              content={
+                selectedContent
+                  ? convertTreeItemToContent(selectedContent)
+                  : null
+              }
               onClose={handleCloseEditor}
               onDelete={handleDeleteContent}
               onSubmit={handleSubmit}

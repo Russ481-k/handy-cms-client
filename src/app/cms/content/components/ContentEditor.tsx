@@ -7,31 +7,28 @@ import {
   Button,
   VStack,
   Text,
-  Checkbox as ChakraCheckbox,
   Input,
-  Select as ChakraSelect,
-  Textarea,
+  Select,
   IconButton,
   HStack,
   Separator,
   useDisclosure,
-  Dialog,
   Portal,
-  CloseButton,
-  Select,
   createListCollection,
   Checkbox,
 } from "@chakra-ui/react";
-import { useColors } from "@/styles/theme";
+
 import { LuPlus, LuTrash2, LuPencil, LuCheck } from "react-icons/lu";
 import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { TreeItem } from "@/components/ui/tree-list";
 import { Content, VisionSection } from "../types";
 import dynamic from "next/dynamic";
+import { SectionEditDialog } from "./editor/SectionEditDialog";
 
-const LexicalEditor = dynamic(() => import("./LexicalEditor"), { ssr: false });
+const LexicalEditor = dynamic(() => import("./editor/LexicalEditor"), {
+  ssr: false,
+});
 
 const contentSchema = z.object({
   name: z.string().min(1, "제목을 입력해주세요"),
@@ -85,7 +82,6 @@ export function ContentEditor({
   onDelete,
   onSubmit,
 }: ContentEditorProps) {
-  const colors = useColors();
   const { open, onOpen, onClose: onCloseModal } = useDisclosure();
   const [selectedSection, setSelectedSection] = useState<VisionSection | null>(
     null
@@ -182,12 +178,10 @@ export function ContentEditor({
 
           <Box>
             <Text mb={2}>설명</Text>
-            <Textarea {...register("description")} />
+            <Input {...register("description")} />
           </Box>
 
           <Box>
-            <Text mb={2}>컨텐츠 유형</Text>
-
             <Select.Root
               variant="outline"
               collection={createListCollection({
@@ -200,10 +194,10 @@ export function ContentEditor({
               })}
             >
               <Select.HiddenSelect />
-              <Select.Label>Select framework - outline</Select.Label>
+              <Select.Label>컨텐츠 유형</Select.Label>
               <Select.Control>
                 <Select.Trigger>
-                  <Select.ValueText placeholder="Select framework" />
+                  <Select.ValueText placeholder="Select type" />
                 </Select.Trigger>
                 <Select.IndicatorGroup>
                   <Select.Indicator />
@@ -217,9 +211,9 @@ export function ContentEditor({
                       { value: "vision", label: "비전 및 목표" },
                       { value: "news", label: "뉴스" },
                       { value: "notice", label: "공지사항" },
-                    ].map((framework) => (
-                      <Select.Item item={framework} key={framework.value}>
-                        {framework.label}
+                    ].map((type) => (
+                      <Select.Item item={type} key={type.value}>
+                        {type.label}
                         <Select.ItemIndicator />
                       </Select.Item>
                     ))}
@@ -273,7 +267,6 @@ export function ContentEditor({
           )}
 
           <Box>
-            <Text mb={2}>내용</Text>
             <Controller
               name="content"
               control={control}
@@ -286,7 +279,6 @@ export function ContentEditor({
           <Separator />
 
           <Box>
-            <Text mb={2}>설정</Text>
             <VStack gap={2} align="stretch">
               <Controller
                 name="settings.layout"
@@ -306,10 +298,10 @@ export function ContentEditor({
                     })}
                   >
                     <Select.HiddenSelect />
-                    <Select.Label>Select framework - outline</Select.Label>
+                    <Select.Label>설정</Select.Label>
                     <Select.Control>
                       <Select.Trigger>
-                        <Select.ValueText placeholder="Select framework" />
+                        <Select.ValueText placeholder="Select layout" />
                       </Select.Trigger>
                       <Select.IndicatorGroup>
                         <Select.Indicator />
@@ -319,13 +311,12 @@ export function ContentEditor({
                       <Select.Positioner>
                         <Select.Content>
                           {[
-                            { value: "page", label: "일반 페이지" },
-                            { value: "vision", label: "비전 및 목표" },
-                            { value: "news", label: "뉴스" },
-                            { value: "notice", label: "공지사항" },
-                          ].map((framework) => (
-                            <Select.Item item={framework} key={framework.value}>
-                              {framework.label}
+                            { value: "default", label: "기본" },
+                            { value: "wide", label: "와이드" },
+                            { value: "full", label: "전체" },
+                          ].map((layout) => (
+                            <Select.Item item={layout} key={layout.value}>
+                              {layout.label}
                               <Select.ItemIndicator />
                             </Select.Item>
                           ))}
@@ -490,169 +481,12 @@ export function ContentEditor({
         </VStack>
       </form>
 
-      <Dialog.Root size="full" motionPreset="slide-in-bottom">
-        <Portal>
-          <Dialog.Backdrop />
-          <Dialog.Positioner>
-            <Dialog.Content>
-              <Dialog.Header>
-                <Dialog.Title>섹션 편집</Dialog.Title>
-                <Dialog.CloseTrigger asChild>
-                  <CloseButton size="sm" />
-                </Dialog.CloseTrigger>
-              </Dialog.Header>
-              <Dialog.Body>
-                <VStack gap={4} align="stretch">
-                  <Box>
-                    <Text mb={2}>제목</Text>
-                    <Input
-                      value={selectedSection?.title || ""}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        setSelectedSection((prev) =>
-                          prev ? { ...prev, title: e.target.value } : null
-                        )
-                      }
-                    />
-                  </Box>
-                  <Box>
-                    <Text mb={2}>유형</Text>
-
-                    <Select.Root
-                      variant="outline"
-                      collection={createListCollection({
-                        items: [
-                          { value: "text", label: "텍스트" },
-                          { value: "quote", label: "인용구" },
-                          { value: "list", label: "목록" },
-                        ],
-                      })}
-                    >
-                      <Select.HiddenSelect />
-                      <Select.Label>Select framework - outline</Select.Label>
-                      <Select.Control>
-                        <Select.Trigger>
-                          <Select.ValueText placeholder="Select framework" />
-                        </Select.Trigger>
-                        <Select.IndicatorGroup>
-                          <Select.Indicator />
-                        </Select.IndicatorGroup>
-                      </Select.Control>
-                      <Portal>
-                        <Select.Positioner>
-                          <Select.Content>
-                            {[
-                              { value: "text", label: "텍스트" },
-                              { value: "quote", label: "인용구" },
-                              { value: "list", label: "목록" },
-                            ].map((type) => (
-                              <Select.Item item={type} key={type.value}>
-                                {type.label}
-                                <Select.ItemIndicator />
-                              </Select.Item>
-                            ))}
-                          </Select.Content>
-                        </Select.Positioner>
-                      </Portal>
-                    </Select.Root>
-                  </Box>
-                  <Box>
-                    <Text mb={2}>내용</Text>
-                    <Controller
-                      name="content"
-                      control={control}
-                      render={({ field }) => (
-                        <LexicalEditor
-                          value={selectedSection?.content || ""}
-                          onChange={(value) =>
-                            setSelectedSection((prev) =>
-                              prev ? { ...prev, content: value || "" } : null
-                            )
-                          }
-                        />
-                      )}
-                    />
-                  </Box>
-                  {selectedSection?.type === "list" && (
-                    <Box>
-                      <Text mb={2}>목록 항목</Text>
-                      <VStack gap={2} align="stretch">
-                        {selectedSection.items?.map((item, index) => (
-                          <HStack key={index}>
-                            <Input
-                              value={item}
-                              onChange={(
-                                e: React.ChangeEvent<HTMLInputElement>
-                              ) =>
-                                setSelectedSection((prev) =>
-                                  prev
-                                    ? {
-                                        ...prev,
-                                        items: prev.items?.map((i, idx) =>
-                                          idx === index ? e.target.value : i
-                                        ),
-                                      }
-                                    : null
-                                )
-                              }
-                            />
-                            <IconButton
-                              aria-label="항목 삭제"
-                              size="sm"
-                              onClick={() =>
-                                setSelectedSection((prev) =>
-                                  prev
-                                    ? {
-                                        ...prev,
-                                        items: prev.items?.filter(
-                                          (_, idx) => idx !== index
-                                        ),
-                                      }
-                                    : null
-                                )
-                              }
-                            >
-                              <LuTrash2 />
-                            </IconButton>
-                          </HStack>
-                        ))}
-                        <Button
-                          onClick={() =>
-                            setSelectedSection((prev) =>
-                              prev
-                                ? {
-                                    ...prev,
-                                    items: [...(prev.items || []), ""],
-                                  }
-                                : null
-                            )
-                          }
-                        >
-                          <LuPlus /> 항목 추가
-                        </Button>
-                      </VStack>
-                    </Box>
-                  )}
-                </VStack>
-              </Dialog.Body>
-              <Dialog.Footer>
-                <Dialog.ActionTrigger asChild>
-                  <Button variant="outline" onClick={onCloseModal}>
-                    취소
-                  </Button>
-                </Dialog.ActionTrigger>
-                <Button
-                  colorScheme="blue"
-                  onClick={() =>
-                    selectedSection && handleSaveSection(selectedSection)
-                  }
-                >
-                  저장
-                </Button>
-              </Dialog.Footer>
-            </Dialog.Content>
-          </Dialog.Positioner>
-        </Portal>
-      </Dialog.Root>
+      <SectionEditDialog
+        isOpen={open}
+        onClose={onCloseModal}
+        section={selectedSection}
+        onSave={handleSaveSection}
+      />
     </Box>
   );
 }
