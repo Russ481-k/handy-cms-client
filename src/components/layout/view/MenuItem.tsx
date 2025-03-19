@@ -1,131 +1,234 @@
 "use client";
 
-import { Box, Flex, Text } from "@chakra-ui/react";
-import { useColors } from "@/styles/theme";
+import { Box, Link, VStack } from "@chakra-ui/react";
+import NextLink from "next/link";
 import { Menu } from "../../../app/cms/menu/page";
-import { LuPlus } from "react-icons/lu";
-import { useRef } from "react";
 
 interface MenuItemProps {
   menu: Menu;
-  isChild?: boolean;
   isNavHovered: boolean;
   isDark: boolean;
+  isRoot: boolean;
+  currentPage: string;
 }
 
 export function MenuItem({
   menu,
-  isChild = false,
   isNavHovered,
   isDark,
+  isRoot,
+  currentPage,
 }: MenuItemProps) {
-  const menuRef = useRef<HTMLDivElement>(null);
+  const isActive = currentPage === menu.url;
   const hasChildren = menu.children && menu.children.length > 0;
-  const colors = useColors();
-  const lineColor = colors.border;
 
   return (
-    <Box
-      position="relative"
-      width={isChild ? "100%" : "auto"}
-      minW={isChild ? "80px" : "160px"}
-      ref={menuRef}
-    >
-      <Flex
-        px={1}
-        py={1}
-        alignItems="center"
-        cursor="pointer"
-        whiteSpace="nowrap"
-        fontSize={isChild ? "sm" : "md"}
-        fontWeight={isChild ? "normal" : "semibold"}
-        _hover={{
-          color: isDark ? "blue.200" : "blue.600",
-          transform: "translateX(4px)",
-          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-        }}
-        position="relative"
-        zIndex={1}
-        height="32px"
-        width="100%"
-      >
-        <Text whiteSpace="nowrap">{menu.name}</Text>
-        {hasChildren && (
-          <Box
-            as={LuPlus}
-            ml={1}
-            transition="transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-            transform={isNavHovered ? "rotate(180deg)" : "rotate(0deg)"}
-          />
-        )}
-      </Flex>
-
+    <Box position="relative" flex="1">
       <Box
-        pl={isChild ? 2 : 1}
         position="relative"
-        opacity={hasChildren && (isChild || isNavHovered) ? 1 : 0}
-        maxHeight={hasChildren && (isChild || isNavHovered) ? "2000px" : "0"}
-        overflow="hidden"
-        transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-        width="100%"
+        role="group"
+        width="fit-content"
+        _before={{
+          content: '""',
+          position: "absolute",
+          bottom: "0",
+          left: "0",
+          width: "0",
+          height: "2px",
+          bg: isDark ? "blue.200" : "blue.500",
+          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+          opacity: "0",
+        }}
+        _hover={{
+          _before: {
+            width: "100%",
+            opacity: "1",
+          },
+        }}
       >
-        {menu.children?.map((childMenu, index, array) => (
-          <Box
-            key={childMenu.id}
-            position="relative"
-            mb={index === array.length - 1 ? 0 : 1}
-            transform={`translateY(${
-              hasChildren && (isChild || isNavHovered) ? "0" : "-10px"
-            })`}
-            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-            width="100%"
-          >
-            <Box
-              position="absolute"
-              left={0}
-              top={0}
-              bottom={index === array.length - 1 ? "16px" : "0"}
-              width="2px"
-              bg={lineColor}
-              transition="opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-              opacity={hasChildren && (isChild || isNavHovered) ? 1 : 0}
-              borderRadius="full"
-            />
-            <Box
-              position="absolute"
-              left={0}
-              top="16px"
-              width="12px"
-              height="2px"
-              bg={lineColor}
-              transform="translateY(0)"
-              transition="opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-              opacity={hasChildren && (isChild || isNavHovered) ? 1 : 0}
-              borderRadius="full"
-            />
-            {index > 0 && (
+        <Link
+          as={NextLink}
+          href={menu.url || "#"}
+          display="block"
+          px={4}
+          py={2}
+          fontSize="sm"
+          fontWeight={isRoot ? "bold" : "medium"}
+          color={
+            isActive
+              ? isDark
+                ? "blue.200"
+                : "blue.500"
+              : isDark
+              ? "gray.300"
+              : "gray.600"
+          }
+          _hover={{
+            textDecoration: "none",
+            color: isDark ? "blue.200" : "blue.500",
+            transform: "translateY(-1px)",
+          }}
+          _focus={{
+            boxShadow: "none",
+            color: isDark ? "blue.200" : "blue.500",
+            transform: "translateY(-1px)",
+            outline: "none",
+            border: "none",
+          }}
+          _groupHover={{
+            color: isDark ? "blue.200" : "blue.500",
+          }}
+          _active={{
+            bg: "transparent",
+          }}
+          transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+          borderRadius="md"
+          whiteSpace="nowrap"
+          overflow="hidden"
+          textOverflow="ellipsis"
+        >
+          {menu.name}
+        </Link>
+      </Box>
+
+      {/* 하위 메뉴 컨테이너 */}
+      <Box
+        position="static"
+        overflow="hidden"
+        maxHeight={isNavHovered && hasChildren ? "1000px" : "0"}
+        opacity={isNavHovered && hasChildren ? 1 : 0}
+        transform={`translateY(${isNavHovered && hasChildren ? "0" : "-10px"})`}
+        transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+        visibility={isNavHovered && hasChildren ? "visible" : "hidden"}
+      >
+        {/* 하위 메뉴 내용 */}
+        <Box pt={2}>
+          <VStack align="stretch" gap={0}>
+            {menu.children?.map((child) => (
               <Box
-                position="absolute"
-                left={0}
-                top={-8}
-                height="calc(100% + 8px)"
-                width="2px"
-                bg={lineColor}
-                transition="opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-                opacity={hasChildren && (isChild || isNavHovered) ? 1 : 0}
-                borderRadius="full"
-              />
-            )}
-            <Box pl={4} position="relative" width="100%">
-              <MenuItem
-                menu={childMenu}
-                isChild={true}
-                isNavHovered={isNavHovered}
-                isDark={isDark}
-              />
-            </Box>
-          </Box>
-        ))}
+                key={child.id}
+                role="group"
+                position="relative"
+                _before={{
+                  content: '""',
+                  position: "absolute",
+                  left: "0",
+                  width: "2px",
+                  height: "0%",
+                  bg: isDark ? "blue.200" : "blue.500",
+                  transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                  opacity: "0",
+                }}
+                _hover={{
+                  _before: {
+                    height: "80%",
+                    opacity: "0.5",
+                  },
+                }}
+              >
+                <Link
+                  as={NextLink}
+                  href={child.url || "#"}
+                  display="block"
+                  px={4}
+                  py={2}
+                  fontSize="sm"
+                  fontWeight="medium"
+                  color={isDark ? "gray.300" : "gray.600"}
+                  _hover={{
+                    textDecoration: "none",
+                    color: isDark ? "blue.200" : "blue.500",
+                    transform: "translateX(4px)",
+                  }}
+                  _focus={{
+                    boxShadow: "none",
+                    color: isDark ? "blue.200" : "blue.500",
+                    transform: "translateX(4px)",
+                    outline: "none",
+                    border: "none",
+                  }}
+                  _groupHover={{
+                    color: isDark ? "blue.200" : "blue.500",
+                  }}
+                  _active={{
+                    bg: "transparent",
+                  }}
+                  transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+                  borderRadius="md"
+                  whiteSpace="nowrap"
+                  overflow="hidden"
+                  textOverflow="ellipsis"
+                >
+                  {child.name}
+                </Link>
+
+                {/* 3차 메뉴 */}
+                {child.children && child.children.length > 0 && (
+                  <VStack align="stretch" gap={0} pl={4}>
+                    {child.children.map((grandChild) => (
+                      <Box
+                        key={grandChild.id}
+                        role="group"
+                        position="relative"
+                        _before={{
+                          content: '""',
+                          position: "absolute",
+                          left: "0",
+                          width: "2px",
+                          height: "0%",
+                          bg: isDark ? "blue.200" : "blue.500",
+                          transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                          opacity: "0",
+                        }}
+                        _hover={{
+                          _before: {
+                            height: "80%",
+                            opacity: "0.3",
+                          },
+                        }}
+                      >
+                        <Link
+                          as={NextLink}
+                          href={grandChild.url || "#"}
+                          display="block"
+                          px={4}
+                          py={1.5}
+                          fontSize="sm"
+                          color={isDark ? "gray.400" : "gray.500"}
+                          _hover={{
+                            textDecoration: "none",
+                            color: isDark ? "blue.200" : "blue.500",
+                            transform: "translateX(4px)",
+                          }}
+                          _focus={{
+                            boxShadow: "none",
+                            color: isDark ? "blue.200" : "blue.500",
+                            transform: "translateX(4px)",
+                            outline: "none",
+                            border: "none",
+                          }}
+                          _groupHover={{
+                            color: isDark ? "blue.200" : "blue.500",
+                          }}
+                          _active={{
+                            bg: "transparent",
+                          }}
+                          transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+                          borderRadius="md"
+                          whiteSpace="nowrap"
+                          overflow="hidden"
+                          textOverflow="ellipsis"
+                        >
+                          {grandChild.name}
+                        </Link>
+                      </Box>
+                    ))}
+                  </VStack>
+                )}
+              </Box>
+            ))}
+          </VStack>
+        </Box>
       </Box>
     </Box>
   );

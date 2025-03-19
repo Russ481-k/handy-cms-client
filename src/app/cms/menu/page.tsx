@@ -11,8 +11,8 @@ import { useColors } from "@/styles/theme";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { getAuthHeader } from "@/lib/auth";
-import { MenuPreview } from "./components/MenuPreview";
 import { toaster } from "@/components/ui/toaster";
+import { Main } from "@/components/layout/view/Main";
 
 export interface Menu {
   id: number;
@@ -312,7 +312,7 @@ export default function MenuManagementPage() {
           </Box>
 
           <Box>
-            <MenuPreview menus={menus} />
+            <Main menus={menus} />
           </Box>
         </GridSection>
       </Box>

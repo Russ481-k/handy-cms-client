@@ -28,11 +28,11 @@ import { Footer } from "@/components/layout/view/Footer";
 import Image from "next/image";
 import { useState, useMemo, useRef, useEffect } from "react";
 import { IconButton } from "@chakra-ui/react";
-import { HeroSection } from "./sections/HeroSection";
-import { CompanySection } from "./sections/CompanySection";
-import { EducationSection } from "./sections/EducationSection";
-import { NewsSection } from "./sections/NewsSection";
-import { ApplicationSection } from "./sections/ApplicationSection";
+import { HeroSection } from "../../../../components/sections/HeroSection";
+import { CompanySection } from "../../../../components/sections/CompanySection";
+import { EducationSection } from "../../../../components/sections/EducationSection";
+import { NewsSection } from "../../../../components/sections/NewsSection";
+import { ApplicationSection } from "../../../../components/sections/ApplicationSection";
 import { Layout } from "../../../../components/layout/view/Layout";
 
 interface MenuPreviewProps {
@@ -163,49 +163,3 @@ const MenuItem = ({
     </Box>
   );
 };
-
-export function MenuPreview({ menus }: MenuPreviewProps) {
-  const colors = useColors();
-  const styles = useStyles(colors, false);
-  const { colorMode } = useColorMode();
-  const isDark = colorMode === "dark";
-
-  useEffect(() => {
-    console.log("Raw menu data:", menus);
-  }, [menus]);
-
-  return (
-    <Layout currentPage="메뉴" menus={menus}>
-      <Box
-        width="100%"
-        height="100%"
-        bg={isDark ? "gray.900" : "white"}
-        overflow="visible"
-        position="relative"
-      >
-        {/* 메인 컨텐츠 */}
-        <Box
-          bg={isDark ? "gray.900" : "white"}
-          minH="calc(100vh - 60px)"
-          overflowY="auto"
-          margin={0}
-          padding={0}
-          id="main-content"
-        >
-          <Box p={4} height="680px">
-            <HeroSection isDark={isDark} />
-          </Box>
-
-          <Container maxW="container.xl" py={20}>
-            <VStack gap={20} align="stretch">
-              <CompanySection />
-              <EducationSection />
-              <NewsSection />
-              <ApplicationSection />
-            </VStack>
-          </Container>
-        </Box>
-      </Box>
-    </Layout>
-  );
-}

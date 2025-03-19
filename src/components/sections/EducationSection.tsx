@@ -82,7 +82,7 @@ const EducationCard = ({
 export function EducationSection() {
   return (
     <Box py={24}>
-      <Container maxW="container.xl">
+      <Container maxW="1640px">
         <Flex direction="column" align="stretch" mb={16}>
           <Box mb={4}>
             <Text
