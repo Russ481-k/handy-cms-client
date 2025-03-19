@@ -2,21 +2,21 @@
 
 import { Box } from "@chakra-ui/react";
 import { useColorMode } from "@/components/ui/color-mode";
-import { PreviewHeader } from "./PreviewHeader";
-import { Menu } from "../../menu/page";
-import { Footer } from "@/components/layout/Footer";
+import { Header } from "./Header";
+import { Menu } from "../../../app/cms/menu/page";
+import { Footer } from "@/components/layout/view/Footer";
 
-interface PreviewLayoutProps {
+interface LayoutProps {
   children: React.ReactNode;
   currentPage?: string;
   menus?: Menu[];
 }
 
-export function PreviewLayout({
+export function Layout({
   children,
   currentPage = "미리보기",
   menus = [],
-}: PreviewLayoutProps) {
+}: LayoutProps) {
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
 
@@ -29,7 +29,7 @@ export function PreviewLayout({
       borderRadius="lg"
       overflow="hidden"
     >
-      <PreviewHeader currentPage={currentPage} menus={menus} />
+      <Header currentPage={currentPage} menus={menus} />
       {children}
       <Footer />
     </Box>

@@ -24,7 +24,7 @@ import { QuickStats } from "@/components/section/QuickStats";
 import { ContentTabs } from "@/components/section/ContentTabs";
 import { ContactInfo } from "@/components/section/ContactInfo";
 import { TopBanner } from "@/components/layout/TopBanner";
-import { Footer } from "@/components/layout/Footer";
+import { Footer } from "@/components/layout/view/Footer";
 import Image from "next/image";
 import { useState, useMemo, useRef, useEffect } from "react";
 import { IconButton } from "@chakra-ui/react";
@@ -33,7 +33,7 @@ import { CompanySection } from "./sections/CompanySection";
 import { EducationSection } from "./sections/EducationSection";
 import { NewsSection } from "./sections/NewsSection";
 import { ApplicationSection } from "./sections/ApplicationSection";
-import { PreviewLayout } from "../../components/preview/PreviewLayout";
+import { Layout } from "../../../../components/layout/view/Layout";
 
 interface MenuPreviewProps {
   menus: Menu[];
@@ -175,7 +175,7 @@ export function MenuPreview({ menus }: MenuPreviewProps) {
   }, [menus]);
 
   return (
-    <PreviewLayout currentPage="메뉴" menus={menus}>
+    <Layout currentPage="메뉴" menus={menus}>
       <Box
         width="100%"
         height="100%"
@@ -206,6 +206,6 @@ export function MenuPreview({ menus }: MenuPreviewProps) {
           </Container>
         </Box>
       </Box>
-    </PreviewLayout>
+    </Layout>
   );
 }

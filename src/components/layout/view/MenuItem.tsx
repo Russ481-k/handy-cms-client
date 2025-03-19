@@ -2,7 +2,7 @@
 
 import { Box, Flex, Text } from "@chakra-ui/react";
 import { useColors } from "@/styles/theme";
-import { Menu } from "../../menu/page";
+import { Menu } from "../../../app/cms/menu/page";
 import { LuPlus } from "react-icons/lu";
 import { useRef } from "react";
 

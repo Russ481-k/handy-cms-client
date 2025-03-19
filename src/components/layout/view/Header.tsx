@@ -6,16 +6,16 @@ import { useColorMode } from "@/components/ui/color-mode";
 import Image from "next/image";
 import { useMemo, useRef, useState } from "react";
 import NextLink from "next/link";
-import { Menu } from "../../menu/page";
+import { Menu } from "../../../app/cms/menu/page";
 import { MenuItem } from "./MenuItem";
-import { createMenuTree } from "../../utils/menuTree";
+import { createMenuTree } from "../../../app/cms/utils/menuTree";
 
-interface PreviewHeaderProps {
+interface HeaderProps {
   currentPage: string;
   menus?: Menu[];
 }
 
-export function PreviewHeader({ currentPage, menus = [] }: PreviewHeaderProps) {
+export function Header({ currentPage, menus = [] }: HeaderProps) {
   const colors = useColors();
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";

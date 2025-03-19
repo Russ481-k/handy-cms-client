@@ -6,7 +6,7 @@ import { useColors, useStyles } from "@/styles/theme";
 
 // Layout Components
 import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
+import { Footer } from "@/components/layout/view/Footer";
 import { FloatingButtons } from "@/components/layout/FloatingButtons";
 
 // Section Components
@@ -84,7 +84,7 @@ export default function Home() {
         padding={0}
         id="main-content"
       >
-        <Container
+        {/* <Container
           {...styles.container}
           maxW="100%"
           px={{ base: 4, md: 6, lg: 8 }}
@@ -95,7 +95,7 @@ export default function Home() {
           <ContactInfo />
         </Container>
 
-        <Footer />
+        <Footer /> */}
         <FloatingButtons
           showScrollTop={showScrollTop}
           scrollToTop={scrollToTop}

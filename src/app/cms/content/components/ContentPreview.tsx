@@ -19,7 +19,7 @@ import { useColors } from "@/styles/theme";
 import { useColorMode } from "@/components/ui/color-mode";
 import { Content, VisionSection } from "../types";
 import { Menu } from "../../menu/page";
-import { PreviewLayout } from "../../components/preview/PreviewLayout";
+import { Layout } from "../../../../components/layout/view/Layout";
 import { LuCalendar, LuEye, LuTag, LuCheck } from "react-icons/lu";
 import { LexicalRenderer } from "./LexicalRenderer";
 
@@ -99,7 +99,7 @@ export function ContentPreview({ content, menus = [] }: ContentPreviewProps) {
   };
 
   return (
-    <PreviewLayout currentPage={content.name} menus={menus}>
+    <Layout currentPage={content.name} menus={menus}>
       <Container maxW="container.xl" py={8}>
         <VStack gap={8} align="stretch">
           {/* 헤더 섹션 */}
@@ -226,6 +226,6 @@ export function ContentPreview({ content, menus = [] }: ContentPreviewProps) {
           )}
         </VStack>
       </Container>
-    </PreviewLayout>
+    </Layout>
   );
 }

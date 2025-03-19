@@ -16,7 +16,7 @@ import { useColors } from "@/styles/theme";
 import { useColorMode } from "@/components/ui/color-mode";
 import { Board } from "../types";
 import { Menu } from "../../menu/page";
-import { PreviewLayout } from "../../components/preview/PreviewLayout";
+import { Layout } from "../../../../components/layout/view/Layout";
 import { AgGridReact } from "ag-grid-react";
 import { useState, useMemo } from "react";
 import {
@@ -291,16 +291,16 @@ export function BoardPreview({
 
   if (!board) {
     return (
-      <PreviewLayout menus={menus}>
+      <Layout menus={menus}>
         <Box p={6} textAlign="center" color="gray.500">
           게시판을 선택해주세요.
         </Box>
-      </PreviewLayout>
+      </Layout>
     );
   }
 
   return (
-    <PreviewLayout currentPage="게시판" menus={menus}>
+    <Layout currentPage="게시판" menus={menus}>
       <Box
         width="100%"
         height="100%"
@@ -449,6 +449,6 @@ export function BoardPreview({
           </Box>
         </Box>
       </Box>
-    </PreviewLayout>
+    </Layout>
   );
 }
