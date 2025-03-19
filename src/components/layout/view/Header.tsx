@@ -11,23 +11,20 @@ import {
   Grid,
   GridItem,
 } from "@chakra-ui/react";
-import { useColors } from "@/styles/theme";
 import { useColorMode } from "@/components/ui/color-mode";
 import Image from "next/image";
 import { useMemo, useRef, useState, useEffect } from "react";
 import NextLink from "next/link";
-import { Menu } from "../../../app/cms/menu/page";
+import { useMenu } from "@/lib/hooks/useMenu";
 import { MenuItem } from "./MenuItem";
 import { createMenuTree } from "../../../app/cms/utils/menuTree";
 import { GiHamburgerMenu } from "react-icons/gi";
 
 interface HeaderProps {
   currentPage: string;
-  menus?: Menu[];
 }
 
-export function Header({ currentPage, menus = [] }: HeaderProps) {
-  const colors = useColors();
+export function Header({ currentPage }: HeaderProps) {
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
   const [isNavHovered, setIsNavHovered] = useState(false);
@@ -36,8 +33,11 @@ export function Header({ currentPage, menus = [] }: HeaderProps) {
   const isMobile = useBreakpointValue({ base: true, md: false });
   const [lastScrollY, setLastScrollY] = useState(0);
 
+  // useMenu 훅 사용
+  const { menus, isLoading, error, refetch } = useMenu({
+    autoFetch: true, // 컴포넌트가 마운트될 때 자동으로 메뉴를 가져옴
+  });
   const { rootMenus } = useMemo(() => createMenuTree(menus), [menus]);
-
   // 스크롤 이벤트 핸들러
   useEffect(() => {
     const handleScroll = () => {
@@ -97,7 +97,7 @@ export function Header({ currentPage, menus = [] }: HeaderProps) {
     >
       <Container p={0} transition="all 0.3s" m={0} w="100%" maxW="100%">
         <Grid templateColumns="200px 1fr auto" gap={4}>
-          <GridItem>
+          <GridItem w="200px">
             <Flex py={3} align="center">
               <Link
                 as={NextLink}
@@ -144,7 +144,7 @@ export function Header({ currentPage, menus = [] }: HeaderProps) {
             </Flex>
           </GridItem>
 
-          <GridItem>
+          <GridItem w="200px" textAlign="right">
             <Button
               aria-label="Toggle Menu"
               variant="ghost"

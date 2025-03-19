@@ -39,7 +39,7 @@ export function Footer() {
               </Flex>
             ))}
           </Flex>
-          <Box position="relative">
+          {/* <Box position="relative">
             <Flex
               as="button"
               align="center"
@@ -51,7 +51,7 @@ export function Footer() {
             >
               패밀리사이트
             </Flex>
-          </Box>
+          </Box> */}
         </Flex>
 
         <Box py={8}>

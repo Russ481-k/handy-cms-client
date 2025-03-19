@@ -1,19 +1,36 @@
+"use client";
+
 import { Box, IconButton } from "@chakra-ui/react";
 import { LuArrowUp } from "react-icons/lu";
-import {} from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
 import { ColorModeToggle } from "../ui/ColorModeToggle";
+import { useEffect, useState } from "react";
 
-interface FloatingButtonsProps {
-  showScrollTop: boolean;
-  scrollToTop: () => void;
-}
-
-export const FloatingButtons: React.FC<FloatingButtonsProps> = ({
-  showScrollTop,
-  scrollToTop,
-}) => {
+export const FloatingButtons = () => {
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const colors = useColors();
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition =
+        window.scrollY ||
+        window.pageYOffset ||
+        document.documentElement.scrollTop;
+      setShowScrollTop(scrollPosition > 300);
+    };
+
+    // 초기 상태 체크
+    handleScroll();
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
 
   return (
     <Box

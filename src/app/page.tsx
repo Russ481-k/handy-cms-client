@@ -2,7 +2,6 @@
 
 import { Box } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
-import { useColors } from "@/styles/theme";
 import { useColorMode } from "@/components/ui/color-mode";
 import { useMenu } from "@/lib/hooks/useMenu";
 
@@ -16,6 +15,8 @@ import { CompanySection } from "@/components/sections/CompanySection";
 import { EducationSection } from "@/components/sections/EducationSection";
 import { NewsSection } from "@/components/sections/NewsSection";
 import { ApplicationSection } from "@/components/sections/ApplicationSection";
+import { getScrollbarStyle } from "@/styles/scrollbar";
+import { Global } from "@emotion/react";
 
 export default function Home() {
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -27,29 +28,6 @@ export default function Home() {
     autoFetch: true, // 컴포넌트가 마운트될 때 자동으로 메뉴를 가져옴
   });
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const mainContent = document.getElementById("main-content");
-      if (!mainContent) return;
-
-      const currentScrollY = mainContent.scrollTop;
-      setShowScrollTop(currentScrollY > 300);
-    };
-
-    const mainContent = document.getElementById("main-content");
-    if (mainContent) {
-      mainContent.addEventListener("scroll", handleScroll);
-      return () => mainContent.removeEventListener("scroll", handleScroll);
-    }
-  }, []);
-
-  const scrollToTop = () => {
-    const mainContent = document.getElementById("main-content");
-    if (mainContent) {
-      mainContent.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
-
   if (isLoading) {
     return <div>Loading...</div>; // 로딩 상태 표시
   }
@@ -60,6 +38,8 @@ export default function Home() {
 
   return (
     <Layout currentPage="홈" menus={menus}>
+      <Global styles={[getScrollbarStyle(isDark)]} />
+
       <Box
         as="main"
         id="main-content"
@@ -77,10 +57,7 @@ export default function Home() {
         <NewsSection />
         <ApplicationSection />
 
-        <FloatingButtons
-          showScrollTop={showScrollTop}
-          scrollToTop={scrollToTop}
-        />
+        <FloatingButtons />
       </Box>
     </Layout>
   );

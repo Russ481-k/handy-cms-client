@@ -1,0 +1,121 @@
+"use client";
+
+import {
+  Box,
+  Container,
+  Heading,
+  Text,
+  VStack,
+  SimpleGrid,
+  Button,
+  Icon,
+} from "@chakra-ui/react";
+import { useColorMode } from "@/components/ui/color-mode";
+import { Card } from "@chakra-ui/react";
+import Link from "next/link";
+import { FaRocket, FaUsers, FaChartLine, FaHandshake } from "react-icons/fa";
+
+export default function HomePage() {
+  const { colorMode } = useColorMode();
+  const isDark = colorMode === "dark";
+
+  const features = [
+    {
+      icon: FaRocket,
+      title: "혁신적인 아이디어",
+      description:
+        "창의적인 아이디어를 실현할 수 있는 환경을 제공합니다. 새로운 기술과 서비스를 개발하고 시장에 도입할 수 있는 기회를 제공합니다.",
+    },
+    {
+      icon: FaUsers,
+      title: "전문가 네트워크",
+      description:
+        "다양한 분야의 전문가들과 함께 일할 수 있는 기회를 제공합니다. 멘토링과 네트워킹을 통해 성장할 수 있습니다.",
+    },
+    {
+      icon: FaChartLine,
+      title: "성장 기회",
+      description:
+        "지속적인 성장과 발전을 위한 다양한 프로그램과 리소스를 제공합니다. 시장 진출과 투자 유치를 위한 지원을 제공합니다.",
+    },
+    {
+      icon: FaHandshake,
+      title: "파트너십",
+      description:
+        "다양한 기업과의 파트너십을 통해 시장 진출 기회를 제공합니다. 글로벌 네트워크를 구축할 수 있는 기회를 제공합니다.",
+    },
+  ];
+
+  return (
+    <Container maxW="container.xl" py={16}>
+      <VStack gap={12} align="stretch">
+        <Box textAlign="center">
+          <Heading
+            as="h1"
+            size="2xl"
+            mb={4}
+            bgGradient="linear(to-r, blue.500, purple.500)"
+            bgClip="text"
+          >
+            부산창업가꿈 해운대
+          </Heading>
+          <Text fontSize="xl" color={isDark ? "gray.300" : "gray.600"}>
+            혁신적인 스타트업을 위한 최고의 환경을 제공합니다
+          </Text>
+          <Link href="/about">자세히 알아보기</Link>
+        </Box>
+
+        <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap={8}>
+          {features.map((feature, index) => (
+            <Card.Root
+              key={index}
+              bg={isDark ? "gray.800" : "white"}
+              borderWidth="1px"
+              borderColor={isDark ? "gray.700" : "gray.200"}
+              boxShadow="lg"
+              _hover={{
+                transform: "translateY(-4px)",
+                boxShadow: "xl",
+                transition: "all 0.2s",
+              }}
+            >
+              <Card.Body gap={4}>
+                <Icon as={feature.icon} w={10} h={10} color="blue.500" mb={4} />
+                <Heading size="md" color={isDark ? "white" : "gray.800"}>
+                  {feature.title}
+                </Heading>
+                <Text color={isDark ? "gray.300" : "gray.600"}>
+                  {feature.description}
+                </Text>
+              </Card.Body>
+            </Card.Root>
+          ))}
+        </SimpleGrid>
+
+        <Card.Root
+          bg={isDark ? "gray.800" : "white"}
+          borderWidth="1px"
+          borderColor={isDark ? "gray.700" : "gray.200"}
+          boxShadow="lg"
+        >
+          <Card.Body gap={6}>
+            <Heading size="lg" color={isDark ? "white" : "gray.800"}>
+              우리의 비전
+            </Heading>
+            <Text fontSize="lg" color={isDark ? "gray.300" : "gray.600"}>
+              부산창업가꿈 해운대는 혁신적인 스타트업을 위한 최고의 환경을
+              제공합니다. 우리는 창의적인 아이디어를 실현하고, 전문가 네트워크를
+              구축하며, 지속적인 성장과 발전을 위한 다양한 프로그램과 리소스를
+              제공합니다.
+            </Text>
+            <Text fontSize="lg" color={isDark ? "gray.300" : "gray.600"}>
+              우리는 스타트업이 성공적으로 시장에 진출하고, 글로벌 네트워크를
+              구축할 수 있도록 지원합니다. 부산창업가꿈 해운대와 함께 미래를
+              만들어가세요.
+            </Text>
+          </Card.Body>
+        </Card.Root>
+      </VStack>
+    </Container>
+  );
+}

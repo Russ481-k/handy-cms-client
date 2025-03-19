@@ -185,7 +185,6 @@ export function NewsSection() {
                       muted
                       playsInline
                       controls={false}
-                      poster="/images/banners/banner_2.jpg"
                     >
                       <source src="/videos/video.mp4" type="video/mp4" />
                     </video>

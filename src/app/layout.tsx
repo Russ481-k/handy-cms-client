@@ -1,11 +1,7 @@
-import type { Metadata } from "next";
+"use client";
+
 import "@/styles/globals.css";
 import { Providers } from "./providers";
-
-export const metadata: Metadata = {
-  title: "Handy CMS",
-  description: "A modern content management system",
-};
 
 export default function RootLayout({
   children,

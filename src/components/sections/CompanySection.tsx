@@ -17,7 +17,7 @@ interface CompanyCardProps {
   description: string;
   tags: string[];
   bgColor: string;
-  imageUrl?: string;
+  imageUrl?: string | null;
   isLarge?: boolean;
   buttonText?: string;
 }
@@ -71,8 +71,8 @@ const CompanyCard = ({
         right={0}
         bottom={0}
         bg={
-          imageUrl
-            ? "linear-gradient(180deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.6) 100%)"
+          !imageUrl
+            ? "linear-gradient(180deg, rgba(0, 0, 0, 0.01) 0%, rgba(0, 0, 0, 0.1) 100%)"
             : "transparent"
         }
         zIndex={1}
@@ -223,7 +223,7 @@ export function CompanySection() {
             description="성장하는 기업들을 만나보세요"
             tags={["모아보기"]}
             bgColor="white"
-            imageUrl="/images/companies/resident.png"
+            imageUrl={null}
             buttonText="전체보기"
           />
           <CompanyCard

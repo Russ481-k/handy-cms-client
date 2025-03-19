@@ -1,105 +1,68 @@
-import { Box } from "@chakra-ui/react";
-import { TopBanner } from "./TopBanner";
-import { Navigation } from "./Navigation";
-import { useColors } from "@/styles/theme";
-import { useState, useEffect } from "react";
-import { useBreakpointValue } from "@chakra-ui/react";
+// "use client";
 
-export const Header = () => {
-  const colors = useColors();
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isTopBannerVisible, setIsTopBannerVisible] = useState(true);
-  const [prevScrollY, setPrevScrollY] = useState(0);
+// import {
+//   Box,
+//   Container,
+//   Flex,
+//   Heading,
+//   Button,
+//   IconButton,
+//   useColorMode,
+//   useColorModeValue,
+// } from "@chakra-ui/react";
+// import Link from "next/link";
+// import { MoonIcon, SunIcon } from "@chakra-ui/icons";
 
-  // 반응형 설정
-  const isMobile = useBreakpointValue({ base: true, md: false });
-  const topBannerHeight = 40;
-  const navHeightDefault = isMobile ? 60 : 80;
-  const navHeightScrolled = isMobile ? 50 : 60;
+// export function Header() {
+//   const { colorMode, toggleColorMode } = useColorMode();
+//   const isDark = colorMode === "dark";
 
-  const headerHeight = isTopBannerVisible
-    ? isScrolled
-      ? topBannerHeight + navHeightScrolled
-      : topBannerHeight + navHeightDefault
-    : isScrolled
-    ? navHeightScrolled
-    : navHeightDefault;
+//   const bgColor = useColorModeValue("white", "gray.800");
+//   const borderColor = useColorModeValue("gray.200", "gray.700");
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const mainContent = document.getElementById("main-content");
-      if (!mainContent) return;
+//   return (
+//     <Box
+//       as="header"
+//       position="sticky"
+//       top={0}
+//       zIndex={100}
+//       bg={bgColor}
+//       borderBottom="1px"
+//       borderColor={borderColor}
+//       boxShadow="sm"
+//     >
+//       <Container maxW="container.xl" py={4}>
+//         <Flex justify="space-between" align="center">
+//           <Link href="/">
+//             <Heading
+//               as="h1"
+//               size="lg"
+//               bgGradient="linear(to-r, blue.500, purple.500)"
+//               bgClip="text"
+//             >
+//               부산창업가꿈 해운대
+//             </Heading>
+//           </Link>
 
-      const currentScrollY = mainContent.scrollTop;
-
-      // 스크롤 값이 임계점 이상이면 네비게이션 축소
-      // 모바일에서는 더 빨리 축소되도록 임계점 조정
-      const scrollThreshold = isMobile ? 50 : 100;
-      setIsScrolled(currentScrollY > scrollThreshold);
-
-      // 스크롤 방향에 따라 TopBanner 표시 여부 결정
-      // 모바일에서는 더 빨리 숨겨지도록 임계점 조정
-      if (currentScrollY <= scrollThreshold) {
-        setIsTopBannerVisible(
-          prevScrollY > currentScrollY || currentScrollY <= 2
-        );
-      } else {
-        // 모바일에서는 스크롤 시 항상 TopBanner 숨김
-        setIsTopBannerVisible(isMobile ? false : prevScrollY > currentScrollY);
-      }
-
-      setPrevScrollY(currentScrollY);
-
-      // 메인 컨텐츠 영역의 패딩 업데이트
-      updateMainContentPadding();
-    };
-
-    const updateMainContentPadding = () => {
-      const mainContent = document.getElementById("main-content");
-      if (mainContent) {
-        mainContent.style.paddingTop = headerHeight + "px";
-      }
-    };
-
-    const mainContent = document.getElementById("main-content");
-    if (mainContent) {
-      mainContent.addEventListener("scroll", handleScroll);
-
-      // 초기 패딩 설정
-      updateMainContentPadding();
-
-      return () => mainContent.removeEventListener("scroll", handleScroll);
-    }
-  }, [prevScrollY, headerHeight, isMobile]);
-
-  return (
-    <Box
-      position="fixed"
-      top={0}
-      left={0}
-      width="100%"
-      zIndex={100}
-      transition="all 0.3s ease-in-out"
-      padding={0}
-      margin={0}
-      height={headerHeight + "px"}
-    >
-      <Box
-        overflow="hidden"
-        maxHeight={isTopBannerVisible ? topBannerHeight + "px" : "2px"}
-        opacity={1}
-        transition="all 0.3s ease-in-out"
-        position="relative"
-        zIndex={101}
-      >
-        {/* <TopBanner /> */}
-      </Box>
-      <Box
-        boxShadow={isScrolled ? colors.shadow.md : "none"}
-        transition="all 0.3s ease-in-out"
-      >
-        <Navigation isScrolled={isScrolled} />
-      </Box>
-    </Box>
-  );
-};
+//           <Flex gap={4} align="center">
+//             <Link href="/about">
+//               <Button variant="ghost">소개</Button>
+//             </Link>
+//             <Link href="/companies">
+//               <Button variant="ghost">입주 기업</Button>
+//             </Link>
+//             <Link href="/contact">
+//               <Button variant="ghost">문의하기</Button>
+//             </Link>
+//             <IconButton
+//               aria-label="Toggle color mode"
+//               icon={isDark ? <SunIcon /> : <MoonIcon />}
+//               onClick={toggleColorMode}
+//               variant="ghost"
+//             />
+//           </Flex>
+//         </Flex>
+//       </Container>
+//     </Box>
+//   );
+// }

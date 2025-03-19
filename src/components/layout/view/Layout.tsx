@@ -27,8 +27,8 @@ export function Layout({
       bg={isDark ? "gray.900" : "white"}
       position="relative"
     >
-      <Header currentPage={currentPage} menus={menus} />
-      <Box flex="1" pt={12}>
+      <Header currentPage={currentPage} />
+      <Box flex="1" pt={16}>
         {children}
       </Box>
       <Footer />
