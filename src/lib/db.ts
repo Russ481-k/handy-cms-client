@@ -6,7 +6,7 @@ let isInitialized = false;
 let initializationPromise: Promise<void> | null = null;
 
 // MySQL 연결 설정 (초기에는 데이터베이스를 지정하지 않음)
-const pool = mysql.createPool({
+const initialPool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
@@ -14,6 +14,18 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0,
 });
+
+// 에러 핸들링 함수
+function handlePoolError(err: Error) {
+  console.error("[DB] Pool error:", err);
+}
+
+// 풀에 에러 핸들러 추가
+initialPool
+  .on("acquire", () => {})
+  .on("connection", () => {})
+  .on("release", () => {});
+process.on("uncaughtException", handlePoolError);
 
 // 데이터베이스 초기화
 async function initializeDatabase() {
@@ -30,7 +42,7 @@ async function initializeDatabase() {
   // 새로운 초기화 Promise 생성
   initializationPromise = (async () => {
     try {
-      const connection = await pool.getConnection();
+      const connection = await initialPool.getConnection();
       console.log("[DB] Connected to MySQL server");
 
       try {
@@ -242,12 +254,15 @@ async function initializeDatabase() {
         // 초기화 완료 표시
         isInitialized = true;
         console.log("[DB] Database initialization completed");
+      } catch (error) {
+        console.error("[DB] Error during database initialization:", error);
+        // 에러를 throw하지 않고 로그만 남김
       } finally {
         connection.release();
       }
     } catch (error) {
-      console.error("[DB] Error initializing database:", error);
-      throw error;
+      console.error("[DB] Error connecting to database:", error);
+      // 에러를 throw하지 않고 로그만 남김
     } finally {
       // 초기화가 완료되면 Promise 참조 제거
       initializationPromise = null;
@@ -257,10 +272,10 @@ async function initializeDatabase() {
   return initializationPromise;
 }
 
-// 서버 시작 시 데이터베이스 초기화 실행
+// 서버 시작 시 데이터베이스 초기화 실행 (에러가 발생해도 계속 진행)
 initializeDatabase().catch((error) => {
   console.error("[DB] Failed to initialize database:", error);
-  process.exit(1);
+  // process.exit(1) 제거
 });
 
 // 데이터베이스가 초기화된 후의 연결 풀 생성
@@ -268,10 +283,17 @@ const dbPool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME || "cms_new", // 기본값 추가
+  database: process.env.DB_NAME || "cms_new",
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
 });
+
+// 메인 풀에도 에러 핸들러 추가
+dbPool
+  .on("acquire", () => {})
+  .on("connection", () => {})
+  .on("release", () => {});
+process.on("uncaughtException", handlePoolError);
 
 export default dbPool;
