@@ -13,9 +13,10 @@ import {
   Popover,
   Text,
 } from "@chakra-ui/react";
+import { ChevronDownIcon } from "lucide-react";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDownIcon, HamburgerIcon, CloseIcon } from "@chakra-ui/icons";
+import { FaHamburger, FaXbox } from "react-icons/fa";
 
 const menuItems = [
   {
@@ -124,7 +125,7 @@ export default function Navigation() {
             variant="ghost"
             aria-label="Toggle Navigation"
           >
-            {isMobileMenuOpen ? <CloseIcon /> : <HamburgerIcon />}
+            {isMobileMenuOpen ? <FaXbox /> : <FaHamburger />}
           </IconButton>
 
           <HStack

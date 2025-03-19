@@ -15,16 +15,17 @@ import { useColorMode } from "@/components/ui/color-mode";
 import Image from "next/image";
 import { useMemo, useRef, useState, useEffect } from "react";
 import NextLink from "next/link";
-import { useMenu } from "@/lib/hooks/useMenu";
 import { MenuItem } from "./MenuItem";
 import { createMenuTree } from "../../../app/cms/utils/menuTree";
 import { GiHamburgerMenu } from "react-icons/gi";
+import { Menu } from "@/app/cms/menu/page";
 
 interface HeaderProps {
   currentPage: string;
+  menus: Menu[];
 }
 
-export function Header({ currentPage }: HeaderProps) {
+export function Header({ currentPage, menus }: HeaderProps) {
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
   const [isNavHovered, setIsNavHovered] = useState(false);
@@ -33,11 +34,8 @@ export function Header({ currentPage }: HeaderProps) {
   const isMobile = useBreakpointValue({ base: true, md: false });
   const [lastScrollY, setLastScrollY] = useState(0);
 
-  // useMenu 훅 사용
-  const { menus, isLoading, error, refetch } = useMenu({
-    autoFetch: true, // 컴포넌트가 마운트될 때 자동으로 메뉴를 가져옴
-  });
   const { rootMenus } = useMemo(() => createMenuTree(menus), [menus]);
+
   // 스크롤 이벤트 핸들러
   useEffect(() => {
     const handleScroll = () => {

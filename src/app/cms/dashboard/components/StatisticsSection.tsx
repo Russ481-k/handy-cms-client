@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Text } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useMemo, useEffect, useState } from "react";
 import {
@@ -26,16 +26,17 @@ export function StatisticsSection() {
   );
 
   const [data, setData] = useState<ChartData[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
+  const [_, setTotalCount] = useState(0);
 
   useEffect(() => {
     const newData = Array.from({ length: 24 }, (_, i) => ({
       hour: `${i}시`,
       value: Math.floor(Math.random() * 100),
     }));
+    console.log(_);
     setData(newData);
     setTotalCount(newData.reduce((sum, item) => sum + item.value, 0));
-  }, []);
+  }, [_]);
 
   const chartOptions = useMemo<AgCartesianChartOptions>(
     () => ({

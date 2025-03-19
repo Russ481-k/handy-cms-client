@@ -1,15 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Box,
-  Container,
-  Heading,
-  Text,
-  Input,
-  InputGroup,
-  Flex,
-} from "@chakra-ui/react";
+import { Box, Container, Heading, Text, Input, Flex } from "@chakra-ui/react";
 import { FaSearch, FaChevronDown, FaChevronUp } from "react-icons/fa";
 
 export default function FAQPage() {

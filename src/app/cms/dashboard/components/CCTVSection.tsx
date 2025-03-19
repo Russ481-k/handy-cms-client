@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Text, AspectRatio } from "@chakra-ui/react";
+import { Box, AspectRatio } from "@chakra-ui/react";
 import { useColors } from "@/styles/theme";
 
 export function CCTVGridSection() {

@@ -1,7 +1,6 @@
 "use client";
 
 import { Box } from "@chakra-ui/react";
-import { useState, useEffect } from "react";
 import { useColorMode } from "@/components/ui/color-mode";
 import { useMenu } from "@/lib/hooks/useMenu";
 
@@ -19,12 +18,11 @@ import { getScrollbarStyle } from "@/styles/scrollbar";
 import { Global } from "@emotion/react";
 
 export default function Home() {
-  const [showScrollTop, setShowScrollTop] = useState(false);
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
 
   // useMenu 훅 사용
-  const { menus, isLoading, error, refetch } = useMenu({
+  const { menus, isLoading, error } = useMenu({
     autoFetch: true, // 컴포넌트가 마운트될 때 자동으로 메뉴를 가져옴
   });
 
@@ -38,7 +36,7 @@ export default function Home() {
 
   return (
     <Layout currentPage="홈" menus={menus}>
-      <Global styles={[getScrollbarStyle(isDark)]} />
+      <Global styles={getScrollbarStyle(isDark)} />
 
       <Box
         as="main"

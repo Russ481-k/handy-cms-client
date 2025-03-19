@@ -15,24 +15,7 @@ interface LexicalRendererProps {
   editable?: boolean;
 }
 
-const theme = {
-  paragraph: "mb-4",
-  heading: {
-    h1: "text-3xl font-bold mb-4",
-    h2: "text-2xl font-bold mb-3",
-    h3: "text-xl font-bold mb-2",
-  },
-  text: {
-    bold: "font-bold",
-    italic: "italic",
-    underline: "underline",
-  },
-};
-
-export function LexicalRenderer({
-  content,
-  editable = false,
-}: LexicalRendererProps) {
+export function LexicalRenderer({ editable = false }: LexicalRendererProps) {
   const colors = useColors();
 
   const initialConfig = {

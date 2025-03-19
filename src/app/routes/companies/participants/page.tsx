@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Box,
-  Container,
-  Heading,
-  Text,
-  SimpleGrid,
-  Image,
-} from "@chakra-ui/react";
+import { Box, Container, Heading, Text, SimpleGrid } from "@chakra-ui/react";
 
 export default function ParticipantsPage() {
   const companies = [

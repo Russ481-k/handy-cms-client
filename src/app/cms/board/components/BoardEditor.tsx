@@ -17,7 +17,6 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { TreeItem } from "@/components/ui/tree-list";
-import { getAuthHeader } from "@/lib/auth";
 import { toaster } from "@/components/ui/toaster";
 
 interface BoardEditorProps {

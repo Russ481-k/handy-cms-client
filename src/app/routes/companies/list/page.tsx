@@ -12,7 +12,7 @@ import {
   Icon,
 } from "@chakra-ui/react";
 import { FaBuilding, FaLightbulb, FaStar, FaChartLine } from "react-icons/fa";
-
+import { IconType } from "react-icons/lib";
 interface CompanyInfo {
   id: number;
   name: string;
@@ -20,7 +20,7 @@ interface CompanyInfo {
   business: string;
   features: string;
   vision: string;
-  icon: any;
+  icon: IconType;
   color: string;
 }
 

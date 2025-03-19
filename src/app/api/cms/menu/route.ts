@@ -73,7 +73,6 @@ export async function GET(request: Request) {
       console.log("Available menu types in database:", menuTypes);
 
       const [menus] = await connection.execute(query, params);
-      console.log("Query result count:", (menus as any[]).length);
       if (type === "CONTENT") {
         console.log("Content menus found:", menus);
       }

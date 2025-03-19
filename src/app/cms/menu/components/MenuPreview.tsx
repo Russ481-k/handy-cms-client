@@ -1,43 +1,10 @@
 "use client";
 
-import {
-  Box,
-  Flex,
-  Text,
-  Link,
-  HStack,
-  Container,
-  Button,
-  Grid,
-  GridItem,
-  Icon,
-  Stack,
-  VStack,
-} from "@chakra-ui/react";
-import { useColors, useStyles } from "@/styles/theme";
+import { Box, Flex, Text } from "@chakra-ui/react";
+import { useColors } from "@/styles/theme";
 import { Menu } from "../page";
-import { LuChevronDown, LuArrowRight, LuPlus } from "react-icons/lu";
-import NextLink from "next/link";
-import { useColorMode } from "@/components/ui/color-mode";
-import { Hero } from "@/components/section/Hero";
-import { QuickStats } from "@/components/section/QuickStats";
-import { ContentTabs } from "@/components/section/ContentTabs";
-import { ContactInfo } from "@/components/section/ContactInfo";
-import { TopBanner } from "@/components/layout/TopBanner";
-import { Footer } from "@/components/layout/view/Footer";
-import Image from "next/image";
-import { useState, useMemo, useRef, useEffect } from "react";
-import { IconButton } from "@chakra-ui/react";
-import { HeroSection } from "../../../../components/sections/HeroSection";
-import { CompanySection } from "../../../../components/sections/CompanySection";
-import { EducationSection } from "../../../../components/sections/EducationSection";
-import { NewsSection } from "../../../../components/sections/NewsSection";
-import { ApplicationSection } from "../../../../components/sections/ApplicationSection";
-import { Layout } from "../../../../components/layout/view/Layout";
-
-interface MenuPreviewProps {
-  menus: Menu[];
-}
+import { LuPlus } from "react-icons/lu";
+import { useRef } from "react";
 
 interface MenuItemProps {
   menu: Menu;

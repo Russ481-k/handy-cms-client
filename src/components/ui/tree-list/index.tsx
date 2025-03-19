@@ -1,12 +1,4 @@
-import {
-  Box,
-  Flex,
-  Text,
-  Badge,
-  IconButton,
-  VStack,
-  HStack,
-} from "@chakra-ui/react";
+import { Box, Flex, Text, IconButton, VStack, HStack } from "@chakra-ui/react";
 import { useState } from "react";
 import {
   LuChevronDown,

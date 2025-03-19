@@ -3,7 +3,6 @@
 import { Button, CloseButton, Dialog, Portal, Text } from "@chakra-ui/react";
 import { useRef } from "react";
 import { useColors } from "@/styles/theme";
-import { useColorModeValue } from "./color-mode";
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -32,10 +31,7 @@ export const ConfirmDialog = ({
   return (
     <Dialog.Root open={isOpen} onOpenChange={(e) => !e.open && onClose()}>
       <Portal>
-        <Dialog.Backdrop
-          bg={colors.dialog.overlay.bg}
-          backdropFilter={colors.dialog.overlay.backdropFilter}
-        />
+        <Dialog.Backdrop bg={colors.bg} backdropFilter={colors.bg} />
         <Dialog.Positioner>
           <Dialog.Content
             bg={colors.cardBg}
@@ -72,7 +68,7 @@ export const ConfirmDialog = ({
                   color={colors.text.secondary}
                   _hover={{
                     color: colors.text.primary,
-                    bg: colors.hover.card,
+                    bg: colors.cardBg,
                   }}
                 />
               </Dialog.CloseTrigger>
@@ -101,7 +97,7 @@ export const ConfirmDialog = ({
                   size="sm"
                   color={colors.text.secondary}
                   _hover={{
-                    bg: colors.hover.card,
+                    bg: colors.cardBg,
                     color: colors.text.primary,
                   }}
                 >

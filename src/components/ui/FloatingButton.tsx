@@ -1,9 +1,9 @@
 "use client";
 
 import { IconButton } from "@chakra-ui/react";
-import { ArrowUpIcon } from "@chakra-ui/icons";
 import { useEffect, useState } from "react";
 import { useColors } from "@/styles/theme";
+import { FaArrowUp } from "react-icons/fa";
 
 export function FloatingButton() {
   const [isVisible, setIsVisible] = useState(false);
@@ -47,7 +47,7 @@ export function FloatingButton() {
         transition: "all 0.2s",
       }}
     >
-      <ArrowUpIcon />
+      <FaArrowUp />
     </IconButton>
   );
 }

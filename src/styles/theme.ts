@@ -1,5 +1,5 @@
 import { useColorModeValue } from "@/components/ui/color-mode";
-import { COLORS, STYLES } from "./theme-tokens";
+import { COLORS } from "./theme-tokens";
 
 export interface Colors {
   bg: string;
@@ -402,52 +402,77 @@ export function useColors(): Colors {
   } as Colors;
 }
 
-export function useStyles(colors: Colors, isScrolled: boolean): Styles {
+export function useStyles(colors: Colors): Styles {
   return {
-    container: STYLES.container,
-    section: STYLES.section,
+    container: {
+      maxW: {
+        base: "100%",
+        xl: "1280px",
+      },
+      px: {
+        base: 4,
+        md: 6,
+        lg: 8,
+      },
+    },
+    section: {
+      py: {
+        base: 8,
+        md: 12,
+        lg: 16,
+      },
+    },
     card: {
-      ...STYLES.card,
       bg: colors.cardBg,
       borderColor: colors.border,
       borderWidth: "1px",
+      borderRadius: "xl",
       boxShadow: colors.shadow.sm,
-      backdropFilter: "blur(12px)",
+      p: 6,
+      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+      backdropFilter: "blur(8px)",
       _hover: {
-        transform: "translateY(-4px)",
-        boxShadow: colors.shadow.lg,
+        transform: "translateY(-2px)",
+        boxShadow: colors.shadow.md,
         borderColor: colors.primary.default,
       },
     },
     header: {
       wrapper: {
         width: "100%",
-        transition: "all 0.3s ease",
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         backdropFilter: "blur(8px)",
         position: "sticky",
         top: 0,
         zIndex: 1000,
-        py: 4,
+        py: 2,
       },
       container: {
-        maxW: "100%",
-        px: { base: 2, md: 8, lg: 12 },
+        maxW: "1280px",
+        px: {
+          base: 4,
+          md: 6,
+          lg: 8,
+        },
       },
       content: {
-        gap: 6,
+        gap: 4,
         justify: "space-between",
-        align: "flex-start",
+        align: "center",
         width: "100%",
-        height: "100%",
+        height: "64px",
       },
       logo: {
-        minWidth: "180px",
+        minWidth: "120px",
         height: "40px",
       },
       nav: {
-        display: { base: "none", md: "flex" },
-        alignItems: "flex-start",
-        mt: 1,
+        display: {
+          base: "none",
+          md: "flex",
+        },
+        alignItems: "center",
+        mt: 0,
       },
     },
     nav: {
@@ -461,54 +486,75 @@ export function useStyles(colors: Colors, isScrolled: boolean): Styles {
     },
     button: {
       primary: {
-        ...STYLES.button.primary,
         bg: colors.primary.default,
         color: colors.text.inverse,
+        borderRadius: "md",
+        fontWeight: "semibold",
+        px: 4,
+        py: 2,
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         _hover: {
           bg: colors.primary.hover,
-          transform: "translateY(-2px)",
+          transform: "translateY(-1px)",
         },
       },
       secondary: {
-        ...STYLES.button.secondary,
         bg: colors.secondary.default,
         color: colors.text.inverse,
+        borderRadius: "md",
+        fontWeight: "semibold",
+        px: 4,
+        py: 2,
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
         _hover: {
           bg: colors.secondary.hover,
-          transform: "translateY(-2px)",
+          transform: "translateY(-1px)",
         },
       },
     },
     text: {
-      ...STYLES.text,
       heading: {
-        ...STYLES.text.heading,
-        color: colors.text.primary,
+        fontWeight: "bold",
+        letterSpacing: "-0.025em",
+        lineHeight: "1.2",
       },
       subheading: {
-        ...STYLES.text.subheading,
-        color: colors.text.secondary,
+        fontWeight: "semibold",
+        letterSpacing: "-0.025em",
+        lineHeight: "1.3",
       },
       body: {
-        ...STYLES.text.body,
-        color: colors.text.secondary,
+        letterSpacing: "0.025em",
+        lineHeight: "1.6",
+      },
+      gradient: {
+        bgGradient: colors.gradient.primary,
+        bgClip: "text",
       },
     },
-    badge: STYLES.badge,
-    icon: STYLES.icon,
+    badge: {
+      fontWeight: "medium",
+      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+      _hover: {
+        transform: "translateY(-1px)",
+      },
+    },
+    icon: {
+      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+    },
     link: {
-      ...STYLES.link,
       color: colors.primary.default,
+      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
       _hover: {
         color: colors.primary.hover,
-        textDecoration: "none",
+        textDecoration: "underline",
       },
     },
     scrollTopButton: {
       position: "fixed",
-      bottom: "20px",
-      right: "20px",
-      zIndex: 999,
+      bottom: "24px",
+      right: "24px",
+      zIndex: 1000,
     },
-  } as Styles;
+  };
 }

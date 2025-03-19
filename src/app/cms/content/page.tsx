@@ -252,7 +252,6 @@ export default function ContentManagementPage() {
               onDeleteContent={handleDeleteContent}
               isLoading={isLoading}
               selectedContentId={selectedContent?.id}
-              refreshContents={refreshContents}
             />
           </Box>
 

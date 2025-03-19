@@ -9,7 +9,7 @@ import {
   Container,
 } from "@chakra-ui/react";
 import { LuPlus } from "react-icons/lu";
-import { useColors, useStyles } from "@/styles/theme";
+import { useColors } from "@/styles/theme";
 import { useColorMode } from "@/components/ui/color-mode";
 
 interface News {

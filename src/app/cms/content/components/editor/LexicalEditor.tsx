@@ -14,14 +14,13 @@ import { TableNode, TableRowNode, TableCellNode } from "@lexical/table";
 import { LinkNode } from "@lexical/link";
 import { LexicalToolbar } from "./LexicalToolbar";
 import { useColors } from "@/styles/theme";
-import { ErrorBoundary } from "react-error-boundary";
 
 interface LexicalEditorProps {
   value: string;
   onChange: (value: string) => void;
 }
 
-export default function LexicalEditor({ value, onChange }: LexicalEditorProps) {
+export default function LexicalEditor({}: LexicalEditorProps) {
   const colors = useColors();
 
   const initialConfig = {

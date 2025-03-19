@@ -5,7 +5,6 @@ import { useColors } from "@/styles/theme";
 import { useColorModeValue } from "@/components/ui/color-mode";
 
 export interface ListItemProps {
-  id: number;
   name: string;
   icon?: React.ReactNode;
   isSelected?: boolean;
@@ -17,7 +16,6 @@ export interface ListItemProps {
 }
 
 export function ListItem({
-  id,
   name,
   icon,
   isSelected,

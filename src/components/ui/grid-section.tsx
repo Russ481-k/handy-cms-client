@@ -1,9 +1,9 @@
 "use client";
 
-import { Box, Button, Flex, IconButton, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, Text } from "@chakra-ui/react";
 import { useColorMode, useColorModeValue } from "@/components/ui/color-mode";
 import { Responsive, WidthProvider, Layout, Layouts } from "react-grid-layout";
-import { LuGrip, LuGripHorizontal, LuMaximize2, LuPlus } from "react-icons/lu";
+import { LuGrip, LuMaximize2 } from "react-icons/lu";
 import * as React from "react";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
@@ -72,10 +72,6 @@ export function GridSection({
     "rgba(30, 41, 59, 0.6)"
   );
   const textColor = useColorModeValue(colors.text.primary, colors.text.primary);
-  const subtitleColor = useColorModeValue(
-    colors.text.secondary,
-    "whiteAlpha.700"
-  );
 
   const childrenArray = React.Children.toArray(children);
 
@@ -91,6 +87,7 @@ export function GridSection({
   });
 
   const onLayoutChange = (currentLayout: Layout[], allLayouts: Layouts) => {
+    console.log(currentLayout, allLayouts);
     setLayouts(allLayouts);
   };
 

@@ -27,7 +27,7 @@ export function Main({ menus }: MainProps) {
   }, [menus]);
 
   return (
-    <Layout currentPage="메뉴" menus={menus}>
+    <Layout currentPage="메뉴">
       <Box
         width="100%"
         height="100%"
@@ -45,7 +45,7 @@ export function Main({ menus }: MainProps) {
           id="main-content"
         >
           <Box p={4} height="680px">
-            <HeroSection isDark={isDark} />
+            <HeroSection />
           </Box>
           <Container maxW="container.xl" py={20}>
             <VStack gap={20} align="stretch">

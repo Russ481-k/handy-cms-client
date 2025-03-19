@@ -7,7 +7,6 @@ import {
   Text,
   VStack,
   SimpleGrid,
-  Button,
   Icon,
 } from "@chakra-ui/react";
 import { useColorMode } from "@/components/ui/color-mode";

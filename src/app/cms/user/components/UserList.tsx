@@ -13,7 +13,6 @@ export interface UserListProps {
   onDeleteUser: (userId: string) => void;
   isLoading: boolean;
   selectedUserId?: string;
-  refreshUsers: () => Promise<void>;
 }
 
 export function UserList({
@@ -22,7 +21,6 @@ export function UserList({
   onDeleteUser,
   isLoading,
   selectedUserId,
-  refreshUsers,
 }: UserListProps) {
   const colors = useColors();
   const iconColor = useColorModeValue(
@@ -59,10 +57,9 @@ export function UserList({
 
   return (
     <Box>
-      {users.map((user, idx) => (
+      {users.map((user) => (
         <ListItem
           key={user.id}
-          id={idx}
           name={user.username}
           icon={getUserIcon(user.role)}
           isSelected={user.id === selectedUserId}

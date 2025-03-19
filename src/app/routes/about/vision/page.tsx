@@ -9,7 +9,6 @@ import {
   SimpleGrid,
   Icon,
   Card,
-  CardBody,
   Badge,
 } from "@chakra-ui/react";
 import {

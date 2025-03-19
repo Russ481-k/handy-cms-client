@@ -9,11 +9,8 @@ import {
 } from "@chakra-ui/react";
 import { LuArrowRight, LuChevronLeft, LuChevronRight } from "react-icons/lu";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
-
-interface HeroSectionProps {
-  isDark: boolean;
-}
+import { useState, useCallback } from "react";
+import Image from "next/image";
 
 const MotionBox = motion(Box);
 
@@ -23,7 +20,11 @@ interface SlideContent {
   image: string;
 }
 
-export function HeroSection({ isDark }: HeroSectionProps) {
+interface HeroSectionProps {
+  isDark?: boolean;
+}
+
+export function HeroSection({ isDark = false }: HeroSectionProps) {
   const [[page, direction], setPage] = useState([0, 0]);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -52,24 +53,20 @@ export function HeroSection({ isDark }: HeroSectionProps) {
     return Math.abs(offset) * velocity;
   };
 
-  const paginate = (newDirection: number) => {
-    if (isAnimating) return;
-    setIsAnimating(true);
-    setPage(([prevPage]) => {
-      const nextPage = prevPage + newDirection;
-      if (nextPage < 0) return [slideContents.length - 1, newDirection];
-      if (nextPage >= slideContents.length) return [0, newDirection];
-      return [nextPage, newDirection];
-    });
-  };
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      paginate(1);
-    }, 5000);
-
-    return () => clearInterval(timer);
-  }, []);
+  const paginate = useCallback(
+    (newDirection: number) => {
+      if (isAnimating) return;
+      setIsAnimating(true);
+      setPage(([currentPage]) => {
+        const nextPage = currentPage + newDirection;
+        if (nextPage < 0) return [0, newDirection];
+        if (nextPage >= slideContents.length)
+          return [slideContents.length - 1, newDirection];
+        return [nextPage, newDirection];
+      });
+    },
+    [isAnimating, slideContents.length]
+  );
 
   const variants = {
     enter: (direction: number) => ({
@@ -89,202 +86,116 @@ export function HeroSection({ isDark }: HeroSectionProps) {
   };
 
   return (
-    <Box px={0} py={8}>
-      <Container maxW="1920px">
-        <Box
-          position="relative"
-          height={{ base: "400px", md: "500px", lg: "680px" }}
-          overflow="hidden"
-          borderRadius={{ base: "20px", md: "26px" }}
-        >
-          {/* Controller Background */}
-          <Box
-            position="absolute"
-            bottom={0}
-            right={0}
-            width={{ base: "100%", md: "400px" }}
-            height={{ base: "60px", md: "80px" }}
-            bg="white"
-            borderTopLeftRadius={{ base: "0", md: "24px" }}
-            zIndex={3}
-            display="flex"
-            alignItems="center"
-            px={{ base: 4, md: 8 }}
+    <Box
+      as="section"
+      position="relative"
+      overflow="hidden"
+      bg={isDark ? "gray.900" : "white"}
+    >
+      <Container maxW="container.xl" py={16}>
+        <AnimatePresence initial={false} custom={direction}>
+          <MotionBox
+            key={page}
+            custom={direction}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{
+              x: { type: "spring", stiffness: 300, damping: 30 },
+              opacity: { duration: 0.2 },
+            }}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={1}
+            onDragEnd={(e, { offset, velocity }) => {
+              const swipe = swipePower(offset.x, velocity.x);
+
+              if (swipe < -swipeConfidenceThreshold) {
+                paginate(1);
+              } else if (swipe > swipeConfidenceThreshold) {
+                paginate(-1);
+              }
+            }}
+            position="relative"
+            width="100%"
+            height="100%"
           >
-            {/* Progress Bar */}
-            <Box
-              flex={1}
-              height="2px"
-              bg="gray.100"
-              borderRadius="full"
-              overflow="hidden"
-              position="relative"
+            <Flex
+              direction={{ base: "column", md: "row" }}
+              align="center"
+              justify="space-between"
+              gap={8}
             >
+              <Box flex="1">
+                <Heading
+                  as="h1"
+                  size="2xl"
+                  mb={4}
+                  color={isDark ? "white" : "gray.800"}
+                >
+                  {slideContents[page].title}
+                </Heading>
+                <Text
+                  fontSize="xl"
+                  mb={8}
+                  whiteSpace="pre-line"
+                  color={isDark ? "gray.300" : "gray.600"}
+                >
+                  {slideContents[page].subtitle}
+                </Text>
+                <Button
+                  size="lg"
+                  colorScheme="blue"
+                  onClick={() => {
+                    // 신청하기 버튼 클릭 시 처리
+                  }}
+                >
+                  신청하기 <LuArrowRight style={{ marginLeft: "0.5rem" }} />
+                </Button>
+              </Box>
               <Box
-                position="absolute"
-                left={0}
-                top={0}
-                height="100%"
-                width={`${((page + 1) / slideContents.length) * 100}%`}
-                bg="blue.500"
-                transition="width 0.3s ease"
-              />
-            </Box>
-
-            {/* Navigation */}
-            <Flex align="center" gap={6} ml={8}>
-              <Flex align="center" gap={3}>
-                <Text color="gray.900" fontSize="xl" fontWeight="bold">
-                  {String(page + 1).padStart(2, "0")}
-                </Text>
-                <Box w="1px" h="20px" bg="gray.200" />
-                <Text color="gray.400" fontSize="xl">
-                  {String(slideContents.length).padStart(2, "0")}
-                </Text>
-              </Flex>
-              <Flex gap={2}>
-                <IconButton
-                  aria-label="Previous slide"
-                  variant="ghost"
-                  size="lg"
-                  color="gray.400"
-                  borderRadius="full"
-                  onClick={() => paginate(-1)}
-                  _hover={{ color: "gray.900", bg: "gray.50" }}
-                  transition="all 0.2s"
-                >
-                  <Box as={LuChevronLeft} boxSize={6} />
-                </IconButton>
-                <IconButton
-                  aria-label="Next slide"
-                  variant="ghost"
-                  size="lg"
-                  color="gray.400"
-                  borderRadius="full"
-                  onClick={() => paginate(1)}
-                  _hover={{ color: "gray.900", bg: "gray.50" }}
-                  transition="all 0.2s"
-                >
-                  <Box as={LuChevronRight} boxSize={6} />
-                </IconButton>
-              </Flex>
-            </Flex>
-          </Box>
-
-          <AnimatePresence initial={false} custom={direction}>
-            <MotionBox
-              key={page}
-              custom={direction}
-              variants={variants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{
-                x: { type: "spring", stiffness: 300, damping: 30 },
-                opacity: { duration: 0.2 },
-              }}
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={1}
-              onDragEnd={(e, { offset, velocity }) => {
-                const swipe = swipePower(offset.x, velocity.x);
-                if (swipe < -swipeConfidenceThreshold) {
-                  paginate(1);
-                } else if (swipe > swipeConfidenceThreshold) {
-                  paginate(-1);
-                }
-              }}
-              position="absolute"
-              width="100%"
-              height="100%"
-              backgroundImage={`url(${slideContents[page].image})`}
-              backgroundSize="cover"
-              backgroundPosition="center"
-              onAnimationComplete={() => setIsAnimating(false)}
-            >
-              <Container
-                maxW="container.xl"
-                height="100%"
+                flex="1"
                 position="relative"
-                zIndex={2}
+                width="100%"
+                height={{ base: "300px", md: "400px" }}
               >
-                <Flex
-                  direction="column"
-                  justify="center"
-                  height="100%"
-                  maxW="3xl"
-                  px={{ base: 4, md: 8 }}
-                >
-                  <Heading
-                    as="h1"
-                    fontSize={{ base: "2xl", sm: "3xl", md: "4xl", lg: "5xl" }}
-                    fontWeight="extrabold"
-                    mb={2}
-                    color="#0D344E"
-                    lineHeight="1.2"
-                  >
-                    {slideContents[page].title}
-                  </Heading>
-                  <Text
-                    fontSize={{ base: "md", sm: "lg", md: "xl" }}
-                    mb={{ base: 8, md: 28 }}
-                    fontWeight="bold"
-                    color="#0D344E"
-                    lineHeight="1.6"
-                    whiteSpace="pre-line"
-                  >
-                    {slideContents[page].subtitle}
-                  </Text>
-                  <Flex
-                    gap={4}
-                    flexWrap="wrap"
-                    flexDirection="column"
-                    maxW="3xs"
-                  >
-                    <Button
-                      size="md"
-                      variant="outline"
-                      color="blue.500"
-                      borderColor="blue.500"
-                      p={6}
-                      fontSize="lg"
-                      borderRadius="full"
-                      borderWidth={2}
-                      _hover={{
-                        transform: "translateX(10px)",
-                        bg: "transparent",
-                      }}
-                      transition="all 0.2s"
-                      justifyContent="space-between"
-                    >
-                      <Text fontWeight="bold">창업 신청하기</Text>
-                      <Box as={LuArrowRight} boxSize={4} />
-                    </Button>
-                    <Button
-                      size="md"
-                      variant="outline"
-                      color="#7A40DD"
-                      borderColor="#7A40DD"
-                      p={6}
-                      fontSize="lg"
-                      borderRadius="full"
-                      borderWidth={2}
-                      _hover={{
-                        transform: "translateX(10px)",
-                        bg: "transparent",
-                      }}
-                      transition="all 0.2s"
-                      justifyContent="space-between"
-                    >
-                      <Text fontWeight="bold">창업기관 소개</Text>
-                      <Box as={LuArrowRight} boxSize={4} />
-                    </Button>
-                  </Flex>
-                </Flex>
-              </Container>
-            </MotionBox>
-          </AnimatePresence>
-        </Box>
+                <Image
+                  src={slideContents[page].image}
+                  alt={slideContents[page].title}
+                  fill
+                  style={{
+                    objectFit: "cover",
+                    borderRadius: "1rem",
+                  }}
+                />
+              </Box>
+            </Flex>
+          </MotionBox>
+        </AnimatePresence>
+
+        <Flex justify="center" mt={8} gap={4}>
+          <IconButton
+            aria-label="Previous slide"
+            onClick={() => paginate(-1)}
+            disabled={page === 0}
+            variant="ghost"
+            color={isDark ? "gray.300" : "gray.600"}
+            _hover={{ bg: isDark ? "gray.700" : "gray.100" }}
+          >
+            <LuChevronLeft />
+          </IconButton>
+          <IconButton
+            aria-label="Next slide"
+            onClick={() => paginate(1)}
+            disabled={page === slideContents.length - 1}
+            variant="ghost"
+            color={isDark ? "gray.300" : "gray.600"}
+            _hover={{ bg: isDark ? "gray.700" : "gray.100" }}
+          >
+            <LuChevronRight />
+          </IconButton>
+        </Flex>
       </Container>
     </Box>
   );

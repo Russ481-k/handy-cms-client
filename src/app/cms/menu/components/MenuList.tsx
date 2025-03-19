@@ -32,10 +32,8 @@ export const MenuList = ({
   menus,
   onEditMenu,
   onDeleteMenu,
-  onMoveMenu,
   isLoading,
   selectedMenuId,
-  refreshMenus,
 }: MenuListProps) => {
   const [expandedMenus, setExpandedMenus] = useState<Set<number>>(new Set());
   const colors = useColors();
@@ -109,7 +107,6 @@ export const MenuList = ({
     return (
       <Box key={menu.id} pl={`${level * 24}px`}>
         <ListItem
-          id={menu.id}
           name={menu.name}
           icon={getMenuIcon(menu)}
           isSelected={menu.id === selectedMenuId}

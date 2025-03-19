@@ -14,7 +14,7 @@ export const TopBanner = (props: JsxStyleProps) => {
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
   const colors = useColors();
-  const styles = useStyles(colors, false);
+  const styles = useStyles(colors);
 
   return (
     <Box

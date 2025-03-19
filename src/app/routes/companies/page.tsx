@@ -7,7 +7,6 @@ import {
   Text,
   VStack,
   SimpleGrid,
-  Button,
 } from "@chakra-ui/react";
 import { useColorMode } from "@/components/ui/color-mode";
 import Link from "next/link";

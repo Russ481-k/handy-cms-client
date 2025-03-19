@@ -3,7 +3,7 @@
 import { Box, Text, VStack, HStack, Checkbox } from "@chakra-ui/react";
 import { AgGridReact } from "ag-grid-react";
 import { ColDef } from "ag-grid-community";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useColors } from "@/styles/theme";
 import { toaster } from "@/components/ui/toaster";
 import { useColorModeValue } from "@/components/ui/color-mode";
@@ -31,7 +31,7 @@ export function UserPermissions({ user }: UserPermissionsProps) {
   const textColor = useColorModeValue(colors.text.primary, colors.text.primary);
   const borderColor = useColorModeValue(colors.border, colors.border);
 
-  const fetchPermissions = async () => {
+  const fetchPermissions = useCallback(async () => {
     try {
       const response = await fetch(`/api/users/${user?.id}/permissions`);
       if (!response.ok) {
@@ -49,51 +49,54 @@ export function UserPermissions({ user }: UserPermissionsProps) {
         duration: 3000,
       });
     }
-  };
+  }, [user?.id]);
 
   useEffect(() => {
     if (user?.id) {
       fetchPermissions();
     }
-  }, [user?.id]);
+  }, [user?.id, fetchPermissions]);
 
-  const handlePermissionChange = async (permissionId: number) => {
-    try {
-      const response = await fetch(
-        `/api/users/${user?.id}/permissions/${permissionId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            isGranted: !selectedPermissions.includes(permissionId),
-          }),
+  const handlePermissionChange = useCallback(
+    async (permissionId: number) => {
+      try {
+        const response = await fetch(
+          `/api/users/${user?.id}/permissions/${permissionId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              isGranted: !selectedPermissions.includes(permissionId),
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to update permission");
         }
-      );
 
-      if (!response.ok) {
-        throw new Error("Failed to update permission");
+        setSelectedPermissions((prev) =>
+          prev.includes(permissionId)
+            ? prev.filter((id) => id !== permissionId)
+            : [...prev, permissionId]
+        );
+
+        toaster.success({
+          title: "권한이 업데이트되었습니다.",
+          duration: 3000,
+        });
+      } catch (error) {
+        console.error("Error updating permission:", error);
+        toaster.error({
+          title: "권한 업데이트에 실패했습니다.",
+          duration: 3000,
+        });
       }
-
-      setSelectedPermissions((prev) =>
-        prev.includes(permissionId)
-          ? prev.filter((id) => id !== permissionId)
-          : [...prev, permissionId]
-      );
-
-      toaster.success({
-        title: "권한이 업데이트되었습니다.",
-        duration: 3000,
-      });
-    } catch (error) {
-      console.error("Error updating permission:", error);
-      toaster.error({
-        title: "권한 업데이트에 실패했습니다.",
-        duration: 3000,
-      });
-    }
-  };
+    },
+    [user?.id, selectedPermissions]
+  );
 
   const columnDefs: ColDef[] = [
     {
@@ -114,7 +117,7 @@ export function UserPermissions({ user }: UserPermissionsProps) {
       field: "isGranted",
       headerName: "권한 부여",
       flex: 1,
-      cellRenderer: (params: any) => (
+      cellRenderer: (params: { data: Permission }) => (
         <Checkbox.Root
           checked={selectedPermissions.includes(params.data.id)}
           onCheckedChange={() => handlePermissionChange(params.data.id)}

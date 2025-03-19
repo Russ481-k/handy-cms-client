@@ -9,7 +9,6 @@ import {
   HStack,
   VStack,
   Icon,
-  useBreakpointValue,
   Badge,
 } from "@chakra-ui/react";
 import { useColors } from "@/styles/theme";
@@ -26,6 +25,7 @@ import {
   themeQuartz,
   colorSchemeDark,
   colorSchemeLight,
+  CellClassParams,
 } from "ag-grid-community";
 import {
   LuPlus,
@@ -184,13 +184,11 @@ const DEFAULT_SETTINGS = {
 export function BoardPreview({
   board,
   settings = DEFAULT_SETTINGS,
-  menus = [],
 }: BoardPreviewProps) {
   const colors = useColors();
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
   const [rowData] = useState<Post[]>(SAMPLE_POSTS);
-  const isMobile = useBreakpointValue({ base: true, md: false });
 
   // AG Grid 테마 설정
   const gridTheme = useMemo(
@@ -227,6 +225,7 @@ export function BoardPreview({
     [isDark, colors]
   );
 
+  console.log(gridTheme);
   // AG Grid 컬럼 설정
   const columnDefs = useMemo<ColDef<Post>[]>(
     () => [
@@ -234,7 +233,7 @@ export function BoardPreview({
         field: "title",
         headerName: "제목",
         flex: 2,
-        cellRenderer: (params: any) => (
+        cellRenderer: (params: CellClassParams) => (
           <Flex align="center" gap={2} height="100%">
             <Icon as={LuFileText} color={colors.primary.default} />
             <Text
@@ -255,7 +254,7 @@ export function BoardPreview({
         field: "author",
         headerName: "작성자",
         flex: 1,
-        cellRenderer: (params: any) => (
+        cellRenderer: (params: CellClassParams) => (
           <Flex align="center" gap={2} height="100%">
             <Icon as={LuUser} color={colors.text.secondary} />
             <Text>{params.value}</Text>
@@ -266,7 +265,7 @@ export function BoardPreview({
         field: "date",
         headerName: "작성일",
         flex: 1,
-        cellRenderer: (params: any) => (
+        cellRenderer: (params: CellClassParams) => (
           <Flex align="center" gap={2} height="100%">
             <Icon as={LuCalendar} color={colors.text.secondary} />
             <Text>{params.value}</Text>
@@ -278,7 +277,7 @@ export function BoardPreview({
         headerName: "조회",
         flex: 1,
         type: "numericColumn",
-        cellRenderer: (params: any) => (
+        cellRenderer: (params: CellClassParams) => (
           <Flex align="center" gap={2} height="100%">
             <Icon as={LuEye} color={colors.text.secondary} />
             <Text>{params.value}</Text>
@@ -291,7 +290,7 @@ export function BoardPreview({
 
   if (!board) {
     return (
-      <Layout menus={menus}>
+      <Layout>
         <Box p={6} textAlign="center" color="gray.500">
           게시판을 선택해주세요.
         </Box>
@@ -300,7 +299,7 @@ export function BoardPreview({
   }
 
   return (
-    <Layout currentPage="게시판" menus={menus}>
+    <Layout currentPage="게시판">
       <Box
         width="100%"
         height="100%"

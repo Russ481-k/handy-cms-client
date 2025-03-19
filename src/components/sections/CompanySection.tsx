@@ -4,10 +4,7 @@ import {
   Grid,
   Text,
   Heading,
-  Button,
-  Tag,
   Flex,
-  Icon,
   Link,
   Separator,
 } from "@chakra-ui/react";

@@ -1,14 +1,11 @@
 "use client";
 
-import { Badge, Text, Box, Spinner, Center, Flex } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { Text, Box, Spinner, Center, Flex } from "@chakra-ui/react";
+
 import { useColors } from "@/styles/theme";
-import { toaster } from "@/components/ui/toaster";
 import { useColorModeValue } from "@/components/ui/color-mode";
-import { getAuthHeader } from "@/lib/auth";
 import { TreeItem } from "@/components/ui/tree-list";
 import { LuInbox, LuLayoutList } from "react-icons/lu";
-import { Menu } from "@/app/cms/menu/page";
 import { ListItem } from "@/components/ui/list-item";
 
 export interface BoardListProps {
@@ -17,7 +14,6 @@ export interface BoardListProps {
   onDeleteBoard: (boardId: number) => void;
   isLoading: boolean;
   selectedBoardId?: number;
-  refreshBoards: () => Promise<void>;
 }
 
 export function BoardList({
@@ -26,7 +22,6 @@ export function BoardList({
   onDeleteBoard,
   isLoading,
   selectedBoardId,
-  refreshBoards,
 }: BoardListProps) {
   const colors = useColors();
   const emptyColor = useColorModeValue(
@@ -56,7 +51,6 @@ export function BoardList({
       {menus.map((menu) => (
         <ListItem
           key={menu.id}
-          id={menu.id}
           name={menu.name}
           icon={<LuLayoutList />}
           isSelected={menu.id === selectedBoardId}

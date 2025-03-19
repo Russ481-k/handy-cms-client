@@ -8,8 +8,6 @@ import {
   VStack,
   SimpleGrid,
   Card,
-  CardBody,
-  Button,
   HStack,
   Badge,
 } from "@chakra-ui/react";

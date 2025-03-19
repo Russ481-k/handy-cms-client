@@ -84,7 +84,7 @@ export async function POST(request: Request) {
     const connection = await pool.getConnection();
     try {
       // 사용자 생성
-      const [result] = await connection.execute(
+      const [] = await connection.execute(
         `INSERT INTO users (
           uuid,
           username,
@@ -110,7 +110,7 @@ export async function POST(request: Request) {
         [data.username, data.email]
       );
 
-      const uuid = (uuidResult as any[])[0].uuid;
+      const uuid = (uuidResult as { uuid: string }[])[0].uuid;
 
       // 생성된 사용자 정보 조회
       const [newUser] = await connection.execute(

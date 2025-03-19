@@ -3,11 +3,10 @@ import {
   ListItemNode,
   INSERT_ORDERED_LIST_COMMAND,
   INSERT_UNORDERED_LIST_COMMAND,
-  REMOVE_LIST_COMMAND,
 } from "@lexical/list";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { TRANSFORMERS } from "@lexical/markdown";
-import { Box, Text, HStack, IconButton, Tooltip } from "@chakra-ui/react";
+import { Box, Text, HStack, IconButton } from "@chakra-ui/react";
 import { useColors } from "@/styles/theme";
 import { LexicalComposer } from "@lexical/react/LexicalComposer";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
@@ -22,29 +21,26 @@ import { TextNode } from "lexical";
 import { LinkNode } from "@lexical/link";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import {
-  $getSelection,
-  $isRangeSelection,
   FORMAT_TEXT_COMMAND,
   FORMAT_ELEMENT_COMMAND,
   UNDO_COMMAND,
   REDO_COMMAND,
-  ElementFormatType,
 } from "lexical";
 import {
   Bold,
   Italic,
   Underline,
   List,
-  ListOrdered,
   Heading1,
   Heading2,
   Heading3,
   Undo,
   Redo,
-  Link,
-  Code,
-  Quote,
-  Table,
+  // ListOrdered,
+  // Link,
+  // Code,
+  // Quote,
+  // Table,
 } from "lucide-react";
 
 interface LexicalEditorProps {
@@ -206,12 +202,43 @@ function ToolbarPlugin() {
         >
           <Redo size={18} />
         </IconButton>
+        <IconButton
+          aria-label="다시 실행"
+          size="sm"
+          variant="ghost"
+          onClick={redo}
+          color={colors.text.primary}
+          _hover={{ bg: "gray.100" }}
+        >
+          <Redo size={18} />
+        </IconButton>
+        <IconButton
+          aria-label="다시 실행"
+          size="sm"
+          variant="ghost"
+          onClick={redo}
+          color={colors.text.primary}
+          _hover={{ bg: "gray.100" }}
+        >
+          <Redo size={18} />
+        </IconButton>
+        <IconButton
+          aria-label="다시 실행"
+          size="sm"
+          variant="ghost"
+          onClick={redo}
+          color={colors.text.primary}
+          _hover={{ bg: "gray.100" }}
+        >
+          <Redo size={18} />
+        </IconButton>
+        Link, Code, Quote, Table,
       </HStack>
     </Box>
   );
 }
 
-export default function LexicalEditor({ value, onChange }: LexicalEditorProps) {
+export default function LexicalEditor({}: LexicalEditorProps) {
   const colors = useColors();
 
   const theme = {

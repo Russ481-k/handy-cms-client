@@ -3,8 +3,8 @@
 import { Box, Flex } from "@chakra-ui/react";
 import { useColorMode } from "@/components/ui/color-mode";
 import { Header } from "./Header";
-import { Menu } from "../../../app/cms/menu/page";
 import { Footer } from "@/components/layout/view/Footer";
+import { Menu } from "@/app/cms/menu/page";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -27,7 +27,7 @@ export function Layout({
       bg={isDark ? "gray.900" : "white"}
       position="relative"
     >
-      <Header currentPage={currentPage} />
+      <Header currentPage={currentPage} menus={menus} />
       <Box flex="1">{children}</Box>
       <Footer />
     </Flex>

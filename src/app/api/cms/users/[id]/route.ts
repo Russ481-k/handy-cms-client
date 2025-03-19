@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import pool from "@/lib/db";
 import { verifyToken } from "@/lib/auth-utils";
 import { User } from "@/app/cms/user/page";
@@ -16,8 +17,8 @@ interface UserRow {
 
 // PUT /api/cms/users/[id]
 export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // 인증 확인
@@ -35,7 +36,7 @@ export async function PUT(
     }
 
     const data = await request.json();
-    const id = params.id;
+    const { id } = await params;
 
     // 사용자 수정
     const connection = await pool.getConnection();
@@ -102,8 +103,8 @@ export async function PUT(
 
 // DELETE /api/cms/users/[id]
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // 인증 확인
@@ -120,7 +121,7 @@ export async function DELETE(
       return NextResponse.json({ message: "Invalid token" }, { status: 401 });
     }
 
-    const id = params.id;
+    const { id } = await params;
 
     // 사용자 삭제
     const connection = await pool.getConnection();

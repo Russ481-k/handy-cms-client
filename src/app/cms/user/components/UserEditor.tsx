@@ -12,11 +12,9 @@ import {
   Portal,
   createListCollection,
   Field,
-  Checkbox,
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
-import { LuCheck } from "react-icons/lu";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -95,7 +93,6 @@ export function UserEditor({
   }, [user, reset]);
 
   const colors = useColors();
-  const bgColor = useColorModeValue(colors.cardBg, colors.cardBg);
   const borderColor = useColorModeValue(colors.border, colors.border);
   const textColor = useColorModeValue(colors.text.primary, colors.text.primary);
   const errorColor = useColorModeValue("red.500", "red.300");

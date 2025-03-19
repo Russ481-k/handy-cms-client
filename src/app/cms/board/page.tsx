@@ -252,7 +252,6 @@ export default function BoardManagementPage() {
               onDeleteBoard={handleDeleteBoard}
               isLoading={isLoading}
               selectedBoardId={selectedBoard?.id}
-              refreshBoards={refreshBoards}
             />
           </Box>
 

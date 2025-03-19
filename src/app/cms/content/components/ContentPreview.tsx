@@ -10,8 +10,6 @@ import {
   Grid,
   Container,
   Heading,
-  List,
-  ListItem,
   Separator,
   Link,
 } from "@chakra-ui/react";
@@ -20,7 +18,7 @@ import { useColorMode } from "@/components/ui/color-mode";
 import { Content, VisionSection } from "../types";
 import { Menu } from "../../menu/page";
 import { Layout } from "../../../../components/layout/view/Layout";
-import { LuCalendar, LuEye, LuTag, LuCheck } from "react-icons/lu";
+import { LuCalendar, LuEye } from "react-icons/lu";
 import { LexicalRenderer } from "./LexicalRenderer";
 
 interface ContentPreviewProps {
@@ -37,7 +35,7 @@ const SAMPLE_CONTENT = {
   views: 1234,
 };
 
-export function ContentPreview({ content, menus = [] }: ContentPreviewProps) {
+export function ContentPreview({ content }: ContentPreviewProps) {
   const colors = useColors();
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
@@ -99,7 +97,7 @@ export function ContentPreview({ content, menus = [] }: ContentPreviewProps) {
   };
 
   return (
-    <Layout currentPage={content.name} menus={menus}>
+    <Layout currentPage={content.name}>
       <Container maxW="container.xl" py={8}>
         <VStack gap={8} align="stretch">
           {/* 헤더 섹션 */}

@@ -6,7 +6,6 @@ import {
   Text,
   VStack,
   Image,
-  Separator,
   HStack,
 } from "@chakra-ui/react";
 

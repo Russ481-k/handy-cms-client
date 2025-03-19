@@ -1,7 +1,7 @@
 "use client";
 
 import { Badge, Text, Box, Spinner, Center, Flex } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useColors } from "@/styles/theme";
 import { toaster } from "@/components/ui/toaster";
 import { useColorModeValue } from "@/components/ui/color-mode";
@@ -17,7 +17,6 @@ export interface ContentListProps {
   onDeleteContent: (contentId: number) => void;
   isLoading: boolean;
   selectedContentId?: number;
-  refreshContents: () => Promise<void>;
 }
 
 export function ContentList({
@@ -26,11 +25,9 @@ export function ContentList({
   onDeleteContent,
   isLoading,
   selectedContentId,
-  refreshContents,
 }: ContentListProps) {
   const [error, setError] = useState<string | null>(null);
   const colors = useColors();
-  const textColor = useColorModeValue(colors.text.primary, colors.text.primary);
   const emptyColor = useColorModeValue(
     colors.text.secondary,
     colors.text.secondary
@@ -82,28 +79,28 @@ export function ContentList({
     }
   };
 
-  useEffect(() => {
-    console.log("ContentList mounted, fetching menus...");
-    fetchMenus().then((data) => {
-      // Assuming the data is stored in the state
-      // This is a placeholder and should be replaced with actual state management
-    });
-  }, []);
+  // useEffect(() => {
+  //   console.log("ContentList mounted, fetching menus...");
+  //   fetchMenus().then(() => {
+  //     // Assuming the data is stored in the state
+  //     // This is a placeholder and should be replaced with actual state management
+  //   });
+  // }, [fetchMenus]);
 
-  useEffect(() => {
-    const handleRefresh = () => {
-      console.log("ContentList refresh event received");
-      fetchMenus().then((data) => {
-        // Assuming the data is stored in the state
-        // This is a placeholder and should be replaced with actual state management
-      });
-    };
+  // useEffect(() => {
+  //   const handleRefresh = () => {
+  //     console.log("ContentList refresh event received");
+  //     fetchMenus().then((data) => {
+  //       // Assuming the data is stored in the state
+  //       // This is a placeholder and should be replaced with actual state management
+  //     });
+  //   };
 
-    window.addEventListener("refreshContentList", handleRefresh);
-    return () => {
-      window.removeEventListener("refreshContentList", handleRefresh);
-    };
-  }, []);
+  //   window.addEventListener("refreshContentList", handleRefresh);
+  //   return () => {
+  //     window.removeEventListener("refreshContentList", handleRefresh);
+  //   };
+  // }, []);
 
   if (isLoading) {
     return (
@@ -144,7 +141,6 @@ export function ContentList({
       {menus.map((menu) => (
         <ListItem
           key={menu.id}
-          id={menu.id}
           name={menu.name}
           icon={<LuFileText />}
           isSelected={menu.id === selectedContentId}

@@ -227,7 +227,6 @@ export default function UserManagementPage() {
               onDeleteUser={handleDeleteUser}
               isLoading={isLoading}
               selectedUserId={selectedUser?.id}
-              refreshUsers={refreshUsers}
             />
           </Box>
 

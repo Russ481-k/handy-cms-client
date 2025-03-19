@@ -7,28 +7,12 @@ import {
   Heading,
   Text,
   VStack,
-  HStack,
   Icon,
   SimpleGrid,
   Card,
-  CardBody,
 } from "@chakra-ui/react";
-import {
-  FaMapMarkerAlt,
-  FaBus,
-  FaSubway,
-  FaCar,
-  FaPhone,
-  FaEnvelope,
-  FaClock,
-} from "react-icons/fa";
+import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock } from "react-icons/fa";
 import { useColorMode } from "@/components/ui/color-mode";
-
-declare global {
-  interface Window {
-    kakao: any;
-  }
-}
 
 export default function LocationPage() {
   const { colorMode } = useColorMode();
@@ -49,7 +33,10 @@ export default function LocationPage() {
           ), // 해운대구 윗반송로51번길 36 좌표
           level: 3,
         };
-        const map = new window.kakao.maps.Map(container, options);
+        const map = new window.kakao.maps.Map(
+          container ?? document.body,
+          options
+        );
 
         // 마커 생성
         const markerPosition = new window.kakao.maps.LatLng(
