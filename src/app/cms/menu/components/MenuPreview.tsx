@@ -205,9 +205,6 @@ export function MenuPreview({ menus }: MenuPreviewProps) {
             </VStack>
           </Container>
         </Box>
-
-        {/* Footer */}
-        <Footer />
       </Box>
     </PreviewLayout>
   );
