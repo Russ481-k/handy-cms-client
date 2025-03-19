@@ -23,18 +23,23 @@ function SupportItem({ title, description, color, isDark }: SupportItemProps) {
     <Box
       bg={isDark ? "whiteAlpha.50" : color}
       borderRightRadius="full"
-      p={6}
+      p={{ base: 4, md: 6 }}
       color="white"
       _hover={{
         transform: "translateY(-2px)",
         transition: "transform 0.2s",
       }}
-      mr={-4}
+      mr={{ base: 0, md: -4 }}
+      mb={{ base: 2, md: 0 }}
     >
-      <Text fontSize="lg" fontWeight="bold" mb={2}>
+      <Text
+        fontSize={{ base: "md", md: "lg" }}
+        fontWeight="bold"
+        mb={{ base: 1, md: 2 }}
+      >
         {title}
       </Text>
-      <Text fontSize="sm" opacity={0.9}>
+      <Text fontSize={{ base: "xs", md: "sm" }} opacity={0.9}>
         {description}
       </Text>
     </Box>
@@ -102,40 +107,43 @@ export function ApplicationSection() {
   return (
     <Box
       width="100%"
-      bg={isDark ? "gray.800" : "white"}
-      borderRadius="2xl"
+      bg={isDark ? "gray.800" : "gray.50"}
       overflow="hidden"
-      border="1px solid"
-      borderColor={colors.border}
+      mt={{ base: 12, md: 24 }}
+      py={{ base: 12, md: 24 }}
     >
-      <Container maxW="container.xl" py={8} px={{ base: 6, md: 12 }}>
+      <Container
+        maxW="container.xl"
+        py={{ base: 6, md: 8 }}
+        px={{ base: 4, md: 12 }}
+      >
         <Flex
           direction={{ base: "column", md: "row" }}
           align={{ base: "center", md: "flex-start" }}
-          gap={{ base: 8, md: 12 }}
+          gap={{ base: 6, md: 12 }}
         >
           <Image
             src="/images/apply/apply_illust.png"
             alt="창업 일러스트레이션"
-            width={{ base: "120px", md: "160px" }}
+            width={{ base: "100px", sm: "120px", md: "160px" }}
             height="auto"
             flexShrink={0}
           />
 
           <Box flex={1}>
             <Flex
-              direction={{ base: "column", md: "row" }}
+              direction={{ base: "column", lg: "row" }}
               justify="space-between"
               align={{ base: "flex-start", md: "center" }}
-              gap={6}
-              mb={8}
+              gap={{ base: 4, md: 6 }}
+              mb={{ base: 6, md: 8 }}
             >
               <Box>
                 <Text
-                  fontSize={{ base: "2xl", md: "3xl" }}
+                  fontSize={{ base: "xl", sm: "2xl", md: "3xl" }}
                   fontWeight="bold"
                   color={colors.text.primary}
-                  mb={2}
+                  mb={{ base: 1, md: 2 }}
                 >
                   창업의 첫걸음,{" "}
                   <Text as="span" color={colors.primary.default}>
@@ -143,7 +151,7 @@ export function ApplicationSection() {
                   </Text>
                 </Text>
                 <Text
-                  fontSize={{ base: "sm", md: "md" }}
+                  fontSize={{ base: "xs", sm: "sm", md: "md" }}
                   color={colors.text.secondary}
                 >
                   부산창업기꿈, 이렇게 지원합니다!
@@ -151,8 +159,8 @@ export function ApplicationSection() {
               </Box>
 
               <Flex
-                gap={4}
-                direction={{ base: "column", sm: "row" }}
+                gap={{ base: 3, md: 4 }}
+                direction={{ base: "column", md: "row" }}
                 width={{ base: "100%", md: "auto" }}
               >
                 <ActionButton variant="outline">모집공고 보러가기</ActionButton>
@@ -163,7 +171,7 @@ export function ApplicationSection() {
             <SimpleGrid
               columns={{ base: 1, sm: 2, lg: 4 }}
               width="100%"
-              gap={{ base: 4, md: 0 }}
+              gap={{ base: 2, sm: 3, md: 0 }}
             >
               {supportItems.map((item, index) => (
                 <SupportItem

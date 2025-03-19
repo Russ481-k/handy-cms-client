@@ -27,7 +27,7 @@ const EducationCard = ({
     <Box width="100%">
       <Box
         bg={bgColor}
-        p={8}
+        p={{ base: 4, md: 8 }}
         position="relative"
         _hover={{ transform: "translateY(-4px)" }}
         transition="all 0.2s"
@@ -35,23 +35,28 @@ const EducationCard = ({
         borderBottom="3px solid"
         borderColor="#0D344E"
         overflow="hidden"
-        height="420px"
+        height={{ base: "auto", md: "420px" }}
+        minHeight={{ base: "320px", md: "420px" }}
       >
-        <Flex gap={8} align="flex-start" position="relative">
+        <Flex gap={{ base: 4, md: 8 }} align="flex-start" position="relative">
           <Box flex={1}>
             <Heading
               as="h3"
-              fontSize="36px"
+              fontSize={{ base: "24px", sm: "28px", md: "36px" }}
               fontWeight="bold"
               color="gray.800"
-              mb={6}
+              mb={{ base: 4, md: 6 }}
             >
               {title}
             </Heading>
-            <VStack align="flex-start" gap={3}>
+            <VStack align="flex-start" gap={{ base: 2, md: 3 }}>
               {descriptions.map((desc, index) => (
-                <Flex key={index} gap={3} align="flex-start">
-                  <Text color="gray.600" fontSize="14px" lineHeight="1.7">
+                <Flex key={index} gap={{ base: 2, md: 3 }} align="flex-start">
+                  <Text
+                    color="gray.600"
+                    fontSize={{ base: "12px", sm: "13px", md: "14px" }}
+                    lineHeight="1.7"
+                  >
                     {desc}
                   </Text>
                 </Flex>
@@ -63,8 +68,8 @@ const EducationCard = ({
           position="absolute"
           right={4}
           bottom={4}
-          width="90px"
-          height="90px"
+          width={{ base: "60px", sm: "70px", md: "90px" }}
+          height={{ base: "60px", sm: "70px", md: "90px" }}
         >
           <Image
             src={iconUrl}
@@ -81,39 +86,61 @@ const EducationCard = ({
 
 export function EducationSection() {
   return (
-    <Box py={24}>
-      <Container maxW="1640px">
-        <Flex direction="column" align="stretch" mb={16}>
-          <Box mb={4}>
+    <Box py={{ base: 12, md: 24 }}>
+      <Container maxW="container.xl">
+        <Flex
+          align="flex-end"
+          mb={{ base: 6, md: 8 }}
+          justifyContent="space-between"
+          flexDirection={{ base: "column", lg: "row" }}
+          gap={{ base: 4, md: 0 }}
+        >
+          <Box>
             <Text
-              color="gray.500"
-              fontSize="xl"
-              fontWeight="medium"
-              mb={2}
+              color="#0D344E"
+              fontSize={{ base: "2xl", sm: "3xl" }}
+              fontWeight="bold"
               letterSpacing="tight"
+              textAlign={{ base: "right", lg: "left" }}
             >
               성공적인 창업을 위한
             </Text>
-            <Heading
-              as="h2"
-              fontSize="5xl"
-              fontWeight="bold"
-              color="blue.400"
-              letterSpacing="tight"
-              lineHeight="1.2"
-            >
-              맞춤형 교육 프로그램
-            </Heading>
+            <Flex gap={{ base: 2, sm: 0 }}>
+              <Heading
+                as="h2"
+                fontSize={{ base: "3xl", sm: "4xl", md: "5xl" }}
+                fontWeight="bold"
+                color="blue.500"
+                letterSpacing="tight"
+                lineHeight="1.2"
+                mr={{ base: 0, sm: 3 }}
+                mb={{ base: 2, sm: 0 }}
+              >
+                맞춤형
+              </Heading>
+              <Heading
+                as="h2"
+                fontSize={{ base: "3xl", sm: "4xl", md: "5xl" }}
+                fontWeight="bold"
+                color="#0D344E"
+                letterSpacing="tight"
+                lineHeight="1.2"
+              >
+                교육 프로그램
+              </Heading>
+            </Flex>
           </Box>
           <Text
-            fontSize="lg"
-            color="gray.600"
+            fontSize={{ base: "sm", lg: "md" }}
+            fontWeight="bold"
+            color="#0D344E"
             textAlign="right"
-            lineHeight="1.7"
+            maxW={{ base: "100%", lg: "600px" }}
           >
-            AI 기반 맞춤형 커리큘럼으로 당신의 창업을 가속화하세요.
+            기초부터 실전까지, <br />
+            창업가에게 꼭 필요한 모든 것을 배울 수 있습니다.
             <br />
-            기초부터 실전까지, 창업가에게 꼭 필요한 모든 것을 배울 수 있습니다
+            AI 기반 맞춤형 커리큘럼으로 당신의 창업을 가속화하세요.
           </Text>
         </Flex>
 

@@ -128,7 +128,7 @@ export function MenuItem({
               >
                 <Link
                   as={NextLink}
-                  href={"/routes" + child.url || "#"}
+                  href={!!child.url ? "/routes" + child.url : "#"}
                   display="block"
                   px={4}
                   py={2}
@@ -189,7 +189,9 @@ export function MenuItem({
                       >
                         <Link
                           as={NextLink}
-                          href={"/routes" + grandChild.url || "#"}
+                          href={
+                            !!grandChild.url ? "/routes" + grandChild.url : "#"
+                          }
                           display="block"
                           px={4}
                           py={1.5}

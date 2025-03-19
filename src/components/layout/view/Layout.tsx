@@ -28,9 +28,7 @@ export function Layout({
       position="relative"
     >
       <Header currentPage={currentPage} />
-      <Box flex="1" pt={16}>
-        {children}
-      </Box>
+      <Box flex="1">{children}</Box>
       <Footer />
     </Flex>
   );

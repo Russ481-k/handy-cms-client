@@ -5,6 +5,7 @@ import {
   Button,
   Flex,
   IconButton,
+  Heading,
 } from "@chakra-ui/react";
 import { LuArrowRight, LuChevronLeft, LuChevronRight } from "react-icons/lu";
 import { motion, AnimatePresence } from "framer-motion";
@@ -37,12 +38,12 @@ export function HeroSection({ isDark }: HeroSectionProps) {
       title: "혁신적인 창업 지원 시스템",
       subtitle:
         "AI 기반 맞춤형 솔루션으로\n당신의 창업을 성공으로 이끌어드립니다",
-      image: "/images/banners/banner_1.jpg",
+      image: "/images/banners/banner_2.gif",
     },
     {
       title: "함께 성장하는 창업 생태계",
       subtitle: "다양한 분야의 전문가와 함께\n창업의 모든 단계를 지원합니다",
-      image: "/images/banners/banner_1.jpg",
+      image: "/images/banners/banner_3.gif",
     },
   ];
 
@@ -92,23 +93,23 @@ export function HeroSection({ isDark }: HeroSectionProps) {
       <Container maxW="1920px">
         <Box
           position="relative"
-          height="680px"
+          height={{ base: "400px", md: "500px", lg: "680px" }}
           overflow="hidden"
-          borderRadius="24px"
+          borderRadius={{ base: "20px", md: "26px" }}
         >
           {/* Controller Background */}
           <Box
             position="absolute"
             bottom={0}
             right={0}
-            width="400px"
-            height="80px"
+            width={{ base: "100%", md: "400px" }}
+            height={{ base: "60px", md: "80px" }}
             bg="white"
-            borderTopLeftRadius="24px"
+            borderTopLeftRadius={{ base: "0", md: "24px" }}
             zIndex={3}
             display="flex"
             alignItems="center"
-            px={8}
+            px={{ base: 4, md: 8 }}
           >
             {/* Progress Bar */}
             <Box
@@ -214,60 +215,69 @@ export function HeroSection({ isDark }: HeroSectionProps) {
                   maxW="3xl"
                   px={{ base: 4, md: 8 }}
                 >
-                  <Text
-                    fontSize={{ base: "3xl", md: "4xl", lg: "5xl" }}
-                    fontWeight="bold"
-                    mb={4}
-                    color="gray.900"
+                  <Heading
+                    as="h1"
+                    fontSize={{ base: "2xl", sm: "3xl", md: "4xl", lg: "5xl" }}
+                    fontWeight="extrabold"
+                    mb={2}
+                    color="#0D344E"
                     lineHeight="1.2"
                   >
                     {slideContents[page].title}
-                  </Text>
+                  </Heading>
                   <Text
-                    fontSize={{ base: "lg", md: "xl" }}
-                    mb={8}
-                    color="gray.700"
+                    fontSize={{ base: "md", sm: "lg", md: "xl" }}
+                    mb={{ base: 8, md: 28 }}
+                    fontWeight="bold"
+                    color="#0D344E"
                     lineHeight="1.6"
                     whiteSpace="pre-line"
                   >
                     {slideContents[page].subtitle}
                   </Text>
-                  <Flex gap={4} flexWrap="wrap">
+                  <Flex
+                    gap={4}
+                    flexWrap="wrap"
+                    flexDirection="column"
+                    maxW="3xs"
+                  >
                     <Button
-                      size="lg"
-                      bg="blue.500"
-                      color="white"
-                      px={8}
-                      py={6}
+                      size="md"
+                      variant="outline"
+                      color="blue.500"
+                      borderColor="blue.500"
+                      p={6}
                       fontSize="lg"
                       borderRadius="full"
+                      borderWidth={2}
                       _hover={{
-                        bg: "blue.600",
-                        transform: "translateY(-2px)",
-                        boxShadow: "lg",
+                        transform: "translateX(10px)",
+                        bg: "transparent",
                       }}
                       transition="all 0.2s"
+                      justifyContent="space-between"
                     >
-                      <Text mr={2}>창업 신청하기</Text>
+                      <Text fontWeight="bold">창업 신청하기</Text>
                       <Box as={LuArrowRight} boxSize={4} />
                     </Button>
                     <Button
-                      size="lg"
+                      size="md"
                       variant="outline"
-                      color="gray.700"
-                      borderColor="gray.300"
-                      px={8}
-                      py={6}
+                      color="#7A40DD"
+                      borderColor="#7A40DD"
+                      p={6}
                       fontSize="lg"
                       borderRadius="full"
+                      borderWidth={2}
                       _hover={{
-                        borderColor: "gray.400",
-                        bg: "gray.50",
-                        transform: "translateY(-2px)",
+                        transform: "translateX(10px)",
+                        bg: "transparent",
                       }}
                       transition="all 0.2s"
+                      justifyContent="space-between"
                     >
-                      창업기관 소개
+                      <Text fontWeight="bold">창업기관 소개</Text>
+                      <Box as={LuArrowRight} boxSize={4} />
                     </Button>
                   </Flex>
                 </Flex>

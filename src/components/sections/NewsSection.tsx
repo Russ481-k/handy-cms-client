@@ -49,18 +49,18 @@ export function NewsSection() {
   ];
 
   return (
-    <Box py={24}>
-      <Container maxW="1640px">
+    <Box py={{ base: 12, md: 24 }}>
+      <Container maxW="container.xl">
         <Flex>
           <Text
-            fontSize={{ base: "3xl", md: "4xl" }}
+            fontSize={{ base: "2xl", sm: "3xl", md: "4xl" }}
             fontWeight="bold"
             color={colors.text.primary}
           >
             창업가꿈
           </Text>
           <Text
-            fontSize={{ base: "3xl", md: "4xl" }}
+            fontSize={{ base: "2xl", sm: "3xl", md: "4xl" }}
             fontWeight="bold"
             color={colors.primary.default}
             ml={2}
@@ -68,14 +68,18 @@ export function NewsSection() {
             소식
           </Text>
         </Flex>
-        <Flex direction={{ base: "column", md: "row" }} gap={8} width="100%">
+        <Flex
+          direction={{ base: "column", lg: "row" }}
+          gap={{ base: 6, md: 8 }}
+          width="100%"
+        >
           <Box flex="1" width="100%">
             <Flex justify="flex-end" mb={2}>
               <Button
                 variant="ghost"
                 color={colors.text.primary}
                 fontWeight="medium"
-                fontSize="md"
+                fontSize={{ base: "sm", md: "md" }}
                 p={2}
                 _hover={{
                   bg: isDark ? "whiteAlpha.100" : "blackAlpha.50",
@@ -90,7 +94,7 @@ export function NewsSection() {
               {news.map((item, index) => (
                 <Box
                   key={item.title}
-                  p={6}
+                  p={{ base: 4, md: 6 }}
                   borderTop={index === 0 ? "1px solid" : "none"}
                   borderBottom="1px solid"
                   borderColor={colors.border}
@@ -101,7 +105,7 @@ export function NewsSection() {
                   }}
                   cursor="pointer"
                 >
-                  <Flex gap={4}>
+                  <Flex gap={{ base: 2, md: 4 }}>
                     {item.isNew && (
                       <Box
                         bg={colors.primary.default}
@@ -109,16 +113,20 @@ export function NewsSection() {
                         px={2}
                         py={1}
                         borderRadius="full"
-                        fontSize="sm"
+                        fontSize={{ base: "xs", md: "sm" }}
                         fontWeight="bold"
                       >
                         N
                       </Box>
                     )}
-                    <Flex flex={1} justify="space-between" gap={3}>
+                    <Flex
+                      flex={1}
+                      justify="space-between"
+                      gap={{ base: 2, md: 3 }}
+                    >
                       <Text
                         color={colors.text.primary}
-                        fontSize="md"
+                        fontSize={{ base: "sm", md: "md" }}
                         fontWeight="medium"
                         overflow="hidden"
                         textOverflow="ellipsis"
@@ -130,7 +138,7 @@ export function NewsSection() {
                       </Text>
                       <Text
                         color={colors.text.secondary}
-                        fontSize="sm"
+                        fontSize={{ base: "xs", md: "sm" }}
                         flexShrink={0}
                         alignItems="center"
                       >
@@ -147,6 +155,7 @@ export function NewsSection() {
             width={{ base: "100%", md: "540px" }}
             minWidth={{ base: "100%", md: "540px" }}
             maxWidth="100%"
+            alignSelf="center"
           >
             {/* Video container with aspect ratio */}
             <Box position="relative" width="100%">
@@ -155,12 +164,12 @@ export function NewsSection() {
                   {/* Blue border background */}
                   <Box
                     border={`2px solid ${colors.primary.default}`}
-                    borderRadius="20px"
+                    borderRadius={{ base: "18px", md: "20px" }}
                     position="absolute"
                     width="85%"
                     height="85%"
-                    left="60px"
-                    top="5"
+                    left={{ base: "50px", md: "60px" }}
+                    top={{ base: "0px", md: "20px" }}
                     zIndex={1}
                   />
 
@@ -169,8 +178,8 @@ export function NewsSection() {
                     position="absolute"
                     width="85%"
                     height="85%"
-                    left="40px"
-                    top="40px"
+                    left={{ base: "20px", md: "40px" }}
+                    top={{ base: "20px", md: "40px" }}
                     zIndex={2}
                   >
                     <video
@@ -195,15 +204,19 @@ export function NewsSection() {
               {/* Bottom content */}
               <Box
                 bg={isDark ? colors.cardBg : "#0C2139"}
-                borderTopRadius="20px"
-                mt={-32}
-                p={8}
+                borderTopRadius={{ base: "16px", md: "20px" }}
+                mt={{ base: -24, md: -32 }}
+                p={{ base: 6, md: 8 }}
                 boxShadow={colors.shadow.md}
               >
-                <Flex justify="space-between" align="flex-end" height="20vh">
+                <Flex
+                  justify="space-between"
+                  align="flex-end"
+                  height={{ base: "15vh", md: "20vh" }}
+                >
                   <Box lineHeight="1.2">
                     <Text
-                      fontSize={{ base: "2xl", md: "3xl" }}
+                      fontSize={{ base: "xl", sm: "2xl", md: "3xl" }}
                       fontWeight="bold"
                       mb={1}
                       color="white"
@@ -212,7 +225,7 @@ export function NewsSection() {
                       홍보영상
                     </Text>
                     <Text
-                      fontSize={{ base: "sm", md: "md" }}
+                      fontSize={{ base: "xs", sm: "sm", md: "md" }}
                       color="whiteAlpha.900"
                       letterSpacing="tight"
                     >
@@ -222,7 +235,7 @@ export function NewsSection() {
                   <Image
                     src="/images/logo/logo2.png"
                     alt="부산창업기꿈"
-                    width={{ base: "80px", md: "100px" }}
+                    width={{ base: "60px", sm: "80px", md: "100px" }}
                     height="auto"
                   />
                 </Flex>

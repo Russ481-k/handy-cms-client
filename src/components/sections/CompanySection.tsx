@@ -9,6 +9,7 @@ import {
   Flex,
   Icon,
   Link,
+  Separator,
 } from "@chakra-ui/react";
 import { LuArrowRight } from "react-icons/lu";
 
@@ -37,7 +38,8 @@ const CompanyCard = ({
       borderRadius="2xl"
       overflow="hidden"
       position="relative"
-      height={isLarge ? "full" : "320px"}
+      height={{ base: "auto", md: isLarge ? "full" : "320px" }}
+      minHeight={{ base: "280px", md: isLarge ? "full" : "320px" }}
       cursor="pointer"
       transition="all 0.2s"
       _hover={{
@@ -79,18 +81,18 @@ const CompanyCard = ({
       />
 
       {/* Content Wrapper */}
-      <Box position="relative" zIndex={2} height="100%" p={8}>
+      <Box position="relative" zIndex={2} height="100%" p={{ base: 4, md: 8 }}>
         {/* Tags */}
-        <Flex gap={2} mb={6}>
+        <Flex gap={2} mb={{ base: 4, md: 6 }} flexWrap="wrap">
           {tags.map((tag, index) => (
             <Box
               key={index}
               bg="whiteAlpha.900"
               color="gray.700"
-              fontSize="sm"
+              fontSize={{ base: "xs", md: "sm" }}
               fontWeight="medium"
               borderRadius="full"
-              px={3}
+              px={{ base: 2, md: 3 }}
               py={1}
             >
               #{tag}
@@ -102,7 +104,10 @@ const CompanyCard = ({
         <Box>
           <Heading
             as="h2"
-            fontSize={isLarge ? "3xl" : "2xl"}
+            fontSize={{
+              base: isLarge ? "2xl" : "xl",
+              md: isLarge ? "3xl" : "2xl",
+            }}
             fontWeight="bold"
             mb={2}
             color={imageUrl ? "white" : isLarge ? "blue.900" : "gray.900"}
@@ -111,11 +116,11 @@ const CompanyCard = ({
             {title}
           </Heading>
           <Text
-            fontSize={isLarge ? "lg" : "md"}
+            fontSize={{ base: "sm", md: isLarge ? "lg" : "md" }}
             color={
               imageUrl ? "whiteAlpha.900" : isLarge ? "blue.700" : "gray.600"
             }
-            mb={isLarge ? 8 : 4}
+            mb={{ base: isLarge ? 4 : 2, md: isLarge ? 8 : 4 }}
             lineHeight="1.5"
           >
             {description}
@@ -153,7 +158,10 @@ const CompanyCard = ({
                 borderRadius="full"
                 px={4}
                 py={2}
-                _hover={{ transform: "translateX(4px)", bg: "blue.600" }}
+                _hover={{
+                  transform: "translateX(4px)",
+                  border: "1px solid blue.600",
+                }}
               >
                 {buttonText}
                 <Box as={LuArrowRight} ml={2} boxSize={5} />
@@ -168,41 +176,48 @@ const CompanyCard = ({
 
 export function CompanySection() {
   return (
-    <Box py={20}>
-      <Container maxW="container.xl" px={0}>
+    <Box py={{ base: 12, md: 24 }}>
+      <Container maxW="container.xl">
         {/* Section Header */}
-        <Box mb={16} px={6}>
+        <Box mb={{ base: 8, md: 16 }} px={{ base: 4, md: 6 }}>
           <Text
             color="blue.500"
-            fontSize="xl"
+            fontSize={{ base: "lg", md: "xl" }}
             fontWeight="semibold"
-            mb={3}
+            mb={{ base: 4, md: 6 }}
             letterSpacing="tight"
           >
             Introduction to Resident Enterprises
           </Text>
           <Heading
             as="h2"
-            fontSize="4xl"
+            fontSize={{ base: "3xl", md: "4xl" }}
             fontWeight="bold"
-            mb={6}
+            mb={{ base: 4, md: 6 }}
             letterSpacing="tight"
+            color="#0D344E"
           >
             혁신을 만드는 공간
           </Heading>
-          <Text fontSize="lg" color="gray.600" mb={8} lineHeight="1.7">
+          <Text
+            fontSize={{ base: "sm", md: "md" }}
+            fontWeight="bold"
+            color="#0D344E"
+            mb={{ base: 4, md: 6 }}
+            lineHeight="1.7"
+          >
             미래를 선도하는 스타트업이 한자리에!
             <br />
             지금, 창업의 중심에서 성장하는 기업들을 만나보세요
           </Text>
-          <Box width="100%" height="1px" bg="gray.200" />
+          <Separator />
         </Box>
 
         {/* Cards Grid */}
         <Grid
-          templateColumns="1.6fr 1fr 1fr"
-          templateRows="repeat(2, 320px)"
-          gap={6}
+          templateColumns={{ base: "1fr", md: "1.6fr 1fr 1fr" }}
+          templateRows={{ base: "repeat(4, auto)", md: "repeat(2, 320px)" }}
+          gap={{ base: 4, md: 6 }}
           px={0}
         >
           {/* Large Card */}
