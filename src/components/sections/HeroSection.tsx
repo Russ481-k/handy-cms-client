@@ -88,7 +88,7 @@ export function HeroSection() {
   };
 
   return (
-    <Box px={0} py={8}>
+    <Box px={0} py={24}>
       <Container maxW="1920px">
         <Box
           position="relative"

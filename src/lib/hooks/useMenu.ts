@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Menu } from "@/types/menu";
 import { fetchMenus } from "@/lib/api/menu";
+import { usePathname } from "next/navigation";
 
 interface UseMenuOptions {
   autoFetch?: boolean; // 자동으로 메뉴를 가져올지 여부
@@ -11,17 +12,18 @@ interface UseMenuReturn {
   menus: Menu[];
   isLoading: boolean;
   error: Error | null;
-  refetch: () => Promise<void>; // 메뉴를 수동으로 다시 가져오는 함수
+  getMenus: () => Promise<void>; // 메뉴를 수동으로 다시 가져오는 함수
 }
 
-export function useMenu(options: UseMenuOptions = {}): UseMenuReturn {
-  const { autoFetch = true, initialData = [] } = options;
-  const [menus, setMenus] = useState<Menu[]>(initialData);
-  const [isLoading, setIsLoading] = useState(autoFetch);
+export function useMenu({
+  autoFetch = true,
+}: UseMenuOptions = {}): UseMenuReturn {
+  const [menus, setMenus] = useState<Menu[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const pathname = usePathname();
 
-  // 메뉴를 가져오는 함수
-  const fetchMenuData = async () => {
+  const getMenus = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -32,19 +34,19 @@ export function useMenu(options: UseMenuOptions = {}): UseMenuReturn {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  // 컴포넌트가 마운트될 때 자동으로 메뉴를 가져옴
+  // 컴포넌트가 마운트되거나 경로가 변경될 때 자동으로 메뉴를 가져옴
   useEffect(() => {
     if (autoFetch) {
-      fetchMenuData();
+      getMenus();
     }
-  }, [autoFetch]);
+  }, [autoFetch, getMenus, pathname]);
 
   return {
     menus,
     isLoading,
     error,
-    refetch: fetchMenuData,
+    getMenus,
   };
 }

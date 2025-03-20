@@ -13,7 +13,7 @@ import {
 } from "@chakra-ui/react";
 import { useColorMode } from "@/components/ui/color-mode";
 import Image from "next/image";
-import { useMemo, useRef, useState, useEffect } from "react";
+import { useMemo, useRef, useState, useEffect, memo } from "react";
 import NextLink from "next/link";
 import { MenuItem } from "./MenuItem";
 import { createMenuTree } from "../../../app/cms/utils/menuTree";
@@ -25,7 +25,13 @@ interface HeaderProps {
   menus: Menu[];
 }
 
-export function Header({ currentPage, menus }: HeaderProps) {
+// MenuItem을 메모이제이션하여 props가 변경되지 않으면 리렌더링되지 않도록 함
+const MemoizedMenuItem = memo(MenuItem);
+
+export const Header = memo(function Header({
+  currentPage,
+  menus,
+}: HeaderProps) {
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
   const [isNavHovered, setIsNavHovered] = useState(false);
@@ -94,7 +100,7 @@ export function Header({ currentPage, menus }: HeaderProps) {
       overflow="hidden"
     >
       <Container p={0} transition="all 0.3s" m={0} w="100%" maxW="100%">
-        <Grid templateColumns="200px 1fr auto" gap={4}>
+        <Grid templateColumns="200px 1fr 200px" gap={0}>
           <GridItem w="200px">
             <Flex py={3} align="center">
               <Link
@@ -129,7 +135,7 @@ export function Header({ currentPage, menus }: HeaderProps) {
                 mx="auto"
               >
                 {rootMenus.map((menu) => (
-                  <MenuItem
+                  <MemoizedMenuItem
                     key={menu.id}
                     menu={menu}
                     isNavHovered={isNavHovered || isMenuOpen}
@@ -142,51 +148,23 @@ export function Header({ currentPage, menus }: HeaderProps) {
             </Flex>
           </GridItem>
 
-          <GridItem w="200px" textAlign="right">
-            <Button
-              aria-label="Toggle Menu"
-              variant="ghost"
-              size="md"
-              color={isDark ? "gray.300" : "gray.600"}
-              position="relative"
-              bg={
-                isMenuOpen
-                  ? isDark
-                    ? "whiteAlpha.100"
-                    : "blackAlpha.50"
-                  : "transparent"
-              }
-              _hover={{
-                bg: isDark ? "whiteAlpha.200" : "blackAlpha.100",
-                color: isDark ? "blue.200" : "blue.500",
-              }}
-              _focus={{
-                boxShadow: "none",
-                bg: isDark ? "whiteAlpha.100" : "blackAlpha.50",
-                color: isDark ? "blue.200" : "blue.500",
-                outline: "none",
-                border: "none",
-              }}
-              _active={{
-                bg: "transparent",
-              }}
-              transform={isMenuOpen ? "scale(1.1)" : "scale(1)"}
-              transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-              onClick={toggleMenu}
-              borderRadius={0}
-              w="60px"
-              h="60px"
-            >
-              <Icon
-                as={GiHamburgerMenu}
-                boxSize={5}
-                transition="transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
-                transform={isMenuOpen ? "rotate(180deg)" : "rotate(0)"}
-              />
-            </Button>
+          <GridItem>
+            <Flex py={3} align="center" justify="flex-end">
+              <Button
+                variant="ghost"
+                display={{ base: "flex", md: "none" }}
+                onClick={toggleMenu}
+                aria-label="Toggle menu"
+                p={2}
+                _hover={{ bg: "transparent" }}
+                _active={{ bg: "transparent" }}
+              >
+                <Icon as={GiHamburgerMenu} boxSize={6} />
+              </Button>
+            </Flex>
           </GridItem>
         </Grid>
       </Container>
     </Box>
   );
-}
+});

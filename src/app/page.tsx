@@ -2,7 +2,6 @@
 
 import { Box } from "@chakra-ui/react";
 import { useColorMode } from "@/components/ui/color-mode";
-import { useMenu } from "@/lib/hooks/useMenu";
 
 // Layout Components
 import { Layout } from "@/components/layout/view/Layout";
@@ -21,21 +20,8 @@ export default function Home() {
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
 
-  // useMenu 훅 사용
-  const { menus, isLoading, error } = useMenu({
-    autoFetch: true, // 컴포넌트가 마운트될 때 자동으로 메뉴를 가져옴
-  });
-
-  if (isLoading) {
-    return <div>Loading...</div>; // 로딩 상태 표시
-  }
-
-  if (error) {
-    return <div>Error: {error.message}</div>; // 에러 상태 표시
-  }
-
   return (
-    <Layout currentPage="홈" menus={menus}>
+    <Layout currentPage="홈">
       <Global styles={getScrollbarStyle(isDark)} />
 
       <Box
