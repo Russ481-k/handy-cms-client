@@ -1,5 +1,8 @@
 // Authentication service for JWT token management
 
+import { api } from "@/lib/api-client";
+import { User } from "@/types/api";
+
 // Types
 export interface LoginCredentials {
   username: string;
@@ -8,13 +11,7 @@ export interface LoginCredentials {
 
 export interface AuthResponse {
   token: string;
-  user: {
-    uuid: string;
-    username: string;
-    name: string;
-    email: string;
-    role: string;
-  };
+  user: User;
 }
 
 // Constants
@@ -38,11 +35,11 @@ export const removeAuthToken = (): void => {
   localStorage.removeItem(USER_KEY);
 };
 
-export const setUser = (user: AuthResponse["user"]): void => {
+export const setUser = (user: User): void => {
   localStorage.setItem(USER_KEY, JSON.stringify(user));
 };
 
-export const getUser = (): AuthResponse["user"] | null => {
+export const getUser = (): User | null => {
   if (typeof window !== "undefined") {
     const userStr = localStorage.getItem(USER_KEY);
     if (userStr) {
@@ -61,27 +58,17 @@ export const login = async (
   credentials: LoginCredentials
 ): Promise<AuthResponse> => {
   try {
-    // Replace with your actual API endpoint
-    const response = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(credentials),
-    });
+    const response = await api.private.login(credentials);
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || "Login failed");
+    if (!response.data) {
+      throw new Error(response.message || "Login failed");
     }
 
-    const data: AuthResponse = await response.json();
-
     // Store auth data
-    setAuthToken(data.token);
-    setUser(data.user);
+    setAuthToken(response.data.token);
+    setUser(response.data.user);
 
-    return data;
+    return response.data;
   } catch (error) {
     console.error("Login error:", error);
     throw error;
@@ -102,3 +89,7 @@ export function getAuthHeader() {
     Authorization: `Bearer ${token}`,
   };
 }
+
+export const removeUser = () => {
+  localStorage.removeItem(USER_KEY);
+};

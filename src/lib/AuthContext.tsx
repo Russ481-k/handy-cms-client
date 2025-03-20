@@ -8,15 +8,8 @@ import React, {
   useCallback,
 } from "react";
 import { useRouter, usePathname } from "next/navigation";
-
-interface User {
-  uuid: string;
-  username: string;
-  name: string;
-  email: string;
-  role: string;
-  avatar?: string;
-}
+import { api } from "@/lib/api-client";
+import { User } from "@/types/api";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -82,32 +75,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (username: string, password: string) => {
     try {
-      // API 호출
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      });
+      const response = await api.private.login({ username, password });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        setIsAuthenticated(true);
-        setUser(data.user);
-        return {
-          success: true,
-          user: data.user,
-        };
-      } else {
+      if (!response.data) {
         return {
           success: false,
-          message: data.message || "로그인에 실패했습니다.",
+          message: response.message || "로그인에 실패했습니다.",
         };
       }
+
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      setIsAuthenticated(true);
+      setUser(response.data.user);
+
+      return {
+        success: true,
+        user: response.data.user,
+      };
     } catch (error) {
       console.error("Login error:", error);
       return {

@@ -4,6 +4,7 @@ import { Breadcrumb, Box, Flex } from "@chakra-ui/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useColors } from "@/styles/theme";
+import React from "react";
 
 const routeMap: { [key: string]: string } = {
   about: "소개",
@@ -50,7 +51,8 @@ export function BreadcrumbNav() {
 
   return (
     <Box
-      py={20}
+      pt={20}
+      pb={6}
       px={{ base: 4, md: 8 }}
       bg={colors.bg}
       borderBottom="1px"
@@ -61,7 +63,7 @@ export function BreadcrumbNav() {
           <Breadcrumb.List>
             <Breadcrumb.Item>
               <Breadcrumb.Link as={Link} href="/" {...linkStyles}>
-                홈
+                Home
               </Breadcrumb.Link>
             </Breadcrumb.Item>
 
@@ -72,8 +74,8 @@ export function BreadcrumbNav() {
               const label = routeMap[path] || path;
 
               return (
-                <>
-                  <Breadcrumb.Separator key={`separator-${path}`}>
+                <React.Fragment key={`separator-${path}`}>
+                  <Breadcrumb.Separator>
                     <Box
                       as="span"
                       color="gray.400"
@@ -84,7 +86,7 @@ export function BreadcrumbNav() {
                       /
                     </Box>
                   </Breadcrumb.Separator>
-                  <Breadcrumb.Item key={path}>
+                  <Breadcrumb.Item>
                     {isLast ? (
                       <Breadcrumb.CurrentLink
                         color={colors.text.primary}
@@ -99,7 +101,7 @@ export function BreadcrumbNav() {
                       </Breadcrumb.Link>
                     )}
                   </Breadcrumb.Item>
-                </>
+                </React.Fragment>
               );
             })}
           </Breadcrumb.List>

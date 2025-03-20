@@ -9,9 +9,9 @@ import {
 } from "@chakra-ui/react";
 import { LuArrowRight, LuChevronLeft, LuChevronRight } from "react-icons/lu";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
-const MotionBox = motion(Box);
+const MotionBox = motion.create(Box);
 
 interface SlideContent {
   title: string;
@@ -20,7 +20,7 @@ interface SlideContent {
 }
 
 export function HeroSection() {
-  const [[page, direction], setPage] = useState([0, 0]);
+  const [currentPage, setCurrentPage] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
   const slideContents: SlideContent[] = [
@@ -48,24 +48,27 @@ export function HeroSection() {
     return Math.abs(offset) * velocity;
   };
 
-  const paginate = (newDirection: number) => {
-    if (isAnimating) return;
-    setIsAnimating(true);
-    setPage(([prevPage]) => {
-      const nextPage = prevPage + newDirection;
-      if (nextPage < 0) return [slideContents.length - 1, newDirection];
-      if (nextPage >= slideContents.length) return [0, newDirection];
-      return [nextPage, newDirection];
-    });
-  };
+  const paginate = useCallback(
+    (newDirection: number) => {
+      if (isAnimating) return;
+      setIsAnimating(true);
+      setCurrentPage((prevPage) => {
+        const nextPage = prevPage + newDirection;
+        if (nextPage < 0) return slideContents.length - 1;
+        if (nextPage >= slideContents.length) return 0;
+        return nextPage;
+      });
+    },
+    [isAnimating, slideContents.length]
+  );
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      paginate(1);
-    }, 5000);
+    const timer = setTimeout(() => {
+      setIsAnimating(false);
+    }, 500);
 
-    return () => clearInterval(timer);
-  }, [paginate]);
+    return () => clearTimeout(timer);
+  }, [currentPage]);
 
   const variants = {
     enter: (direction: number) => ({
@@ -121,7 +124,7 @@ export function HeroSection() {
                 left={0}
                 top={0}
                 height="100%"
-                width={`${((page + 1) / slideContents.length) * 100}%`}
+                width={`${((currentPage + 1) / slideContents.length) * 100}%`}
                 bg="blue.500"
                 transition="width 0.3s ease"
               />
@@ -131,7 +134,7 @@ export function HeroSection() {
             <Flex align="center" gap={6} ml={8}>
               <Flex align="center" gap={3}>
                 <Text color="gray.900" fontSize="xl" fontWeight="bold">
-                  {String(page + 1).padStart(2, "0")}
+                  {String(currentPage + 1).padStart(2, "0")}
                 </Text>
                 <Box w="1px" h="20px" bg="gray.200" />
                 <Text color="gray.400" fontSize="xl">
@@ -167,10 +170,10 @@ export function HeroSection() {
             </Flex>
           </Box>
 
-          <AnimatePresence initial={false} custom={direction}>
+          <AnimatePresence initial={false} custom={currentPage}>
             <MotionBox
-              key={page}
-              custom={direction}
+              key={currentPage}
+              custom={currentPage}
               variants={variants}
               initial="enter"
               animate="center"
@@ -193,7 +196,7 @@ export function HeroSection() {
               position="absolute"
               width="100%"
               height="100%"
-              backgroundImage={`url(${slideContents[page].image})`}
+              backgroundImage={`url(${slideContents[currentPage].image})`}
               backgroundSize="cover"
               backgroundPosition="center"
               onAnimationComplete={() => setIsAnimating(false)}
@@ -219,7 +222,7 @@ export function HeroSection() {
                     color="#0D344E"
                     lineHeight="1.2"
                   >
-                    {slideContents[page].title}
+                    {slideContents[currentPage].title}
                   </Heading>
                   <Text
                     fontSize={{ base: "md", sm: "lg", md: "xl" }}
@@ -229,7 +232,7 @@ export function HeroSection() {
                     lineHeight="1.6"
                     whiteSpace="pre-line"
                   >
-                    {slideContents[page].subtitle}
+                    {slideContents[currentPage].subtitle}
                   </Text>
                   <Flex
                     gap={4}

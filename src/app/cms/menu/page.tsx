@@ -13,6 +13,8 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { getAuthHeader } from "@/lib/auth";
 import { toaster } from "@/components/ui/toaster";
 import { Main } from "@/components/layout/view/Main";
+import { api } from "@/lib/api-client";
+import { MenuData } from "@/types/api";
 
 export interface Menu {
   id: number;
@@ -61,33 +63,18 @@ export default function MenuManagementPage() {
   const refreshMenus = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/cms/menu", {
-        headers: getAuthHeader(),
-      });
-      if (!response.ok) {
+      const response = await api.private.getCmsMenus();
+      if (!response.data) {
         throw new Error("Failed to fetch menus");
       }
-      const data = await response.json();
-      console.log("API Response:", data);
-
-      // 메뉴를 sortOrder 기준으로 정렬
-      const sortMenus = (menus: Menu[]): Menu[] => {
-        const sorted = menus
-          .sort((a, b) => a.sortOrder - b.sortOrder)
-          .map((menu) => ({
-            ...menu,
-            children: menu.children ? sortMenus(menu.children) : [],
-          }));
-        console.log("Sorted menus:", sorted);
-        return sorted;
-      };
-
-      const sortedMenus = sortMenus(data);
-      console.log("Final menus:", sortedMenus);
-      setMenus(sortedMenus);
+      console.log("API Response:", response.data);
+      setMenus(response.data);
     } catch (error) {
       console.error("Error fetching menus:", error);
-      alert("메뉴 목록을 불러오는데 실패했습니다.");
+      toaster.error({
+        title: "메뉴 목록을 불러오는데 실패했습니다.",
+        duration: 3000,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -135,37 +122,25 @@ export default function MenuManagementPage() {
     setParentMenuId(null);
   };
 
-  const handleSubmit = async (
-    menuData: Omit<Menu, "id" | "createdAt" | "updatedAt">
-  ) => {
+  const handleSubmit = async (menuData: MenuData) => {
     try {
-      const url = selectedMenu
-        ? `/api/cms/menu/${selectedMenu.id}`
-        : "/api/cms/menu";
-      const method = selectedMenu ? "PUT" : "POST";
-
-      // 새 메뉴 추가 시 부모 메뉴 ID 설정
-      const menuDataWithParent = {
-        ...menuData,
-        parentId: selectedMenu ? menuData.parentId : parentMenuId,
-      };
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          ...getAuthHeader(),
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(menuDataWithParent),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save menu");
+      if (selectedMenu) {
+        const response = await api.private.updateCmsMenu(
+          selectedMenu.id.toString(),
+          menuData
+        );
+        if (!response.data) {
+          throw new Error("Failed to update menu");
+        }
+      } else {
+        const response = await api.private.createCmsMenu(menuData);
+        if (!response.data) {
+          throw new Error("Failed to create menu");
+        }
       }
 
       await refreshMenus();
       setSelectedMenu(null);
-      setParentMenuId(null); // 부모 메뉴 ID 초기화
       toaster.create({
         title: selectedMenu
           ? "메뉴가 수정되었습니다."
