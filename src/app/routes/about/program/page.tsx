@@ -10,148 +10,261 @@ import {
   Icon,
 } from "@chakra-ui/react";
 import {
-  FaLightbulb,
   FaGraduationCap,
-  FaChartLine,
   FaUsers,
+  FaChartLine,
+  FaLaptop,
+  FaPalette,
   FaHandshake,
+  FaRegLightbulb,
+  FaHeartbeat,
+  FaBullseye,
+  FaRegBuilding,
+  FaNetworkWired,
+  FaRegComments,
 } from "react-icons/fa";
 import { useColorMode } from "@/components/ui/color-mode";
 import { Card } from "@chakra-ui/react";
+import { useColors } from "@/styles/theme";
+import { motion } from "framer-motion";
+
+const MotionBox = motion(Box);
+const MotionCard = motion(Card.Root);
 
 export default function ProgramPage() {
-  const { colorMode } = useColorMode();
-  const isDark = colorMode === "dark";
+  const colors = useColors();
+
+  const cardBg = colors.cardBg;
+  const borderColor = colors.border;
+  const textColor = colors.text.primary;
+  const headingColor = colors.primary.default;
+  const iconColors = {
+    green: colors.accent.success.default,
+    purple: colors.secondary.default,
+    blue: colors.primary.default,
+  };
+
+  const cardStyle = {
+    bg: cardBg,
+    borderWidth: "1px",
+    borderColor: borderColor,
+    boxShadow: "lg",
+    p: 8,
+    transition: "all 0.3s ease-in-out",
+    _hover: {
+      transform: "translateY(-4px)",
+      boxShadow: "xl",
+      borderColor: colors.primary.default,
+    },
+  };
+
+  const headingStyle = {
+    display: "flex",
+    alignItems: "center",
+    gap: 3,
+    mb: 6,
+    color: headingColor,
+  };
+
+  const subHeadingStyle = {
+    display: "flex",
+    alignItems: "center",
+    gap: 2,
+    mb: 4,
+    color: headingColor,
+  };
 
   return (
     <Container maxW="container.xl" py={16}>
-      <VStack gap={12} align="stretch">
-        <Box textAlign="center">
+      <VStack gap={16} align="stretch">
+        <MotionBox
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          textAlign="center"
+        >
           <Heading
             as="h1"
             size="2xl"
             mb={4}
-            bgGradient="linear(to-r, blue.500, purple.500)"
+            bgGradient={colors.gradient.primary}
             bgClip="text"
           >
-            성공적인 창업을 위한 맞춤형 교육 프로그램
+            창업가꿈 주요프로그램
           </Heading>
-          <Text fontSize="xl" color={isDark ? "gray.300" : "gray.600"}>
-            창업 준비부터 실행까지, 전문가와 함께하는 체계적인 교육
+          <Text fontSize="xl" color={textColor}>
+            성공적인 창업을 위한 체계적인 지원 프로그램
           </Text>
-        </Box>
+        </MotionBox>
 
-        <SimpleGrid columns={{ base: 1, md: 2 }} gap={8}>
-          <Card.Root
-            bg={isDark ? "gray.800" : "white"}
-            borderWidth="1px"
-            borderColor={isDark ? "gray.700" : "gray.200"}
-            boxShadow="lg"
-          >
-            <Card.Body gap={4}>
-              <Icon as={FaGraduationCap} w={8} h={8} color="blue.500" />
-              <Heading size="lg">기초 교육</Heading>
-              <Text color={isDark ? "gray.300" : "gray.600"}>
-                창업의 기초를 다지는 필수 교육 과정
-              </Text>
-              <Box gap={2}>
-                <Box display="flex" alignItems="center">
-                  <Icon as={FaChartLine} color="blue.500" />
-                  <Text>창업 기초 이론</Text>
-                </Box>
-                <Box display="flex" alignItems="center">
-                  <Icon as={FaUsers} color="blue.500" />
-                  <Text>시장 분석 및 리서치</Text>
-                </Box>
-                <Box display="flex" alignItems="center">
-                  <Icon as={FaHandshake} color="blue.500" />
-                  <Text>비즈니스 모델 설계</Text>
+        {/* 1. 갓생 클래쓰 */}
+        <MotionCard
+          {...cardStyle}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <VStack align="stretch" gap={6}>
+            <Heading as="h2" size="xl" {...headingStyle}>
+              <Icon as={FaHeartbeat} color={iconColors.blue} boxSize={8} />
+              1. 갓생 클래쓰
+            </Heading>
+            <SimpleGrid columns={{ base: 1, md: 2 }} gap={8}>
+              <Box>
+                <Heading as="h3" size="md" {...subHeadingStyle}>
+                  <Icon as={FaRegLightbulb} color={iconColors.green} />
+                  생활 복지 프로그램
+                </Heading>
+                <Text color={textColor}>
+                  창업·주거 외에도 청년들에게 필요한 생활·문화·복지 프로그램
+                  제공
+                </Text>
+              </Box>
+              <Box>
+                <Heading as="h3" size="md" {...subHeadingStyle}>
+                  <Icon as={FaBullseye} color={iconColors.green} />
+                  헬스케어 & 자기계발 지원
+                </Heading>
+                <Text color={textColor}>
+                  건강 관리, 역량 개발 등 연계 프로그램 지원
+                </Text>
+              </Box>
+            </SimpleGrid>
+          </VStack>
+        </MotionCard>
+
+        {/* 2. 그로우업 Program */}
+        <MotionCard
+          {...cardStyle}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          <VStack align="stretch" gap={6}>
+            <Heading as="h2" size="xl" {...headingStyle}>
+              <Icon as={FaChartLine} color={iconColors.blue} boxSize={8} />
+              2. 그로우업 (GROW-UP) Program
+            </Heading>
+            <SimpleGrid columns={{ base: 1, md: 2 }} gap={8}>
+              <Box>
+                <Heading as="h3" size="md" {...subHeadingStyle}>
+                  <Icon as={FaGraduationCap} color={iconColors.purple} />
+                  전문 멘토링 & 창업교육
+                </Heading>
+                <Box gap={2} color={textColor}>
+                  <li>• 기술, 마케팅, 회계·법률 등 분야별 전문가 멘토링</li>
+                  <li>• 아이디어 검증부터 사업화까지 단계적 창업교육</li>
                 </Box>
               </Box>
-            </Card.Body>
-          </Card.Root>
+              <Box>
+                <Heading as="h3" size="md" {...subHeadingStyle}>
+                  <Icon as={FaPalette} color={iconColors.purple} />
+                  BI/CI 및 웹 지원
+                </Heading>
+                <Text color={textColor}>홈페이지, BI/CI(브랜딩) 제작 지원</Text>
+              </Box>
+              <Box>
+                <Heading as="h3" size="md" {...subHeadingStyle}>
+                  <Icon as={FaLaptop} color={iconColors.purple} />
+                  맞춤형 진단 & 시제품 제작
+                </Heading>
+                <Text color={textColor}>
+                  청년 창업가의 요구에 맞춘 프로그램 설계 및 시제품 제작
+                </Text>
+              </Box>
+              <Box>
+                <Heading as="h3" size="md" {...subHeadingStyle}>
+                  <Icon as={FaUsers} color={iconColors.purple} />
+                  소비자 반응조사 & 사업화 패키지 연계
+                </Heading>
+                <Text color={textColor}>
+                  시장 검증 및 후속 지원 프로그램 연계 운영
+                </Text>
+              </Box>
+            </SimpleGrid>
+          </VStack>
+        </MotionCard>
 
-          <Card.Root
-            bg={isDark ? "gray.800" : "white"}
-            borderWidth="1px"
-            borderColor={isDark ? "gray.700" : "gray.200"}
-            boxShadow="lg"
-          >
-            <Card.Body gap={4}>
-              <Icon as={FaLightbulb} w={8} h={8} color="purple.500" />
-              <Heading size="lg">실전 교육</Heading>
-              <Text color={isDark ? "gray.300" : "gray.600"}>
-                실제 창업 과정에서 필요한 실무 교육
-              </Text>
-              <Box gap={2}>
-                <Box display="flex" alignItems="center">
-                  <Icon as={FaChartLine} color="purple.500" />
-                  <Text>재무 관리 및 자금 운용</Text>
-                </Box>
-                <Box display="flex" alignItems="center">
-                  <Icon as={FaUsers} color="purple.500" />
-                  <Text>마케팅 전략 수립</Text>
-                </Box>
-                <Box display="flex" alignItems="center">
-                  <Icon as={FaHandshake} color="purple.500" />
-                  <Text>고객 관리 및 서비스</Text>
+        {/* 3. 스케일업 Program */}
+        <MotionCard
+          {...cardStyle}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+        >
+          <VStack align="stretch" gap={6}>
+            <Heading as="h2" size="xl" {...headingStyle}>
+              <Icon as={FaRegBuilding} color={iconColors.blue} boxSize={8} />
+              3. 스케일업 (SCALE-UP) Program
+            </Heading>
+            <SimpleGrid columns={{ base: 1, md: 2 }} gap={8}>
+              <Box>
+                <Heading as="h3" size="md" {...subHeadingStyle}>
+                  <Icon as={FaNetworkWired} color={iconColors.blue} />
+                  정기 네트워킹 & 신기술 Lab 운영
+                </Heading>
+                <Text color={textColor}>
+                  교류·협업을 위한 네트워킹 행사와 신기술 체험 Lab 운영
+                </Text>
+              </Box>
+              <Box>
+                <Heading as="h3" size="md" {...subHeadingStyle}>
+                  <Icon as={FaRegComments} color={iconColors.blue} />
+                  신기술 체험 공간조성
+                </Heading>
+                <Box gap={2} color={textColor}>
+                  <li>
+                    • 청년의 감각으로 재해석한 플래그십 스토어 형태의 복합 문화
+                    공간
+                  </li>
+                  <li>
+                    • 특화존 구성: 3D/홀로그램, XR, 라이프스타일, AI 인공지능 등
+                  </li>
                 </Box>
               </Box>
-            </Card.Body>
-          </Card.Root>
-        </SimpleGrid>
+              <Box>
+                <Heading as="h3" size="md" {...subHeadingStyle}>
+                  <Icon as={FaHandshake} color={iconColors.blue} />
+                  지역 문화 연계 프로그램
+                </Heading>
+                <Text color={textColor}>
+                  지역 행사와의 협업을 통한 참여 독려 및 시너지 창출
+                </Text>
+              </Box>
+              <Box>
+                <Heading as="h3" size="md" {...subHeadingStyle}>
+                  <Icon as={FaChartLine} color={iconColors.blue} />
+                  투자(엑셀러레이팅) 아카데미
+                </Heading>
+                <Text color={textColor}>
+                  투자유치 기회 제공 및 전문가 네트워크 연계
+                </Text>
+              </Box>
+            </SimpleGrid>
+          </VStack>
+        </MotionCard>
 
-        <Box>
-          <Heading size="xl" mb={6} textAlign="center">
-            교육 프로그램 특징
+        {/* 문의 섹션 */}
+        <MotionBox
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.8 }}
+          mt={12}
+          p={6}
+          bg={cardBg}
+          borderRadius="lg"
+          borderWidth="1px"
+          borderColor={borderColor}
+        >
+          <Heading as="h2" size="lg" mb={4} color={headingColor}>
+            더 궁금하신 점이 있으신가요?
           </Heading>
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={6}>
-            <Card.Root
-              bg={isDark ? "gray.800" : "white"}
-              borderWidth="1px"
-              borderColor={isDark ? "gray.700" : "gray.200"}
-              boxShadow="lg"
-            >
-              <Card.Body gap={3}>
-                <Icon as={FaUsers} w={6} h={6} color="blue.500" />
-                <Heading size="md">맞춤형 교육</Heading>
-                <Text color={isDark ? "gray.300" : "gray.600"}>
-                  창업가의 분야와 단계에 맞는 개별 맞춤형 교육 제공
-                </Text>
-              </Card.Body>
-            </Card.Root>
-
-            <Card.Root
-              bg={isDark ? "gray.800" : "white"}
-              borderWidth="1px"
-              borderColor={isDark ? "gray.700" : "gray.200"}
-              boxShadow="lg"
-            >
-              <Card.Body gap={3}>
-                <Icon as={FaHandshake} w={6} h={6} color="purple.500" />
-                <Heading size="md">멘토링</Heading>
-                <Text color={isDark ? "gray.300" : "gray.600"}>
-                  성공한 창업가와 전문가의 1:1 멘토링 지원
-                </Text>
-              </Card.Body>
-            </Card.Root>
-
-            <Card.Root
-              bg={isDark ? "gray.800" : "white"}
-              borderWidth="1px"
-              borderColor={isDark ? "gray.700" : "gray.200"}
-              boxShadow="lg"
-            >
-              <Card.Body gap={3}>
-                <Icon as={FaChartLine} w={6} h={6} color="green.500" />
-                <Heading size="md">네트워킹</Heading>
-                <Text color={isDark ? "gray.300" : "gray.600"}>
-                  창업가 간 네트워크 형성 및 협력 기회 제공
-                </Text>
-              </Card.Body>
-            </Card.Root>
-          </SimpleGrid>
-        </Box>
+          <Text fontSize="lg" color={textColor}>
+            이메일: info@changupgakkum.com
+            <br />
+            전화: 02-123-4567 (평일 09:00-18:00)
+          </Text>
+        </MotionBox>
       </VStack>
     </Container>
   );

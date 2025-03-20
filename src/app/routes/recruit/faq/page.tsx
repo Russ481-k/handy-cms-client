@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { Box, Container, Heading, Text, Input, Flex } from "@chakra-ui/react";
 import { FaSearch, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { useColors } from "@/styles/theme";
 
 export default function FAQPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
+  const colors = useColors();
 
   const faqs = [
     {
@@ -96,7 +98,7 @@ export default function FAQPage() {
         <Heading as="h1" size="2xl" mb={4}>
           자주 묻는 질문
         </Heading>
-        <Text color="gray.600" fontSize="lg" mb={8}>
+        <Text color={colors.text.primary} fontSize="lg" mb={8}>
           창업가꿈 프로그램에 대해 자주 묻는 질문들을 모았습니다.
         </Text>
 
@@ -106,7 +108,7 @@ export default function FAQPage() {
             left={4}
             top="50%"
             transform="translateY(-50%)"
-            color="gray.300"
+            color={colors.text.primary}
           >
             <FaSearch />
           </Box>
@@ -146,8 +148,8 @@ export default function FAQPage() {
                     justifyContent="space-between"
                     p={4}
                     onClick={() => toggleItem(categoryIndex, itemIndex)}
-                    bg={isOpen ? "gray.50" : "white"}
-                    _hover={{ bg: "gray.50" }}
+                    bg={isOpen ? colors.cardBg : colors.bg}
+                    _hover={{ bg: colors.cardBg }}
                     transition="all 0.2s"
                   >
                     <Text fontSize="lg" fontWeight="medium" textAlign="left">
@@ -155,7 +157,11 @@ export default function FAQPage() {
                     </Text>
                     <Box as={isOpen ? FaChevronUp : FaChevronDown} />
                   </Box>
-                  <Box p={4} bg="white" display={isOpen ? "block" : "none"}>
+                  <Box
+                    p={4}
+                    bg={colors.cardBg}
+                    display={isOpen ? "block" : "none"}
+                  >
                     <Text fontSize="lg">{item.answer}</Text>
                   </Box>
                 </Box>
@@ -165,7 +171,7 @@ export default function FAQPage() {
         </Box>
       ))}
 
-      <Box mt={12} p={6} bg="blue.50" borderRadius="lg">
+      <Box mt={12} p={6} bg={colors.cardBg} borderRadius="lg">
         <Heading as="h2" size="lg" mb={4}>
           더 궁금하신 점이 있으신가요?
         </Heading>

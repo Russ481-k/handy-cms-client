@@ -21,8 +21,8 @@ const companyData = {
     industry: "콘텐츠/미디어",
     foundedYear: "2022",
     teamSize: "15명",
-    logo: "/images/companies/today-story.png",
-    mainImage: "/images/companies/today-story-main.jpg",
+    logo: "/images/companies/todays_story.png",
+    mainImage: "/images/companies/todays_story.png",
     features: [
       "AI 기반 콘텐츠 추천 시스템",
       "크리에이터 협업 플랫폼",
@@ -57,8 +57,8 @@ const companyData = {
     industry: "푸드테크",
     foundedYear: "2021",
     teamSize: "20명",
-    logo: "/images/companies/samseontaek.png",
-    mainImage: "/images/companies/samseontaek-main.jpg",
+    logo: "/images/companies/samsunteck.png",
+    mainImage: "/images/companies/samsunteck.png",
     features: [
       "AI 수요 예측 시스템",
       "실시간 재고 관리",
@@ -76,7 +76,7 @@ const companyData = {
     foundedYear: "2022",
     teamSize: "18명",
     logo: "/images/companies/serora.png",
-    mainImage: "/images/companies/serora-main.jpg",
+    mainImage: "/images/companies/serora.png",
     features: [
       "24/7 건강 모니터링",
       "AI 기반 질병 예측",

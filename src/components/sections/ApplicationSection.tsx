@@ -10,7 +10,7 @@ import {
 import { useColors } from "@/styles/theme";
 import { LuArrowRight } from "react-icons/lu";
 import { useColorMode } from "@/components/ui/color-mode";
-
+import Link from "next/link";
 interface SupportItemProps {
   title: string;
   description: string;
@@ -163,8 +163,14 @@ export function ApplicationSection() {
                 direction={{ base: "column", md: "row" }}
                 width={{ base: "100%", md: "auto" }}
               >
-                <ActionButton variant="outline">모집공고 보러가기</ActionButton>
-                <ActionButton variant="solid">입주 신청하기</ActionButton>
+                <Link href="/routes/recruit/notice">
+                  <ActionButton variant="outline">
+                    모집공고 보러가기
+                  </ActionButton>
+                </Link>
+                <Link href="/routes/recruit/guide">
+                  <ActionButton variant="solid">입주 신청하기</ActionButton>
+                </Link>
               </Flex>
             </Flex>
 

@@ -1,8 +1,10 @@
 "use client";
 
+import { useColors } from "@/styles/theme";
 import { Box, Container, Heading, Text, Button, Badge } from "@chakra-ui/react";
 
 export default function NoticePage() {
+  const colors = useColors();
   const notices = [
     {
       id: 1,
@@ -29,10 +31,10 @@ export default function NoticePage() {
   return (
     <Container maxW="container.xl" py={10}>
       <Box mb={10}>
-        <Heading as="h1" size="2xl" mb={4}>
+        <Heading as="h1" size="2xl" mb={4} color={colors.text.primary}>
           모집공고
         </Heading>
-        <Text color="gray.600" fontSize="lg">
+        <Text color={colors.text.primary} fontSize="lg">
           창업가꿈에서 진행하는 다양한 모집 프로그램을 확인하세요.
         </Text>
       </Box>
@@ -42,7 +44,7 @@ export default function NoticePage() {
           key={notice.id}
           mb={8}
           p={6}
-          bg="white"
+          bg={colors.cardBg}
           borderRadius="lg"
           shadow="md"
           transition="all 0.3s"
@@ -73,28 +75,34 @@ export default function NoticePage() {
             <Text fontSize="lg" mb={4}>
               <strong>지원내용:</strong> {notice.support}
             </Text>
-            <Text fontSize="lg" color="gray.600">
+            <Text fontSize="lg" color={colors.text.primary}>
               {notice.description}
             </Text>
           </Box>
 
           <Box display="flex" gap={4}>
             <Button
-              colorScheme="blue"
+              variant="outline"
+              bg={colors.primary.default}
+              color={colors.text.primary}
               size="lg"
               disabled={notice.status !== "모집중"}
             >
               신청하기
             </Button>
-            <Button variant="outline" colorScheme="blue" size="lg">
+            <Button
+              bg={colors.primary.default}
+              color={colors.text.primary}
+              size="lg"
+            >
               상세보기
             </Button>
           </Box>
         </Box>
       ))}
 
-      <Box mt={12} p={6} bg="gray.50" borderRadius="lg">
-        <Heading as="h3" size="lg" mb={4}>
+      <Box mt={12} p={6} bg={colors.cardBg} borderRadius="lg">
+        <Heading as="h3" size="lg" mb={4} color={colors.text.primary}>
           지원 절차
         </Heading>
         <Box
@@ -108,7 +116,7 @@ export default function NoticePage() {
                 key={index}
                 flex="1"
                 p={4}
-                bg="white"
+                bg={colors.cardBg}
                 borderRadius="md"
                 textAlign="center"
                 position="relative"
@@ -123,11 +131,16 @@ export default function NoticePage() {
                   borderTop: "8px solid transparent",
                   borderBottom: "8px solid transparent",
                   borderLeft: "8px solid",
-                  borderLeftColor: "blue.500",
+                  borderLeftColor: colors.primary.default,
                   display: { base: "none", md: index === 3 ? "none" : "block" },
                 }}
               >
-                <Text fontSize="xl" fontWeight="bold" color="blue.500" mb={2}>
+                <Text
+                  fontSize="xl"
+                  fontWeight="bold"
+                  color={colors.primary.default}
+                  mb={2}
+                >
                   STEP {index + 1}
                 </Text>
                 <Text fontSize="lg">{step}</Text>

@@ -6,6 +6,7 @@ import {
   Flex,
   IconButton,
   Heading,
+  Link,
 } from "@chakra-ui/react";
 import { LuArrowRight, LuChevronLeft, LuChevronRight } from "react-icons/lu";
 import { motion, AnimatePresence } from "framer-motion";
@@ -240,44 +241,48 @@ export function HeroSection() {
                     flexDirection="column"
                     maxW="3xs"
                   >
-                    <Button
-                      size="md"
-                      variant="outline"
-                      color="blue.500"
-                      borderColor="blue.500"
-                      p={6}
-                      fontSize="lg"
-                      borderRadius="full"
-                      borderWidth={2}
-                      _hover={{
-                        transform: "translateX(10px)",
-                        bg: "transparent",
-                      }}
-                      transition="all 0.2s"
-                      justifyContent="space-between"
-                    >
-                      <Text fontWeight="bold">창업 신청하기</Text>
-                      <Box as={LuArrowRight} boxSize={4} />
-                    </Button>
-                    <Button
-                      size="md"
-                      variant="outline"
-                      color="#7A40DD"
-                      borderColor="#7A40DD"
-                      p={6}
-                      fontSize="lg"
-                      borderRadius="full"
-                      borderWidth={2}
-                      _hover={{
-                        transform: "translateX(10px)",
-                        bg: "transparent",
-                      }}
-                      transition="all 0.2s"
-                      justifyContent="space-between"
-                    >
-                      <Text fontWeight="bold">창업기관 소개</Text>
-                      <Box as={LuArrowRight} boxSize={4} />
-                    </Button>
+                    <Link href="/routes/recruit/guide">
+                      <Button
+                        size="md"
+                        variant="outline"
+                        color="blue.500"
+                        borderColor="blue.500"
+                        p={6}
+                        fontSize="lg"
+                        borderRadius="full"
+                        borderWidth={2}
+                        _hover={{
+                          transform: "translateX(10px)",
+                          bg: "transparent",
+                        }}
+                        transition="all 0.2s"
+                        justifyContent="space-between"
+                      >
+                        <Text fontWeight="bold">창업 신청하기</Text>
+                        <Box as={LuArrowRight} boxSize={4} />
+                      </Button>
+                    </Link>
+                    <Link href="/routes/about/vision">
+                      <Button
+                        size="md"
+                        variant="outline"
+                        color="#7A40DD"
+                        borderColor="#7A40DD"
+                        p={6}
+                        fontSize="lg"
+                        borderRadius="full"
+                        borderWidth={2}
+                        _hover={{
+                          transform: "translateX(10px)",
+                          bg: "transparent",
+                        }}
+                        transition="all 0.2s"
+                        justifyContent="space-between"
+                      >
+                        <Text fontWeight="bold">창업기관 소개</Text>
+                        <Box as={LuArrowRight} boxSize={4} />
+                      </Button>
+                    </Link>
                   </Flex>
                 </Flex>
               </Container>

@@ -9,6 +9,12 @@ html {
   overflow-x: hidden;
 }
 
+a {
+  text-decoration: none;
+  color: inherit;
+  outline: none;
+}
+
 @font-face {
   font-family: "Pretendard";
   src: url("/fonts/pretendard/Pretendard-Thin.otf") format("otf");

@@ -18,6 +18,7 @@ interface CompanyCardProps {
   imageUrl?: string | null;
   isLarge?: boolean;
   buttonText?: string;
+  link?: string;
 }
 
 const CompanyCard = ({
@@ -28,6 +29,7 @@ const CompanyCard = ({
   imageUrl,
   isLarge,
   buttonText,
+  link,
 }: CompanyCardProps) => {
   return (
     <Box
@@ -122,26 +124,9 @@ const CompanyCard = ({
           >
             {description}
           </Text>
-          {isLarge && (
-            <Box>
-              <Text
-                as="span"
-                display="inline-flex"
-                alignItems="center"
-                fontSize="lg"
-                fontWeight="medium"
-                color={imageUrl ? "white" : "blue.600"}
-                cursor="pointer"
-                transition="all 0.2s"
-                _hover={{ transform: "translateX(4px)" }}
-              >
-                자세히 보기
-                <Box as={LuArrowRight} ml={2} boxSize={5} />
-              </Text>
-            </Box>
-          )}
-          {buttonText && (
-            <Link href={"#"}>
+
+          {buttonText ? (
+            <Link href={link}>
               <Text
                 as="span"
                 display="inline-flex"
@@ -161,6 +146,23 @@ const CompanyCard = ({
                 }}
               >
                 {buttonText}
+                <Box as={LuArrowRight} ml={2} boxSize={5} />
+              </Text>
+            </Link>
+          ) : (
+            <Link href={link}>
+              <Text
+                as="span"
+                display="inline-flex"
+                alignItems="center"
+                fontSize="lg"
+                fontWeight="medium"
+                color={imageUrl ? "white" : "blue.600"}
+                cursor="pointer"
+                transition="all 0.2s"
+                _hover={{ transform: "translateX(4px)" }}
+              >
+                자세히 보기
                 <Box as={LuArrowRight} ml={2} boxSize={5} />
               </Text>
             </Link>
@@ -226,6 +228,7 @@ export function CompanySection() {
               bgColor="blue.50"
               imageUrl="/images/companies/todays_story.png"
               isLarge
+              link="/routes/companies/details/today-story"
             />
           </Box>
 
@@ -237,6 +240,7 @@ export function CompanySection() {
             bgColor="white"
             imageUrl={null}
             buttonText="전체보기"
+            link="/routes/companies/participants"
           />
           <CompanyCard
             title="유니마스"
@@ -244,6 +248,7 @@ export function CompanySection() {
             tags={["해외셀러", "해외직구"]}
             bgColor="blue.500"
             imageUrl="/images/companies/unimas.png"
+            link="/routes/companies/details/unimas"
           />
           <CompanyCard
             title="삼선택"
@@ -251,6 +256,7 @@ export function CompanySection() {
             tags={["생성AI", "모바일 커머드"]}
             bgColor="purple.100"
             imageUrl="/images/companies/samsunteck.png"
+            link="/routes/companies/details/samseontaek"
           />
           <CompanyCard
             title="세로라"
@@ -258,6 +264,7 @@ export function CompanySection() {
             tags={["벤나스", "친환경 라이프"]}
             bgColor="teal.100"
             imageUrl="/images/companies/serora.png"
+            link="/routes/companies/details/serora"
           />
         </Grid>
       </Container>

@@ -12,11 +12,10 @@ import {
   Card,
 } from "@chakra-ui/react";
 import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock } from "react-icons/fa";
-import { useColorMode } from "@/components/ui/color-mode";
+import { useColors } from "@/styles/theme";
 
 export default function LocationPage() {
-  const { colorMode } = useColorMode();
-  const isDark = colorMode === "dark";
+  const colors = useColors();
 
   useEffect(() => {
     const mapScript = document.createElement("script");
@@ -77,16 +76,16 @@ export default function LocationPage() {
           >
             오시는 길
           </Heading>
-          <Text fontSize="xl" color={isDark ? "gray.300" : "gray.600"}>
+          <Text fontSize="xl" color={colors.text.primary}>
             부산창업가꿈 해운대는 해운대구에 위치해 있습니다
           </Text>
         </Box>
 
         <SimpleGrid columns={{ base: 1, md: 2 }} gap={8}>
           <Card.Root
-            bg={isDark ? "gray.800" : "white"}
+            bg={colors.cardBg}
             borderWidth="1px"
-            borderColor={isDark ? "gray.700" : "gray.200"}
+            borderColor={colors.border}
             boxShadow="lg"
           >
             <Card.Body>
@@ -94,7 +93,7 @@ export default function LocationPage() {
                 <Box
                   w="100%"
                   h="400px"
-                  bg={isDark ? "gray.700" : "gray.100"}
+                  bg={colors.cardBg}
                   borderRadius="lg"
                   overflow="hidden"
                 >
@@ -104,14 +103,14 @@ export default function LocationPage() {
                     borderRadius="xl"
                     overflow="hidden"
                     border="1px"
-                    borderColor={isDark ? "gray.700" : "gray.200"}
+                    borderColor={colors.border}
                   />
                 </Box>
                 <Box>
                   <Text fontWeight="bold" mb={2}>
                     주소
                   </Text>
-                  <Text color={isDark ? "gray.300" : "gray.600"}>
+                  <Text color={colors.text.primary}>
                     부산광역시 해운대구 윗반송로51번길 36
                   </Text>
                 </Box>
@@ -120,9 +119,9 @@ export default function LocationPage() {
           </Card.Root>
 
           <Card.Root
-            bg={isDark ? "gray.800" : "white"}
+            bg={colors.cardBg}
             borderWidth="1px"
-            borderColor={isDark ? "gray.700" : "gray.200"}
+            borderColor={colors.border}
             boxShadow="lg"
           >
             <Card.Body>
@@ -137,7 +136,7 @@ export default function LocationPage() {
                     <Icon as={FaMapMarkerAlt} mr={2} color="blue.500" />
                     위치 안내
                   </Text>
-                  <Text color={isDark ? "gray.300" : "gray.600"}>
+                  <Text color={colors.text.primary}>
                     해운대구청에서 도보로 5분 거리에 위치해 있습니다.
                     해운대해수욕장과 가까워 여름철에는 해수욕을 즐기실 수
                     있습니다.
@@ -154,9 +153,7 @@ export default function LocationPage() {
                     <Icon as={FaPhone} mr={2} color="green.500" />
                     연락처
                   </Text>
-                  <Text color={isDark ? "gray.300" : "gray.600"}>
-                    051-123-4567
-                  </Text>
+                  <Text color={colors.text.primary}>051-123-4567</Text>
                 </Box>
 
                 <Box>
@@ -169,7 +166,7 @@ export default function LocationPage() {
                     <Icon as={FaEnvelope} mr={2} color="purple.500" />
                     이메일
                   </Text>
-                  <Text color={isDark ? "gray.300" : "gray.600"}>
+                  <Text color={colors.text.primary}>
                     info@startup-dream.or.kr
                   </Text>
                 </Box>
@@ -184,7 +181,7 @@ export default function LocationPage() {
                     <Icon as={FaClock} mr={2} color="orange.500" />
                     운영 시간
                   </Text>
-                  <Text color={isDark ? "gray.300" : "gray.600"}>
+                  <Text color={colors.text.primary}>
                     평일: 09:00 - 18:00
                     <br />
                     주말 및 공휴일: 휴무

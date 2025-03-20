@@ -2,8 +2,10 @@
 
 import { Box, Container, Heading, Text, SimpleGrid } from "@chakra-ui/react";
 import { FaLightbulb, FaChartLine, FaHandshake, FaGlobe } from "react-icons/fa";
+import { useColors } from "@/styles/theme";
 
 export default function EducationPage() {
+  const colors = useColors();
   const courses = [
     {
       title: "창업 기초",
@@ -17,7 +19,7 @@ export default function EducationPage() {
         "세무/회계 기초",
       ],
       icon: FaLightbulb,
-      color: "blue",
+      color: colors.primary.default,
     },
     {
       title: "사업화 전략",
@@ -31,7 +33,7 @@ export default function EducationPage() {
         "영업/판로 개척",
       ],
       icon: FaChartLine,
-      color: "green",
+      color: colors.primary.default,
     },
     {
       title: "투자 유치",
@@ -45,7 +47,7 @@ export default function EducationPage() {
         "투자자 네트워킹",
       ],
       icon: FaHandshake,
-      color: "purple",
+      color: colors.primary.default,
     },
     {
       title: "글로벌 진출",
@@ -54,7 +56,7 @@ export default function EducationPage() {
       duration: "3주",
       topics: ["해외 시장 조사", "글로벌 마케팅", "수출입 실무", "현지화 전략"],
       icon: FaGlobe,
-      color: "orange",
+      color: colors.primary.default,
     },
   ];
 
@@ -64,7 +66,7 @@ export default function EducationPage() {
         <Heading as="h1" size="2xl" mb={4}>
           교육내용
         </Heading>
-        <Text color="gray.600" fontSize="lg">
+        <Text color={colors.text.primary} fontSize="lg">
           창업가꿈에서 제공하는 체계적인 교육 프로그램을 소개합니다.
         </Text>
       </Box>
@@ -74,7 +76,7 @@ export default function EducationPage() {
           <Box
             key={index}
             p={8}
-            bg="white"
+            bg={colors.cardBg}
             borderRadius="lg"
             shadow="md"
             transition="all 0.3s"
@@ -86,7 +88,7 @@ export default function EducationPage() {
             <Box display="flex" alignItems="center" mb={6}>
               <Box
                 as={course.icon}
-                color={`${course.color}.500`}
+                color={colors.primary.default}
                 fontSize="2xl"
                 mr={4}
               />
@@ -94,7 +96,9 @@ export default function EducationPage() {
                 <Heading as="h3" size="lg" mb={2}>
                   {course.title}
                 </Heading>
-                <Text color="gray.500">교육기간: {course.duration}</Text>
+                <Text color={colors.text.primary}>
+                  교육기간: {course.duration}
+                </Text>
               </Box>
             </Box>
 
@@ -120,7 +124,7 @@ export default function EducationPage() {
                       w={2}
                       h={2}
                       borderRadius="full"
-                      bg={`${course.color}.500`}
+                      bg={colors.primary.default}
                       mr={3}
                     />
                     {topic}
@@ -132,7 +136,7 @@ export default function EducationPage() {
         ))}
       </SimpleGrid>
 
-      <Box mt={16} p={6} bg="blue.50" borderRadius="lg">
+      <Box mt={16} p={6} bg={colors.cardBg} borderRadius="lg">
         <Heading as="h2" size="lg" mb={4}>
           교육 운영 안내
         </Heading>

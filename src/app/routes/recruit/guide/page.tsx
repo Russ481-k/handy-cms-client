@@ -21,8 +21,10 @@ import {
   FaPhone,
   FaCopy,
 } from "react-icons/fa";
+import { useColors } from "@/styles/theme";
 
 export default function GuidePage() {
+  const colors = useColors();
   const email = "buvakim@naver.com";
   const [hasCopied, setHasCopied] = useState(false);
 
@@ -41,10 +43,10 @@ export default function GuidePage() {
       <VStack gap={12} align="stretch">
         {/* 제목 섹션 */}
         <Box>
-          <Heading as="h1" size="2xl" mb={6}>
+          <Heading as="h1" size="2xl" mb={6} color={colors.text.primary}>
             지원 안내
           </Heading>
-          <Text fontSize="xl" color="gray.600">
+          <Text fontSize="xl" color={colors.text.primary}>
             해운대 도심형 청년 창업·주거 복합공간 입주 기업 모집
           </Text>
         </Box>
@@ -57,41 +59,52 @@ export default function GuidePage() {
           <VStack
             gap={4}
             align="stretch"
-            bg="white"
+            bg={colors.cardBg}
             p={6}
             borderRadius="lg"
             boxShadow="sm"
           >
             <HStack>
-              <Icon as={FaCalendarAlt} color="blue.500" w={5} h={5} />
+              <Icon
+                as={FaCalendarAlt}
+                color={colors.primary.default}
+                w={5}
+                h={5}
+              />
               <Text>
                 <strong>모집기간:</strong> 2025년 2월 13일(목) ~ 2월 19일(수)
                 18시까지
               </Text>
             </HStack>
             <HStack>
-              <Icon as={FaMapMarkerAlt} color="red.500" w={5} h={5} />
+              <Icon
+                as={FaMapMarkerAlt}
+                color={colors.primary.default}
+                w={5}
+                h={5}
+              />
               <Text>
                 <strong>위치:</strong> 부산광역시 해운대구 윗반송로51번길 36
                 (반송동 216-10)
               </Text>
             </HStack>
             <HStack>
-              <Icon as={FaUsers} color="green.500" w={5} h={5} />
+              <Icon as={FaUsers} color={colors.primary.default} w={5} h={5} />
               <Text>
                 <strong>모집분야:</strong> 기술 기반 창업, 디자인, 크리에이터
                 창업
               </Text>
             </HStack>
             <HStack>
-              <Icon as={FaFileAlt} color="purple.500" w={5} h={5} />
+              <Icon as={FaFileAlt} color={colors.primary.default} w={5} h={5} />
               <Text>
                 <strong>접수방법:</strong> 이메일 접수
               </Text>
               <Button
                 size="sm"
                 onClick={onCopy}
-                colorScheme={hasCopied ? "green" : "blue"}
+                bg={colors.primary.default}
+                color={colors.text.primary}
               >
                 <FaCopy />
                 {hasCopied ? "복사됨" : email}
@@ -100,7 +113,7 @@ export default function GuidePage() {
             <Text>
               <strong>사업기간:</strong> 2025년 3월 ~ 2025년 12월 (10개월)
             </Text>
-            <Text color="gray.600" fontSize="sm">
+            <Text color={colors.text.primary} fontSize="sm">
               ※ 최대 1년 단위로 연장 심사 후 총 2년 이내 연장 가능
             </Text>
           </VStack>
@@ -111,7 +124,7 @@ export default function GuidePage() {
           <Heading as="h2" size="lg" mb={6}>
             2. 신청 대상
           </Heading>
-          <Box bg="white" p={6} borderRadius="lg" boxShadow="sm">
+          <Box bg={colors.cardBg} p={6} borderRadius="lg" boxShadow="sm">
             <VStack align="stretch" gap={4}>
               <Box>
                 <Text fontSize="lg" fontWeight="bold" mb={2}>
@@ -121,7 +134,7 @@ export default function GuidePage() {
                   <li>대표자 만 18세 이상 39세 이하 (2025.2.13. 기준)</li>
                   <li>
                     해운대구 거주 또는 사업장 소재지가 해운대구인 청년창업가
-                    <Text fontSize="sm" color="gray.600" ml={4}>
+                    <Text fontSize="sm" color={colors.text.primary} ml={4}>
                       ※ 타 지역 거주/사업장일 경우, 입주 후 3개월(예비창업자는
                       6개월) 내 해운대구로 이전
                     </Text>
@@ -133,10 +146,15 @@ export default function GuidePage() {
               <Separator />
 
               <Box>
-                <Text fontSize="lg" fontWeight="bold" color="red.500" mb={2}>
+                <Text
+                  fontSize="lg"
+                  fontWeight="bold"
+                  color={colors.primary.default}
+                  mb={2}
+                >
                   신청 제외 대상
                 </Text>
-                <Box gap={2} color="gray.700">
+                <Box gap={2} color={colors.text.primary}>
                   <li>사치·향락 업종, 단순 유통·도소매, 금품 관련 사업자</li>
                   <li>국세·지방세 체납자, 금융기관 채무불이행자 등</li>
                   <li>정부지원 사업 참여제한 대상</li>
@@ -154,10 +172,10 @@ export default function GuidePage() {
           <Heading as="h2" size="lg" mb={6}>
             3. 입주 조건
           </Heading>
-          <Box bg="white" p={6} borderRadius="lg" boxShadow="sm">
+          <Box bg={colors.cardBg} p={6} borderRadius="lg" boxShadow="sm">
             <Table.Root size="sm">
               <Table.Header>
-                <Table.Row>
+                <Table.Row bg={colors.primary.alpha}>
                   <Table.ColumnHeader>구분</Table.ColumnHeader>
                   <Table.ColumnHeader textAlign="end">
                     보증금
@@ -185,7 +203,7 @@ export default function GuidePage() {
                     note: "관리비 포함",
                   },
                 ].map((item) => (
-                  <Table.Row key={item.id}>
+                  <Table.Row key={item.id} bg={colors.cardBg}>
                     <Table.Cell>{item.name}</Table.Cell>
                     <Table.Cell>{item.category}</Table.Cell>
                     <Table.Cell textAlign="end">{item.price}</Table.Cell>
@@ -212,21 +230,21 @@ export default function GuidePage() {
           <Heading as="h2" size="lg" mb={6}>
             4. 시설 개요
           </Heading>
-          <Box bg="white" p={6} borderRadius="lg" boxShadow="sm">
+          <Box bg={colors.cardBg} p={6} borderRadius="lg" boxShadow="sm">
             <VStack align="stretch" gap={6}>
               <Box>
                 <Text fontSize="lg" fontWeight="bold" mb={4}>
                   층별 공간 구성
                 </Text>
                 <VStack align="stretch" gap={4}>
-                  <Box p={4} bg="blue.50" borderRadius="md">
-                    <Text fontWeight="bold" color="blue.700">
+                  <Box p={4} bg={colors.cardBg} borderRadius="md">
+                    <Text fontWeight="bold" color={colors.primary.default}>
                       1층: 미디어아트 카페 (109.89㎡)
                     </Text>
                     <Text ml={4}>실감형 미디어아트, 야외테라스</Text>
                   </Box>
-                  <Box p={4} bg="pink.50" borderRadius="md">
-                    <Text fontWeight="bold" color="pink.700">
+                  <Box p={4} bg={colors.cardBg} borderRadius="md">
+                    <Text fontWeight="bold" color={colors.primary.default}>
                       2층A: 여성주거공용공간 (46.46㎡)
                     </Text>
                     <Text ml={4}>여성전용 3실(각 15.26㎡)</Text>
@@ -234,8 +252,8 @@ export default function GuidePage() {
                       거실·세탁실·정수기·TV·에어컨 등 기본 비품 구비
                     </Text>
                   </Box>
-                  <Box p={4} bg="green.50" borderRadius="md">
-                    <Text fontWeight="bold" color="green.700">
+                  <Box p={4} bg={colors.cardBg} borderRadius="md">
+                    <Text fontWeight="bold" color={colors.primary.default}>
                       2층B: 공유오피스 (51.98㎡)
                     </Text>
                     <Text ml={4}>개방형 8석 + 소회의실(13.38㎡)</Text>
@@ -243,8 +261,8 @@ export default function GuidePage() {
                       탕비실·프린터·무선공유기·프로젝터 등 업무환경 제공
                     </Text>
                   </Box>
-                  <Box p={4} bg="purple.50" borderRadius="md">
-                    <Text fontWeight="bold" color="purple.700">
+                  <Box p={4} bg={colors.cardBg} borderRadius="md">
+                    <Text fontWeight="bold" color={colors.primary.default}>
                       3층: 남성주거공용공간 (70.78㎡)
                     </Text>
                     <Text ml={4}>남성전용 5실(각 15.26㎡)</Text>
@@ -259,9 +277,9 @@ export default function GuidePage() {
         </Box>
 
         {/* 문의처 섹션 */}
-        <Box bg="blue.50" p={6} borderRadius="lg">
+        <Box bg={colors.cardBg} p={6} borderRadius="lg">
           <HStack gap={4}>
-            <Icon as={FaPhone} color="blue.500" w={6} h={6} />
+            <Icon as={FaPhone} color={colors.primary.default} w={6} h={6} />
             <Box>
               <Heading as="h2" size="md" mb={2}>
                 문의처

@@ -7,6 +7,7 @@ import { getScrollbarStyle } from "@/styles/scrollbar";
 import { Global } from "@emotion/react";
 import { FloatingButtons } from "@/components/layout/FloatingButtons";
 import Layout from "@/components/layout/view/Layout";
+import { useColors } from "@/styles/theme";
 
 export default function RoutesLayout({
   children,
@@ -15,12 +16,13 @@ export default function RoutesLayout({
 }) {
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
+  const colors = useColors();
 
   return (
     <Layout>
       <Box
         as="main"
-        bg={isDark ? "gray.900" : "white"}
+        bg={colors.bg}
         flex="1"
         position="relative"
         minH="100vh"

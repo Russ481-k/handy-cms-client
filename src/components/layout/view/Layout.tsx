@@ -1,11 +1,11 @@
 "use client";
 
 import { Box, Flex } from "@chakra-ui/react";
-import { useColorMode } from "@/components/ui/color-mode";
 import { Header } from "./Header";
 import { Footer } from "@/components/layout/view/Footer";
 import { useMenu } from "@/lib/hooks/useMenu";
 import { memo, Suspense } from "react";
+import { useColors } from "@/styles/theme";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -45,10 +45,8 @@ const LoadingFallback = () => (
 );
 
 export default function Layout({ children, currentPage = "홈" }: LayoutProps) {
-  const { colorMode } = useColorMode();
-  const isDark = colorMode === "dark";
   const { menus, error } = useMenu();
-
+  const colors = useColors();
   if (error) {
     return <div>Error loading menu data</div>;
   }
@@ -57,7 +55,7 @@ export default function Layout({ children, currentPage = "홈" }: LayoutProps) {
     <Flex
       width="100vw"
       direction="column"
-      bg={isDark ? "gray.900" : "white"}
+      bg={colors.bg}
       position="relative"
       minHeight="100vh"
     >

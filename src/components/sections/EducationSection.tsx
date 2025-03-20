@@ -7,6 +7,7 @@ import {
   VStack,
   Image,
   HStack,
+  Link,
 } from "@chakra-ui/react";
 
 interface EducationCardProps {
@@ -14,6 +15,7 @@ interface EducationCardProps {
   descriptions: string[];
   iconUrl: string;
   bgColor?: string;
+  link?: string;
 }
 
 const EducationCard = ({
@@ -21,65 +23,68 @@ const EducationCard = ({
   descriptions,
   iconUrl,
   bgColor = "white",
+  link,
 }: EducationCardProps) => {
   return (
-    <Box width="100%">
-      <Box
-        bg={bgColor}
-        p={{ base: 4, md: 8 }}
-        position="relative"
-        _hover={{ transform: "translateY(-4px)" }}
-        transition="all 0.2s"
-        borderTop="1px solid"
-        borderBottom="3px solid"
-        borderColor="#0D344E"
-        overflow="hidden"
-        height={{ base: "auto", md: "420px" }}
-        minHeight={{ base: "320px", md: "420px" }}
-      >
-        <Flex gap={{ base: 4, md: 8 }} align="flex-start" position="relative">
-          <Box flex={1}>
-            <Heading
-              as="h3"
-              fontSize={{ base: "24px", sm: "28px", md: "36px" }}
-              fontWeight="bold"
-              color="gray.800"
-              mb={{ base: 4, md: 6 }}
-            >
-              {title}
-            </Heading>
-            <VStack align="flex-start" gap={{ base: 2, md: 3 }}>
-              {descriptions.map((desc, index) => (
-                <Flex key={index} gap={{ base: 2, md: 3 }} align="flex-start">
-                  <Text
-                    color="gray.600"
-                    fontSize={{ base: "12px", sm: "13px", md: "14px" }}
-                    lineHeight="1.7"
-                  >
-                    {desc}
-                  </Text>
-                </Flex>
-              ))}
-            </VStack>
-          </Box>
-        </Flex>
+    <Link href={link}>
+      <Box width="100%">
         <Box
-          position="absolute"
-          right={4}
-          bottom={4}
-          width={{ base: "60px", sm: "70px", md: "90px" }}
-          height={{ base: "60px", sm: "70px", md: "90px" }}
+          bg={bgColor}
+          p={{ base: 4, md: 8 }}
+          position="relative"
+          _hover={{ transform: "translateY(-4px)" }}
+          transition="all 0.2s"
+          borderTop="1px solid"
+          borderBottom="3px solid"
+          borderColor="#0D344E"
+          overflow="hidden"
+          height={{ base: "auto", md: "420px" }}
+          minHeight={{ base: "320px", md: "420px" }}
         >
-          <Image
-            src={iconUrl}
-            alt={title}
-            width="100%"
-            height="100%"
-            objectFit="contain"
-          />
+          <Flex gap={{ base: 4, md: 8 }} align="flex-start" position="relative">
+            <Box flex={1}>
+              <Heading
+                as="h3"
+                fontSize={{ base: "24px", sm: "28px", md: "36px" }}
+                fontWeight="bold"
+                color="gray.800"
+                mb={{ base: 4, md: 6 }}
+              >
+                {title}
+              </Heading>
+              <VStack align="flex-start" gap={{ base: 2, md: 3 }}>
+                {descriptions.map((desc, index) => (
+                  <Flex key={index} gap={{ base: 2, md: 3 }} align="flex-start">
+                    <Text
+                      color="gray.600"
+                      fontSize={{ base: "12px", sm: "13px", md: "14px" }}
+                      lineHeight="1.7"
+                    >
+                      {desc}
+                    </Text>
+                  </Flex>
+                ))}
+              </VStack>
+            </Box>
+          </Flex>
+          <Box
+            position="absolute"
+            right={4}
+            bottom={4}
+            width={{ base: "60px", sm: "70px", md: "90px" }}
+            height={{ base: "60px", sm: "70px", md: "90px" }}
+          >
+            <Image
+              src={iconUrl}
+              alt={title}
+              width="100%"
+              height="100%"
+              objectFit="contain"
+            />
+          </Box>
         </Box>
       </Box>
-    </Box>
+    </Link>
   );
 };
 
@@ -152,6 +157,7 @@ export function EducationSection() {
             ]}
             iconUrl="/images/education/class.png"
             bgColor="blue.50"
+            link="/routes/about/program"
           />
           <EducationCard
             title="그로우업"
@@ -161,6 +167,7 @@ export function EducationSection() {
               "소비자 반응조사 및 사업화 지원 패키지 연계 운영",
             ]}
             iconUrl="/images/education/growth.png"
+            link="/routes/about/program"
           />
           <EducationCard
             title="스케일업"
@@ -170,6 +177,7 @@ export function EducationSection() {
               "지역 문화 행사와 연계한 프로그램 추진(참여독려)",
             ]}
             iconUrl="/images/education/scale.png"
+            link="/routes/about/program"
           />
         </HStack>
       </Container>
