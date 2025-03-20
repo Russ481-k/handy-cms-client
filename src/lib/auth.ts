@@ -1,8 +1,5 @@
 // Authentication service for JWT token management
 
-import { api } from "@/lib/api-client";
-import { User } from "@/types/api";
-
 // Types
 export interface LoginCredentials {
   username: string;
@@ -11,7 +8,13 @@ export interface LoginCredentials {
 
 export interface AuthResponse {
   token: string;
-  user: User;
+  user: {
+    uuid: string;
+    username: string;
+    name: string;
+    email: string;
+    role: string;
+  };
 }
 
 // Constants
@@ -20,7 +23,9 @@ const USER_KEY = "user";
 
 // Helper functions
 export const setAuthToken = (token: string): void => {
-  localStorage.setItem(TOKEN_KEY, token);
+  if (typeof window !== "undefined") {
+    localStorage.setItem(TOKEN_KEY, token);
+  }
 };
 
 export const getAuthToken = (): string | null => {
@@ -31,19 +36,27 @@ export const getAuthToken = (): string | null => {
 };
 
 export const removeAuthToken = (): void => {
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(USER_KEY);
+  if (typeof window !== "undefined") {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+  }
 };
 
-export const setUser = (user: User): void => {
-  localStorage.setItem(USER_KEY, JSON.stringify(user));
+export const setUser = (user: AuthResponse["user"]): void => {
+  if (typeof window !== "undefined") {
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  }
 };
 
-export const getUser = (): User | null => {
+export const getUser = (): AuthResponse["user"] | null => {
   if (typeof window !== "undefined") {
     const userStr = localStorage.getItem(USER_KEY);
     if (userStr) {
-      return JSON.parse(userStr);
+      try {
+        return JSON.parse(userStr);
+      } catch {
+        return null;
+      }
     }
   }
   return null;
@@ -58,17 +71,27 @@ export const login = async (
   credentials: LoginCredentials
 ): Promise<AuthResponse> => {
   try {
-    const response = await api.private.login(credentials);
+    // Replace with your actual API endpoint
+    const response = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(credentials),
+    });
 
-    if (!response.data) {
-      throw new Error(response.message || "Login failed");
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Login failed");
     }
 
-    // Store auth data
-    setAuthToken(response.data.token);
-    setUser(response.data.user);
+    const data: AuthResponse = await response.json();
 
-    return response.data;
+    // Store auth data
+    setAuthToken(data.token);
+    setUser(data.user);
+
+    return data;
   } catch (error) {
     console.error("Login error:", error);
     throw error;
@@ -80,7 +103,17 @@ export const logout = (): void => {
   // Redirect to login page can be handled by the component
 };
 
-export function getAuthHeader() {
+export function getAuthHeader(): HeadersInit {
+  const token = getAuthToken();
+  return token
+    ? {
+        Authorization: `Bearer ${token}`,
+      }
+    : {};
+}
+
+// 인증이 필요한 API 호출을 위한 헬퍼 함수
+export function getAuthHeaderOrThrow(): HeadersInit {
   const token = getAuthToken();
   if (!token) {
     throw new Error("No authentication token found");
@@ -89,7 +122,3 @@ export function getAuthHeader() {
     Authorization: `Bearer ${token}`,
   };
 }
-
-export const removeUser = () => {
-  localStorage.removeItem(USER_KEY);
-};

@@ -1,52 +1,46 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Menu } from "@/types/menu";
-import { fetchMenus } from "@/lib/api/menu";
-import { usePathname } from "next/navigation";
+import { getAuthHeader } from "@/lib/auth";
 
 interface UseMenuOptions {
-  autoFetch?: boolean; // 자동으로 메뉴를 가져올지 여부
-  initialData?: Menu[]; // 초기 메뉴 데이터
+  requireAuth?: boolean;
 }
 
-interface UseMenuReturn {
-  menus: Menu[];
-  isLoading: boolean;
-  error: Error | null;
-  getMenus: () => Promise<void>; // 메뉴를 수동으로 다시 가져오는 함수
-}
-
-export function useMenu({
-  autoFetch = true,
-}: UseMenuOptions = {}): UseMenuReturn {
+export function useMenu(options: UseMenuOptions = {}) {
   const [menus, setMenus] = useState<Menu[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const pathname = usePathname();
 
-  const getMenus = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const data = await fetchMenus();
-      setMenus(data);
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error("Failed to fetch menus"));
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  // 컴포넌트가 마운트되거나 경로가 변경될 때 자동으로 메뉴를 가져옴
   useEffect(() => {
-    if (autoFetch) {
-      getMenus();
-    }
-  }, [autoFetch, getMenus, pathname]);
+    let isMounted = true;
 
-  return {
-    menus,
-    isLoading,
-    error,
-    getMenus,
-  };
+    const fetchMenus = async () => {
+      try {
+        const headers = options.requireAuth ? getAuthHeader() : {};
+        const response = await fetch("/api/menu", { headers });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch menus");
+        }
+
+        const data = await response.json();
+        if (isMounted) {
+          setMenus(data);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(
+            err instanceof Error ? err : new Error("Failed to fetch menus")
+          );
+        }
+      }
+    };
+
+    fetchMenus();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [options.requireAuth]);
+
+  return { menus, error };
 }
