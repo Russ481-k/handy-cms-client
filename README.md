@@ -34,3 +34,24 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+sudo dnf module reset nodejs -y
+sudo dnf module enable nodejs:20 -y
+sudo dnf install -y nodejs
+
+# 2. CentOS / Rocky / AlmaLinux (RHEL 계열): firewalld 사용
+
+# 2-1. firewalld 설치 및 활성화
+
+sudo dnf install firewalld -y
+sudo systemctl start firewalld
+sudo systemctl enable firewalld
+
+# 2-2. 특정 포트 열기
+
+# 예: TCP 3000 포트 허용
+
+sudo firewall-cmd --add-port=3000/tcp --permanent
+sudo firewall-cmd --reload
+
+pm2 start pnpm --name "h-startup" -- run start

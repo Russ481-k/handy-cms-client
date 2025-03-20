@@ -13,7 +13,11 @@ import {
   UserData,
 } from "@/types/api";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+// 현재 호스트를 기반으로 BASE_URL 설정
+const BASE_URL =
+  typeof window !== "undefined"
+    ? `${window.location.protocol}//${window.location.host}/api`
+    : process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // 인증이 필요하지 않은 API 요청을 위한 클라이언트
 export const publicApi = axios.create({
@@ -21,6 +25,7 @@ export const publicApi = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true, // CORS 요청에 credentials 포함
 });
 
 // 인증이 필요한 API 요청을 위한 클라이언트
@@ -29,6 +34,7 @@ export const privateApi = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true, // CORS 요청에 credentials 포함
 });
 
 // 인증이 필요한 API 요청에 토큰을 자동으로 추가하는 인터셉터
@@ -53,7 +59,7 @@ privateApi.interceptors.request.use(
       if (error.response?.status === 401) {
         // 인증 에러 처리
         localStorage.removeItem("token");
-        window.location.href = "/login";
+        window.location.href = "/cms/login";
       }
       return Promise.reject(error);
     }

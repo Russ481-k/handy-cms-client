@@ -1,9 +1,6 @@
-"use client";
-
 import "@/styles/globals.css";
 import { Providers } from "./providers";
-
-import { BreadcrumbNav } from "@/components/ui/breadcrumb";
+import { ClientLayout } from "./client-layout";
 
 export default function RootLayout({
   children,
@@ -14,8 +11,7 @@ export default function RootLayout({
     <html lang="ko">
       <body>
         <Providers>
-          <BreadcrumbNav />
-          <main>{children}</main>
+          <ClientLayout>{children}</ClientLayout>
         </Providers>
       </body>
     </html>

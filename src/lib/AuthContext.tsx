@@ -75,9 +75,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (username: string, password: string) => {
     try {
+      setIsLoading(true); // 로그인 시작 시 로딩 상태로 설정
       const response = await api.private.login({ username, password });
 
       if (!response.data) {
+        setIsLoading(false); // 실패 시 로딩 상태 해제
         return {
           success: false,
           message: response.message || "로그인에 실패했습니다.",
@@ -89,11 +91,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsAuthenticated(true);
       setUser(response.data.user);
 
+      // 로딩 상태는 유지하여 리다이렉트 전까지 사이드바가 보이지 않도록 함
       return {
         success: true,
         user: response.data.user,
       };
     } catch (error) {
+      setIsLoading(false); // 에러 시 로딩 상태 해제
       console.error("Login error:", error);
       return {
         success: false,

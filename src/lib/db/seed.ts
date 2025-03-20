@@ -1,12 +1,12 @@
-import crypto from "crypto";
+import bcrypt from "bcryptjs";
 
 // 비밀번호 해시 함수
 function hashPassword(password: string): string {
-  return crypto.createHash("sha256").update(password).digest("hex");
+  return bcrypt.hashSync(password, 10);
 }
 
 export const createInitialAdmin = async () => {
-  const hashedPassword = hashPassword("admin123");
+  const hashedPassword = hashPassword("0000");
   return `
     INSERT INTO users (uuid, username, name, password, email, role) 
     VALUES (UUID(), 'admin', 'Administrator', '${hashedPassword}', 'admin@example.com', 'admin')

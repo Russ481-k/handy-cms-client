@@ -97,6 +97,8 @@ function LoginForm() {
           title: "로그인 성공",
           description: "환영합니다!",
         });
+
+        // 로딩 상태를 유지한 채로 리다이렉트
         router.push(from);
       } else {
         toaster.error({

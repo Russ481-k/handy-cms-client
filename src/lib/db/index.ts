@@ -1,5 +1,5 @@
 import mysql from "mysql2/promise";
-import crypto from "crypto";
+import bcrypt from "bcryptjs";
 import {
   createUsersTable,
   createMenusTable,
@@ -31,8 +31,8 @@ initialPool
 process.on("uncaughtException", handlePoolError);
 
 // 비밀번호 해시 함수
-function hashPassword(password: string): string {
-  return crypto.createHash("sha256").update(password).digest("hex");
+async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, 10);
 }
 
 interface TableResult {
@@ -80,7 +80,7 @@ export async function initializeDatabase() {
       console.log("[DB] Monitoring table created");
 
       // 초기 관리자 계정 생성
-      const hashedPassword = hashPassword("admin123");
+      const hashedPassword = await hashPassword("0000");
       await connection.execute(
         `INSERT INTO users (uuid, username, name, password, email, role) 
          VALUES (UUID(), 'admin', 'Administrator', ?, 'admin@example.com', 'admin')`,
@@ -143,7 +143,25 @@ export async function initializeDatabase() {
       }
       console.log("[DB] Initial menus created");
     } else {
-      console.log("[DB] Tables already exist. Skipping initialization.");
+      console.log("[DB] Tables already exist. Checking for admin account...");
+
+      // admin 계정 존재 여부 확인
+      const [adminUsers] = await connection.execute(
+        "SELECT * FROM users WHERE username = 'admin'"
+      );
+
+      if ((adminUsers as unknown[]).length === 0) {
+        console.log("[DB] Admin account not found. Creating admin account...");
+        const hashedPassword = await hashPassword("0000");
+        await connection.execute(
+          `INSERT INTO users (uuid, username, name, password, email, role) 
+           VALUES (UUID(), 'admin', 'Administrator', ?, 'admin@example.com', 'admin')`,
+          [hashedPassword]
+        );
+        console.log("[DB] Admin account created");
+      } else {
+        console.log("[DB] Admin account already exists");
+      }
     }
 
     console.log("[DB] Database initialization completed");

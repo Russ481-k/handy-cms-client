@@ -97,7 +97,7 @@ function Layout({ children }: { children: React.ReactNode }) {
         h="100vh"
         position="relative"
       >
-        {!isRootPath && isAuthenticated && (
+        {isCMSPath && !isLoading && !isRootPath && isAuthenticated && (
           <>
             <Topbar isSidebarOpen={isSidebarOpen} />
             <Sidebar
@@ -117,14 +117,13 @@ function Layout({ children }: { children: React.ReactNode }) {
           transition="all 0.2s ease-in-out"
           position="relative"
           ml={
-            !isRootPath && isAuthenticated
+            !isRootPath && isAuthenticated && !isLoginPage
               ? { base: 0, md: isSidebarOpen ? "36" : "16" }
               : 0
           }
         >
           {children}
         </Box>
-
         {/* CMS 화면에서만 컬러 모드 토글 버튼 표시 */}
         {isCMSPath && isAuthenticated && (
           <Flex
