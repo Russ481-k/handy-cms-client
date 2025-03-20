@@ -44,13 +44,13 @@ const LoadingFallback = () => (
   </Box>
 );
 
-export function Layout({ children, currentPage = "홈" }: LayoutProps) {
+export default function Layout({ children, currentPage = "홈" }: LayoutProps) {
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
-  const { menus, isLoading, error } = useMenu();
+  const { menus, error } = useMenu();
 
   if (error) {
-    return <div>Error: {error.message}</div>;
+    return <div>Error loading menu data</div>;
   }
 
   return (

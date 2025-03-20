@@ -148,20 +148,48 @@ export const Header = memo(function Header({
             </Flex>
           </GridItem>
 
-          <GridItem>
-            <Flex py={3} align="center" justify="flex-end">
-              <Button
-                variant="ghost"
-                display={{ base: "flex", md: "none" }}
-                onClick={toggleMenu}
-                aria-label="Toggle menu"
-                p={2}
-                _hover={{ bg: "transparent" }}
-                _active={{ bg: "transparent" }}
-              >
-                <Icon as={GiHamburgerMenu} boxSize={6} />
-              </Button>
-            </Flex>
+          <GridItem w="200px" textAlign="right">
+            <Button
+              aria-label="Toggle Menu"
+              variant="ghost"
+              size="md"
+              color={isDark ? "gray.300" : "gray.600"}
+              position="relative"
+              bg={
+                isMenuOpen
+                  ? isDark
+                    ? "whiteAlpha.100"
+                    : "blackAlpha.50"
+                  : "transparent"
+              }
+              _hover={{
+                bg: isDark ? "whiteAlpha.200" : "blackAlpha.100",
+                color: isDark ? "blue.200" : "blue.500",
+              }}
+              _focus={{
+                boxShadow: "none",
+                bg: isDark ? "whiteAlpha.100" : "blackAlpha.50",
+                color: isDark ? "blue.200" : "blue.500",
+                outline: "none",
+                border: "none",
+              }}
+              _active={{
+                bg: "transparent",
+              }}
+              transform={isMenuOpen ? "scale(1.1)" : "scale(1)"}
+              transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+              onClick={toggleMenu}
+              borderRadius={0}
+              w="60px"
+              h="60px"
+            >
+              <Icon
+                as={GiHamburgerMenu}
+                boxSize={5}
+                transition="transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+                transform={isMenuOpen ? "rotate(180deg)" : "rotate(0)"}
+              />
+            </Button>
           </GridItem>
         </Grid>
       </Container>

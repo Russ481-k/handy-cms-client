@@ -15,7 +15,6 @@ import { useColors } from "@/styles/theme";
 import { useColorMode } from "@/components/ui/color-mode";
 import { Board } from "../types";
 import { Menu } from "../../menu/page";
-import { Layout } from "../../../../components/layout/view/Layout";
 import { AgGridReact } from "ag-grid-react";
 import { useState, useMemo } from "react";
 import {
@@ -40,6 +39,7 @@ import {
   themeDarkMode,
   themeLightMode,
 } from "@/lib/ag-grid-config";
+import Layout from "@/components/layout/view/Layout";
 
 // Register required modules
 ModuleRegistry.registerModules([ClientSideRowModelModule]);

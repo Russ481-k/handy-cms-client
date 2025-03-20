@@ -7,12 +7,12 @@ import { useColorMode } from "@/components/ui/color-mode";
 
 import { useEffect } from "react";
 
-import { Layout } from "./Layout";
 import { CompanySection } from "@/components/sections/CompanySection";
 import { HeroSection } from "@/components/sections/HeroSection";
 import { ApplicationSection } from "@/components/sections/ApplicationSection";
 import { EducationSection } from "@/components/sections/EducationSection";
 import { NewsSection } from "@/components/sections/NewsSection";
+import Layout from "./Layout";
 
 interface MainProps {
   menus: Menu[];

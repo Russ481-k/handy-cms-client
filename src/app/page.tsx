@@ -4,7 +4,6 @@ import { Box } from "@chakra-ui/react";
 import { useColorMode } from "@/components/ui/color-mode";
 
 // Layout Components
-import { Layout } from "@/components/layout/view/Layout";
 import { FloatingButtons } from "@/components/layout/FloatingButtons";
 
 // Section Components
@@ -15,6 +14,7 @@ import { NewsSection } from "@/components/sections/NewsSection";
 import { ApplicationSection } from "@/components/sections/ApplicationSection";
 import { getScrollbarStyle } from "@/styles/scrollbar";
 import { Global } from "@emotion/react";
+import Layout from "@/components/layout/view/Layout";
 
 export default function Home() {
   const { colorMode } = useColorMode();
