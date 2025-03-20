@@ -47,7 +47,7 @@ export default function Home() {
         position="relative"
       >
         <Box minH="680px">
-          <HeroSection isDark={isDark} />
+          <HeroSection />
         </Box>
 
         <CompanySection />
