@@ -1,13 +1,14 @@
 "use client";
 
 import { Box, Container, Heading, Text, SimpleGrid } from "@chakra-ui/react";
+import Image from "next/image";
 
 export default function ParticipantsPage() {
   const companies = [
     {
       name: "오늘의 이야기",
       description: "AI 기반 스토리텔링 플랫폼",
-      logo: "/images/companies/today-story.png",
+      logo: "/images/companies/todays_story.png",
       industry: "콘텐츠/미디어",
       year: "2023",
     },
@@ -21,7 +22,7 @@ export default function ParticipantsPage() {
     {
       name: "삼선택",
       description: "식자재 유통 플랫폼",
-      logo: "/images/companies/samseontaek.png",
+      logo: "/images/companies/samsunteck.png",
       industry: "푸드테크",
       year: "2023",
     },
@@ -47,9 +48,9 @@ export default function ParticipantsPage() {
 
       <Box mb={12}>
         <Heading as="h2" size="xl" mb={6}>
-          2023년 참여기업
+          2025년 참여기업
         </Heading>
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap={8}>
+        <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap={3}>
           {companies.map((company, index) => (
             <Box
               key={index}
@@ -74,7 +75,18 @@ export default function ParticipantsPage() {
                 justifyContent="center"
               >
                 <Box as="span" fontSize="lg" color="gray.500">
-                  로고 이미지
+                  <Image
+                    src={company.logo}
+                    alt={company.name}
+                    width={220}
+                    height={220}
+                    objectFit="contain"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "contain",
+                    }}
+                  />
                 </Box>
               </Box>
               <Heading as="h3" size="lg" mb={2}>
@@ -87,38 +99,9 @@ export default function ParticipantsPage() {
                 <Text fontSize="sm" color="gray.500" mb={1}>
                   <strong>산업분야:</strong> {company.industry}
                 </Text>
-                <Text fontSize="sm" color="gray.500">
-                  <strong>선정연도:</strong> {company.year}
-                </Text>
               </Box>
             </Box>
           ))}
-        </SimpleGrid>
-      </Box>
-
-      <Box p={8} bg="blue.50" borderRadius="lg">
-        <Heading as="h2" size="lg" mb={6}>
-          참여기업 성과
-        </Heading>
-        <SimpleGrid columns={{ base: 1, md: 3 }} gap={8}>
-          <Box p={6} bg="white" borderRadius="lg" textAlign="center">
-            <Heading as="h3" size="xl" color="blue.500" mb={2}>
-              15+
-            </Heading>
-            <Text fontSize="lg">누적 참여기업</Text>
-          </Box>
-          <Box p={6} bg="white" borderRadius="lg" textAlign="center">
-            <Heading as="h3" size="xl" color="green.500" mb={2}>
-              90%
-            </Heading>
-            <Text fontSize="lg">기업 생존율</Text>
-          </Box>
-          <Box p={6} bg="white" borderRadius="lg" textAlign="center">
-            <Heading as="h3" size="xl" color="purple.500" mb={2}>
-              50억+
-            </Heading>
-            <Text fontSize="lg">총 투자유치 금액</Text>
-          </Box>
         </SimpleGrid>
       </Box>
     </Container>

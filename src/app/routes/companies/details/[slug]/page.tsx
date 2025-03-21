@@ -40,7 +40,7 @@ const companyData = {
     foundedYear: "2021",
     teamSize: "25명",
     logo: "/images/companies/unimas.png",
-    mainImage: "/images/companies/unimas-main.jpg",
+    mainImage: "/images/companies/unimas.png",
     features: [
       "생분해성 마스크 소재 개발",
       "항균 필터 시스템",
@@ -163,22 +163,6 @@ export default function CompanyDetailPage() {
             <Box>
               <Text fontSize="lg" mb={2}>
                 <strong>산업분야:</strong> {company.industry}
-              </Text>
-              <Text fontSize="lg" mb={2}>
-                <strong>설립연도:</strong> {company.foundedYear}
-              </Text>
-              <Text fontSize="lg" mb={2}>
-                <strong>팀 규모:</strong> {company.teamSize}
-              </Text>
-              <Text fontSize="lg" mb={2}>
-                <strong>웹사이트:</strong>{" "}
-                <NextLink
-                  href={company.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {company.website}
-                </NextLink>
               </Text>
             </Box>
           </Box>

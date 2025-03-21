@@ -107,7 +107,7 @@ export function ApplicationSection() {
   return (
     <Box
       width="100%"
-      bg={isDark ? "gray.800" : "gray.50"}
+      bg={colors.bg}
       overflow="hidden"
       mt={{ base: 12, md: 24 }}
       py={{ base: 12, md: 24 }}

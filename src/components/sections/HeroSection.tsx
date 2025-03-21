@@ -38,10 +38,6 @@ export function HeroSection({ slideContents }: HeroSectionProps) {
   const pathname = usePathname();
   const paths = pathname.split("/").filter(Boolean);
 
-  const getSlideContents = useSlideContents();
-
-  if (paths.length === 0) return null;
-
   const routeMap: { [key: string]: string } = {
     about: "소개",
     companies: "입주 기업",
@@ -51,7 +47,7 @@ export function HeroSection({ slideContents }: HeroSectionProps) {
     application: "입주 신청",
   };
   const linkStyles = {
-    color: colors.text.primary,
+    color: colors.primary.dark,
     transition: "all 0.2s",
     fontSize: "xl",
     fontWeight: "bold",
@@ -124,10 +120,8 @@ export function HeroSection({ slideContents }: HeroSectionProps) {
     }),
   };
 
-  if (contents.length === 0) return null;
-
   return (
-    <Box px={0} py={24}>
+    <Box px={0} py={24} bg={colors.bg}>
       <Container maxW="1920px">
         <Box
           position="relative"
@@ -260,7 +254,7 @@ export function HeroSection({ slideContents }: HeroSectionProps) {
                       fontSize={{ base: "xl", sm: "2xl", md: "3xl" }}
                       fontWeight="bold"
                       color={
-                        contents[currentPage]?.subtitle ? "#0D344E" : colors.bg
+                        contents[currentPage]?.subtitle ? "#0D344E" : "white"
                       }
                       lineHeight="1.6"
                       whiteSpace="pre-line"
@@ -270,11 +264,15 @@ export function HeroSection({ slideContents }: HeroSectionProps) {
                   )}
                   <Heading
                     as="h1"
-                    fontSize={{ base: "4xl", sm: "5xl", md: "6xl", lg: "7xl" }}
+                    fontSize={
+                      contents[currentPage]?.header
+                        ? { base: "4xl", sm: "5xl", md: "6xl", lg: "7xl" }
+                        : { base: "2xl", sm: "3xl", md: "4xl", lg: "5xl" }
+                    }
                     fontWeight="extrabold"
                     mb={contents[currentPage]?.header ? 6 : 2}
                     color={
-                      contents[currentPage]?.subtitle ? "#0D344E" : colors.bg
+                      contents[currentPage]?.subtitle ? "#0D344E" : "white"
                     }
                     lineHeight="1.2"
                   >
@@ -298,8 +296,6 @@ export function HeroSection({ slideContents }: HeroSectionProps) {
                     <Box
                       backgroundColor="white"
                       borderRadius="full"
-                      border="1px solid"
-                      borderColor={colors.border}
                       py={4}
                       px={8}
                       w="fit-content"
@@ -336,7 +332,7 @@ export function HeroSection({ slideContents }: HeroSectionProps) {
                                 <Breadcrumb.Item>
                                   {isLast ? (
                                     <Breadcrumb.CurrentLink
-                                      color={colors.text.primary}
+                                      color={colors.primary.dark}
                                       fontSize="xl"
                                       fontWeight="bold"
                                     >

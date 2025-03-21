@@ -243,28 +243,6 @@ export default function ProgramPage() {
             </SimpleGrid>
           </VStack>
         </MotionCard>
-
-        {/* 문의 섹션 */}
-        <MotionBox
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.8 }}
-          mt={12}
-          p={6}
-          bg={cardBg}
-          borderRadius="lg"
-          borderWidth="1px"
-          borderColor={borderColor}
-        >
-          <Heading as="h2" size="lg" mb={4} color={headingColor}>
-            더 궁금하신 점이 있으신가요?
-          </Heading>
-          <Text fontSize="lg" color={textColor}>
-            이메일: info@changupgakkum.com
-            <br />
-            전화: 02-123-4567 (평일 09:00-18:00)
-          </Text>
-        </MotionBox>
       </VStack>
     </Container>
   );

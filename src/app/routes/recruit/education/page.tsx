@@ -71,6 +71,10 @@ export default function EducationPage() {
         </Text>
       </Box>
 
+      <Heading as="h2" size="lg" mb={4} color={colors.text.primary}>
+        준비중입니다...
+      </Heading>
+      {/* 
       <SimpleGrid columns={{ base: 1, md: 2 }} gap={8}>
         {courses.map((course, index) => (
           <Box
@@ -154,7 +158,7 @@ export default function EducationPage() {
             - 우수 수료생에게는 투자 유치 기회가 제공될 수 있습니다.
           </Box>
         </Box>
-      </Box>
+      </Box> */}
     </Container>
   );
 }

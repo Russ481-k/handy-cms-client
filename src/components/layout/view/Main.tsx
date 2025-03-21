@@ -12,6 +12,7 @@ import { ApplicationSection } from "@/components/sections/ApplicationSection";
 import { EducationSection } from "@/components/sections/EducationSection";
 import { NewsSection } from "@/components/sections/NewsSection";
 import Layout from "./Layout";
+import { BreadcrumbNav } from "@/components/ui/breadcrumb";
 
 interface MainProps {
   menus: Menu[];

@@ -103,7 +103,7 @@ export default function GuidePage() {
               <Button
                 size="sm"
                 onClick={onCopy}
-                bg={colors.primary.default}
+                bg={colors.cardBg}
                 color={colors.text.primary}
               >
                 <FaCopy />

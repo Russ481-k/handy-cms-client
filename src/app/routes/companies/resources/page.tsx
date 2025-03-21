@@ -13,6 +13,7 @@ import {
   NativeSelect,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
+import { useColors } from "@/styles/theme";
 
 const resources = [
   {
@@ -77,6 +78,8 @@ export default function ResourcesPage() {
     return matchesSearch && matchesCategory;
   });
 
+  const colors = useColors();
+
   return (
     <Container maxW="container.xl" py={10}>
       <Box mb={10}>
@@ -88,7 +91,10 @@ export default function ResourcesPage() {
         </Text>
       </Box>
 
-      <Box mb={8}>
+      <Heading as="h2" size="lg" mb={4} color={colors.text.primary}>
+        준비중입니다...
+      </Heading>
+      {/* <Box mb={8}>
         <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
           <Input
             placeholder="자료 검색..."
@@ -170,7 +176,7 @@ export default function ResourcesPage() {
             검색 결과가 없습니다.
           </Text>
         </Box>
-      )}
+      )} */}
     </Container>
   );
 }

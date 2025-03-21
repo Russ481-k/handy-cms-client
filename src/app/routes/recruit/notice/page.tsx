@@ -8,8 +8,8 @@ export default function NoticePage() {
   const notices = [
     {
       id: 1,
-      title: "2024년 상반기 창업기업 모집 공고",
-      status: "모집중",
+      title: "준비중입니다.",
+      status: "준비중",
       period: "2024.03.01 - 2024.03.31",
       target: "예비창업자 및 3년 이내 창업기업",
       support: "사업화 자금 최대 5천만원, 멘토링, 사무공간 등",
@@ -38,69 +38,74 @@ export default function NoticePage() {
           창업가꿈에서 진행하는 다양한 모집 프로그램을 확인하세요.
         </Text>
       </Box>
+      <Box>
+        {/* {notices.map((notice) => (
+          <Box
+            key={notice.id}
+            mb={8}
+            p={6}
+            bg={colors.cardBg}
+            borderRadius="lg"
+            shadow="md"
+            transition="all 0.3s"
+            _hover={{ transform: "translateY(-4px)", shadow: "lg" }}
+          >
+            <Box display="flex" alignItems="center" mb={4}>
+              <Heading as="h2" size="lg" flex="1">
+                {notice.title}
+              </Heading>
+              <Badge
+                colorScheme={notice.status === "모집중" ? "green" : "yellow"}
+                fontSize="md"
+                px={3}
+                py={1}
+                borderRadius="full"
+              >
+                {notice.status}
+              </Badge>
+            </Box>
 
-      {notices.map((notice) => (
-        <Box
-          key={notice.id}
-          mb={8}
-          p={6}
-          bg={colors.cardBg}
-          borderRadius="lg"
-          shadow="md"
-          transition="all 0.3s"
-          _hover={{ transform: "translateY(-4px)", shadow: "lg" }}
-        >
-          <Box display="flex" alignItems="center" mb={4}>
-            <Heading as="h2" size="lg" flex="1">
-              {notice.title}
-            </Heading>
-            <Badge
-              colorScheme={notice.status === "모집중" ? "green" : "yellow"}
-              fontSize="md"
-              px={3}
-              py={1}
-              borderRadius="full"
-            >
-              {notice.status}
-            </Badge>
+            <Box mb={6}>
+              <Text fontSize="lg" mb={2}>
+                <strong>모집기간:</strong> {notice.period}
+              </Text>
+              <Text fontSize="lg" mb={2}>
+                <strong>모집대상:</strong> {notice.target}
+              </Text>
+              <Text fontSize="lg" mb={4}>
+                <strong>지원내용:</strong> {notice.support}
+              </Text>
+              <Text fontSize="lg" color={colors.text.primary}>
+                {notice.description}
+              </Text>
+            </Box>
+
+            <Box display="flex" gap={4}>
+              <Button
+                variant="outline"
+                bg={colors.primary.default}
+                color={colors.text.primary}
+                size="lg"
+                disabled={notice.status !== "모집중"}
+              >
+                신청하기
+              </Button>
+              <Button
+                bg={colors.primary.default}
+                color={colors.text.primary}
+                size="lg"
+              >
+                상세보기
+              </Button>
+            </Box>
           </Box>
+        ))} */}
 
-          <Box mb={6}>
-            <Text fontSize="lg" mb={2}>
-              <strong>모집기간:</strong> {notice.period}
-            </Text>
-            <Text fontSize="lg" mb={2}>
-              <strong>모집대상:</strong> {notice.target}
-            </Text>
-            <Text fontSize="lg" mb={4}>
-              <strong>지원내용:</strong> {notice.support}
-            </Text>
-            <Text fontSize="lg" color={colors.text.primary}>
-              {notice.description}
-            </Text>
-          </Box>
-
-          <Box display="flex" gap={4}>
-            <Button
-              variant="outline"
-              bg={colors.primary.default}
-              color={colors.text.primary}
-              size="lg"
-              disabled={notice.status !== "모집중"}
-            >
-              신청하기
-            </Button>
-            <Button
-              bg={colors.primary.default}
-              color={colors.text.primary}
-              size="lg"
-            >
-              상세보기
-            </Button>
-          </Box>
-        </Box>
-      ))}
-
+        <Heading as="h2" size="lg" mb={4} color={colors.text.primary}>
+          준비중입니다...
+        </Heading>
+      </Box>
+      {/* 
       <Box mt={12} p={6} bg={colors.cardBg} borderRadius="lg">
         <Heading as="h3" size="lg" mb={4} color={colors.text.primary}>
           지원 절차
@@ -148,7 +153,7 @@ export default function NoticePage() {
             )
           )}
         </Box>
-      </Box>
+      </Box> */}
     </Container>
   );
 }

@@ -177,10 +177,6 @@ export default function VisionPage() {
                     <Icon as={FaUsers} color={colors.secondary.default} />
                     <Text fontWeight="medium">운영기관: 부산창업가꿈</Text>
                   </Box>
-                  <Box {...infoItemStyles}>
-                    <Icon as={FaChartLine} color={colors.secondary.default} />
-                    <Text fontWeight="medium">운영기간: 2024.01 ~ 2024.12</Text>
-                  </Box>
                 </Box>
               </VStack>
             </Card.Body>
@@ -339,85 +335,6 @@ export default function VisionPage() {
                       <Text fontWeight="medium">휴게 공간</Text>
                     </Box>
                   </Box>
-                </VStack>
-              </Card.Body>
-            </Card.Root>
-          </SimpleGrid>
-        </Box>
-
-        <Box>
-          <Heading {...sectionTitleStyles} textAlign="center">
-            기대 효과
-          </Heading>
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={6}>
-            <Card.Root {...cardStyles}>
-              <Card.Body>
-                <VStack align="start" gap={3}>
-                  <Box
-                    display="flex"
-                    alignItems="center"
-                    gap={3}
-                    mb={2}
-                    role="group"
-                  >
-                    <Icon
-                      as={FaUsers}
-                      color={colors.primary.default}
-                      {...iconStyles}
-                    />
-                    <Heading size="md">창업 성공률 향상</Heading>
-                  </Box>
-                  <Text color={colors.text.primary}>
-                    통합 지원 시스템을 통한 창업 성공률 20% 이상 향상
-                  </Text>
-                </VStack>
-              </Card.Body>
-            </Card.Root>
-
-            <Card.Root {...cardStyles}>
-              <Card.Body>
-                <VStack align="start" gap={3}>
-                  <Box
-                    display="flex"
-                    alignItems="center"
-                    gap={3}
-                    mb={2}
-                    role="group"
-                  >
-                    <Icon
-                      as={FaChartLine}
-                      color={colors.accent.success.default}
-                      {...iconStyles}
-                    />
-                    <Heading size="md">일자리 창출</Heading>
-                  </Box>
-                  <Text color={colors.text.primary}>
-                    연간 100개 이상의 신규 일자리 창출
-                  </Text>
-                </VStack>
-              </Card.Body>
-            </Card.Root>
-
-            <Card.Root {...cardStyles}>
-              <Card.Body>
-                <VStack align="start" gap={3}>
-                  <Box
-                    display="flex"
-                    alignItems="center"
-                    gap={3}
-                    mb={2}
-                    role="group"
-                  >
-                    <Icon
-                      as={FaBuilding}
-                      color={colors.accent.success.default}
-                      {...iconStyles}
-                    />
-                    <Heading size="md">지역 경제 활성화</Heading>
-                  </Box>
-                  <Text color={colors.text.primary}>
-                    연간 10억원 이상의 지역 경제 파급 효과
-                  </Text>
                 </VStack>
               </Card.Body>
             </Card.Root>

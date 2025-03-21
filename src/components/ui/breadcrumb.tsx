@@ -4,9 +4,8 @@ import { Breadcrumb, Box, Flex, Container } from "@chakra-ui/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useColors } from "@/styles/theme";
-import React from "react";
+import React, { useCallback } from "react";
 import { HeroSection } from "../sections/HeroSection";
-
 const routeMap: { [key: string]: string } = {
   about: "소개",
   companies: "입주 기업",
@@ -15,15 +14,13 @@ const routeMap: { [key: string]: string } = {
   news: "소식",
   application: "입주 신청",
 };
-
 function useSlideContents() {
   const pathname = usePathname();
   const paths = pathname.split("/").filter(Boolean);
 
-  const getContents = () => {
-    // 메인 페이지
+  const getContents = useCallback(() => {
     if (paths.length === 0) {
-      return [
+      const slideContents = [
         {
           title: "AI와 함께 창업의 미래를 열다!",
           subtitle:
@@ -43,8 +40,8 @@ function useSlideContents() {
           image: "/images/banners/banner_3.gif",
         },
       ];
+      return slideContents;
     }
-
     // 서브 페이지들
     const subPageImages: {
       [key: string]: { header: string; title: string; image: string };
@@ -86,7 +83,7 @@ function useSlideContents() {
     }
 
     return [];
-  };
+  }, [paths]);
 
   return getContents;
 }
@@ -98,9 +95,6 @@ export function BreadcrumbNav() {
   const paths = pathname.split("/").filter(Boolean);
   const colors = useColors();
   const getSlideContents = useSlideContents();
-
-  if (paths.length === 0) return null;
-
   const linkStyles = {
     color: colors.text.secondary,
     transition: "all 0.2s",
@@ -131,6 +125,75 @@ export function BreadcrumbNav() {
   return (
     <Box position="relative">
       <HeroSection slideContents={getSlideContents} />
+      {/* {paths.length > 0 && (
+        <Box
+          position="absolute"
+          top={0}
+          left={0}
+          right={0}
+          zIndex={10}
+          bg="rgba(255, 255, 255, 0.9)"
+          backdropFilter="blur(4px)"
+          borderBottom="1px"
+          borderColor={colors.border}
+        >
+          <Container maxW="container.xl">
+            <Flex align="center" gap={2} py={4}>
+              <Breadcrumb.Root size="md">
+                <Breadcrumb.List>
+                  <Breadcrumb.Item>
+                    <Breadcrumb.Link as={Link} href="/" {...linkStyles}>
+                      Home
+                    </Breadcrumb.Link>
+                  </Breadcrumb.Item>
+
+                  {paths.map((path, index) => {
+                    if (path === "routes") return null;
+                    const isLast = index === paths.length - 1;
+                    const href = `/${paths.slice(0, index + 1).join("/")}`;
+                    const label = routeMap[path] || path;
+
+                    return (
+                      <React.Fragment key={`separator-${path}`}>
+                        <Breadcrumb.Separator>
+                          <Box
+                            as="span"
+                            color="gray.400"
+                            mx={2}
+                            fontSize="sm"
+                            fontWeight="light"
+                          >
+                            /
+                          </Box>
+                        </Breadcrumb.Separator>
+                        <Breadcrumb.Item>
+                          {isLast ? (
+                            <Breadcrumb.CurrentLink
+                              color={colors.text.primary}
+                              fontSize="sm"
+                              fontWeight="semibold"
+                            >
+                              {label}
+                            </Breadcrumb.CurrentLink>
+                          ) : (
+                            <Breadcrumb.Link
+                              as={Link}
+                              href={href}
+                              {...linkStyles}
+                            >
+                              {label}
+                            </Breadcrumb.Link>
+                          )}
+                        </Breadcrumb.Item>
+                      </React.Fragment>
+                    );
+                  })}
+                </Breadcrumb.List>
+              </Breadcrumb.Root>
+            </Flex>
+          </Container>
+        </Box>
+      )} */}
     </Box>
   );
 }

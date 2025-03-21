@@ -6,7 +6,6 @@ import { Box } from "@chakra-ui/react";
 import { FloatingButtons } from "@/components/layout/FloatingButtons";
 
 // Section Components
-import { HeroSection } from "@/components/sections/HeroSection";
 import { CompanySection } from "@/components/sections/CompanySection";
 import { EducationSection } from "@/components/sections/EducationSection";
 import { NewsSection } from "@/components/sections/NewsSection";
@@ -22,8 +21,7 @@ export default function Home() {
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
   const colors = useColors();
-  const slideContents = useSlideContents();
-
+  const getSlideContents = useSlideContents();
   return (
     <Layout currentPage="홈">
       <Global styles={getScrollbarStyle(isDark)} />
@@ -36,10 +34,6 @@ export default function Home() {
         overflowY="auto"
         position="relative"
       >
-        <Box minH="680px">
-          <HeroSection slideContents={slideContents} />
-        </Box>
-
         <CompanySection />
         <EducationSection />
         <NewsSection />

@@ -73,6 +73,7 @@ export default function LocationPage() {
             mb={4}
             bgGradient="linear(to-r, blue.500, purple.500)"
             bgClip="text"
+            color={colors.primary.default}
           >
             오시는 길
           </Heading>
@@ -137,9 +138,8 @@ export default function LocationPage() {
                     위치 안내
                   </Text>
                   <Text color={colors.text.primary}>
-                    해운대구청에서 도보로 5분 거리에 위치해 있습니다.
-                    해운대해수욕장과 가까워 여름철에는 해수욕을 즐기실 수
-                    있습니다.
+                    부산 도시철도 4호선 윗반송역에서 내려서 도보 7분거리에 위치
+                    하고 있습니다.
                   </Text>
                 </Box>
 
@@ -153,7 +153,7 @@ export default function LocationPage() {
                     <Icon as={FaPhone} mr={2} color="green.500" />
                     연락처
                   </Text>
-                  <Text color={colors.text.primary}>051-123-4567</Text>
+                  <Text color={colors.text.primary}>051-343-0509</Text>
                 </Box>
 
                 <Box>
@@ -166,26 +166,7 @@ export default function LocationPage() {
                     <Icon as={FaEnvelope} mr={2} color="purple.500" />
                     이메일
                   </Text>
-                  <Text color={colors.text.primary}>
-                    info@startup-dream.or.kr
-                  </Text>
-                </Box>
-
-                <Box>
-                  <Text
-                    fontWeight="bold"
-                    mb={2}
-                    display="flex"
-                    alignItems="center"
-                  >
-                    <Icon as={FaClock} mr={2} color="orange.500" />
-                    운영 시간
-                  </Text>
-                  <Text color={colors.text.primary}>
-                    평일: 09:00 - 18:00
-                    <br />
-                    주말 및 공휴일: 휴무
-                  </Text>
+                  <Text color={colors.text.primary}>buvakim@naver.com</Text>
                 </Box>
               </VStack>
             </Card.Body>

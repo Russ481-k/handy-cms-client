@@ -102,16 +102,7 @@ export default function FAQPage() {
           창업가꿈 프로그램에 대해 자주 묻는 질문들을 모았습니다.
         </Text>
 
-        <Flex maxW="600px" mb={8}>
-          <Box
-            position="absolute"
-            left={4}
-            top="50%"
-            transform="translateY(-50%)"
-            color={colors.text.primary}
-          >
-            <FaSearch />
-          </Box>
+        <Flex width="100%" mb={8}>
           <Input
             pl={10}
             placeholder="질문을 검색해보세요"
@@ -170,17 +161,6 @@ export default function FAQPage() {
           </Box>
         </Box>
       ))}
-
-      <Box mt={12} p={6} bg={colors.cardBg} borderRadius="lg">
-        <Heading as="h2" size="lg" mb={4}>
-          더 궁금하신 점이 있으신가요?
-        </Heading>
-        <Text fontSize="lg">
-          이메일: info@changupgakkum.com
-          <br />
-          전화: 02-123-4567 (평일 09:00-18:00)
-        </Text>
-      </Box>
     </Container>
   );
 }
