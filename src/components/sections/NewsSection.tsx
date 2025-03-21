@@ -7,6 +7,7 @@ import {
   Image,
   AspectRatio,
   Container,
+  Link,
 } from "@chakra-ui/react";
 import { LuPlus } from "react-icons/lu";
 import { useColors } from "@/styles/theme";
@@ -75,19 +76,21 @@ export function NewsSection() {
         >
           <Box flex="1" width="100%">
             <Flex justify="flex-end" mb={2}>
-              <Button
-                variant="ghost"
-                color={colors.text.primary}
-                fontWeight="medium"
-                fontSize={{ base: "sm", md: "md" }}
-                p={2}
-                _hover={{
-                  bg: isDark ? "whiteAlpha.100" : "blackAlpha.50",
-                }}
-              >
-                More View
-                <Box as={LuPlus} />
-              </Button>
+              <Link href="/routes/recruit/notice">
+                <Button
+                  variant="ghost"
+                  color={colors.text.primary}
+                  fontWeight="medium"
+                  fontSize={{ base: "sm", md: "md" }}
+                  p={2}
+                  _hover={{
+                    bg: isDark ? "whiteAlpha.100" : "blackAlpha.50",
+                  }}
+                >
+                  More View
+                  <Box as={LuPlus} />
+                </Button>
+              </Link>
             </Flex>
 
             <VStack gap={0} align="stretch" width="100%">

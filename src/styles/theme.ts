@@ -246,8 +246,8 @@ export function useColors(): Colors {
         COLORS.dark.primary.hover
       ),
       light: useColorModeValue(
-        COLORS.light.primary.light,
-        COLORS.dark.primary.light
+        COLORS.dark.primary.light,
+        COLORS.light.primary.light
       ),
       dark: useColorModeValue(
         COLORS.light.primary.dark,

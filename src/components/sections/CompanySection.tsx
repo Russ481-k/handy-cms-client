@@ -1,3 +1,4 @@
+import { useColors } from "@/styles/theme";
 import {
   Box,
   Container,
@@ -174,6 +175,7 @@ const CompanyCard = ({
 };
 
 export function CompanySection() {
+  const colors = useColors();
   return (
     <Box py={{ base: 12, md: 24 }}>
       <Container maxW="container.xl">
@@ -194,14 +196,14 @@ export function CompanySection() {
             fontWeight="bold"
             mb={{ base: 4, md: 6 }}
             letterSpacing="tight"
-            color="#0D344E"
+            color={colors.primary.light}
           >
             혁신을 만드는 공간
           </Heading>
           <Text
             fontSize={{ base: "sm", md: "md" }}
             fontWeight="bold"
-            color="#0D344E"
+            color={colors.primary.light}
             mb={{ base: 4, md: 6 }}
             lineHeight="1.7"
           >

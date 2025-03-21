@@ -84,7 +84,7 @@ export default function VisionPage() {
   };
 
   return (
-    <Container maxW="container.xl" pb={16}>
+    <Container maxW="container.xl" py={16}>
       <VStack gap={12} align="stretch">
         <Box textAlign="center">
           <Badge

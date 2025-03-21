@@ -16,11 +16,13 @@ import { Global } from "@emotion/react";
 import Layout from "@/components/layout/view/Layout";
 import { useColorMode } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
+import { useSlideContents } from "@/components/ui/breadcrumb";
 
 export default function Home() {
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
   const colors = useColors();
+  const slideContents = useSlideContents();
 
   return (
     <Layout currentPage="홈">
@@ -35,7 +37,7 @@ export default function Home() {
         position="relative"
       >
         <Box minH="680px">
-          <HeroSection />
+          <HeroSection slideContents={slideContents} />
         </Box>
 
         <CompanySection />

@@ -1,3 +1,4 @@
+import { useColors } from "@/styles/theme";
 import {
   Box,
   Container,
@@ -26,62 +27,61 @@ const EducationCard = ({
   link,
 }: EducationCardProps) => {
   return (
-    <Link href={link}>
-      <Box width="100%">
-        <Box
-          bg={bgColor}
-          p={{ base: 4, md: 8 }}
-          position="relative"
-          _hover={{ transform: "translateY(-4px)" }}
-          transition="all 0.2s"
-          borderTop="1px solid"
-          borderBottom="3px solid"
-          borderColor="#0D344E"
-          overflow="hidden"
-          height={{ base: "auto", md: "420px" }}
-          minHeight={{ base: "320px", md: "420px" }}
-        >
-          <Flex gap={{ base: 4, md: 8 }} align="flex-start" position="relative">
-            <Box flex={1}>
-              <Heading
-                as="h3"
-                fontSize={{ base: "24px", sm: "28px", md: "36px" }}
-                fontWeight="bold"
-                color="gray.800"
-                mb={{ base: 4, md: 6 }}
-              >
-                {title}
-              </Heading>
-              <VStack align="flex-start" gap={{ base: 2, md: 3 }}>
-                {descriptions.map((desc, index) => (
-                  <Flex key={index} gap={{ base: 2, md: 3 }} align="flex-start">
-                    <Text
-                      color="gray.600"
-                      fontSize={{ base: "12px", sm: "13px", md: "14px" }}
-                      lineHeight="1.7"
-                    >
-                      {desc}
-                    </Text>
-                  </Flex>
-                ))}
-              </VStack>
-            </Box>
-          </Flex>
-          <Box
-            position="absolute"
-            right={4}
-            bottom={4}
-            width={{ base: "60px", sm: "70px", md: "90px" }}
-            height={{ base: "60px", sm: "70px", md: "90px" }}
-          >
-            <Image
-              src={iconUrl}
-              alt={title}
-              width="100%"
-              height="100%"
-              objectFit="contain"
-            />
+    <Link href={link} width="100%">
+      <Box
+        bg={bgColor}
+        p={{ base: 4, md: 8 }}
+        position="relative"
+        _hover={{ transform: "translateY(-4px)" }}
+        transition="all 0.2s"
+        borderTop="1px solid"
+        borderBottom="3px solid"
+        borderColor="#0D344E"
+        overflow="hidden"
+        height={{ base: "auto", md: "420px" }}
+        minHeight={{ base: "320px", md: "420px" }}
+        width="100%"
+      >
+        <Flex gap={{ base: 4, md: 8 }} align="flex-start" position="relative">
+          <Box flex={1}>
+            <Heading
+              as="h3"
+              fontSize={{ base: "24px", sm: "28px", md: "36px" }}
+              fontWeight="bold"
+              color="gray.800"
+              mb={{ base: 4, md: 6 }}
+            >
+              {title}
+            </Heading>
+            <VStack align="flex-start" gap={{ base: 2, md: 3 }}>
+              {descriptions.map((desc, index) => (
+                <Flex key={index} gap={{ base: 2, md: 3 }} align="flex-start">
+                  <Text
+                    color="gray.600"
+                    fontSize={{ base: "12px", sm: "13px", md: "14px" }}
+                    lineHeight="1.7"
+                  >
+                    {desc}
+                  </Text>
+                </Flex>
+              ))}
+            </VStack>
           </Box>
+        </Flex>
+        <Box
+          position="absolute"
+          right={4}
+          bottom={4}
+          width={{ base: "60px", sm: "70px", md: "90px" }}
+          height={{ base: "60px", sm: "70px", md: "90px" }}
+        >
+          <Image
+            src={iconUrl}
+            alt={title}
+            width="100%"
+            height="100%"
+            objectFit="contain"
+          />
         </Box>
       </Box>
     </Link>
@@ -89,6 +89,7 @@ const EducationCard = ({
 };
 
 export function EducationSection() {
+  const colors = useColors();
   return (
     <Box py={{ base: 12, md: 24 }}>
       <Container maxW="container.xl">
@@ -101,7 +102,7 @@ export function EducationSection() {
         >
           <Box>
             <Text
-              color="#0D344E"
+              color={colors.primary.light}
               fontSize={{ base: "2xl", sm: "3xl" }}
               fontWeight="bold"
               letterSpacing="tight"
@@ -126,7 +127,7 @@ export function EducationSection() {
                 as="h2"
                 fontSize={{ base: "3xl", sm: "4xl", md: "5xl" }}
                 fontWeight="bold"
-                color="#0D344E"
+                color={colors.primary.light}
                 letterSpacing="tight"
                 lineHeight="1.2"
               >
@@ -137,7 +138,7 @@ export function EducationSection() {
           <Text
             fontSize={{ base: "sm", lg: "md" }}
             fontWeight="bold"
-            color="#0D344E"
+            color={colors.primary.light}
             textAlign="right"
             maxW={{ base: "100%", lg: "600px" }}
           >

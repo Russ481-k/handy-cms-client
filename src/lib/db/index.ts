@@ -40,13 +40,16 @@ interface TableResult {
 }
 
 export async function initializeDatabase() {
-  const connection = await mysql.createConnection({
-    host: process.env.DB_HOST || "localhost",
-    user: process.env.DB_USER || "root",
-    password: process.env.DB_PASSWORD || "",
-  });
-
+  let connection;
   try {
+    connection = await mysql.createConnection({
+      host: process.env.DB_HOST || "localhost",
+      user: process.env.DB_USER || "root",
+      password: process.env.DB_PASSWORD || "",
+      connectTimeout: 10000,
+      connectionLimit: 5,
+    });
+
     // 데이터베이스 생성
     await connection.execute(
       `CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME || "cms_new"}`
@@ -122,7 +125,7 @@ export async function initializeDatabase() {
           );
 
           // 기업별 소개 하위 메뉴인 경우 추가 하위 메뉴 삽입
-          if (subMenu.name === "기업별 소개") {
+          if (subMenu.name === "참여기업업") {
             const companyParentId = (subResult as TableResult).insertId;
             for (const companySubMenu of companySubMenus) {
               await connection.execute(
@@ -166,7 +169,9 @@ export async function initializeDatabase() {
 
     console.log("[DB] Database initialization completed");
   } finally {
-    await connection.end();
+    if (connection) {
+      await connection.end();
+    }
   }
 }
 

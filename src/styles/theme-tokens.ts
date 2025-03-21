@@ -73,7 +73,7 @@ export const COLORS = {
     primary: {
       default: "#63b3ed",
       hover: "#4299e1",
-      light: "#2a4365",
+      light: "#0D344E",
       dark: "#2b6cb0",
       alpha: "rgba(99, 179, 237, 0.1)",
     },

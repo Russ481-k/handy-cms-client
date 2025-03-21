@@ -8,7 +8,6 @@ import { useColorMode } from "@/components/ui/color-mode";
 import { useEffect } from "react";
 
 import { CompanySection } from "@/components/sections/CompanySection";
-import { HeroSection } from "@/components/sections/HeroSection";
 import { ApplicationSection } from "@/components/sections/ApplicationSection";
 import { EducationSection } from "@/components/sections/EducationSection";
 import { NewsSection } from "@/components/sections/NewsSection";
@@ -44,9 +43,6 @@ export function Main({ menus }: MainProps) {
           padding={0}
           id="main-content"
         >
-          <Box p={4} height="680px">
-            <HeroSection />
-          </Box>
           <Container maxW="container.xl" py={20}>
             <VStack gap={20} align="stretch">
               <CompanySection />

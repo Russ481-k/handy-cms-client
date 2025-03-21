@@ -1,8 +1,16 @@
 "use client";
 
-import { BreadcrumbNav } from "@/components/ui/breadcrumb";
+import { Box } from "@chakra-ui/react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
+
+const BreadcrumbNav = dynamic(
+  () => import("@/components/ui/breadcrumb").then((mod) => mod.BreadcrumbNav),
+  {
+    ssr: false,
+  }
+);
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -13,14 +21,10 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
-    return <main>{children}</main>;
-  }
-
   return (
-    <>
-      {!isCmsPath && <BreadcrumbNav />}
-      <main>{children}</main>
-    </>
+    <Box>
+      {mounted && !isCmsPath && <BreadcrumbNav />}
+      <Box as="main">{children}</Box>
+    </Box>
   );
 }
