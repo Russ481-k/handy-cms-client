@@ -8,11 +8,16 @@ import {
 } from "./schema";
 import { createInitialMenus } from "./seed";
 
-// MySQL 연결 설정 (초기에는 데이터베이스를 지정하지 않음)
-const initialPool = mysql.createPool({
+interface MySQLResult {
+  insertId: number;
+}
+
+// MySQL 연결 설정
+const dbPool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME || "cms_new",
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
@@ -23,68 +28,37 @@ function handlePoolError(err: Error) {
   console.error("[DB] Pool error:", err);
 }
 
-// 풀에 에러 핸들러 추가
-initialPool
-  .on("acquire", () => {})
-  .on("connection", () => {})
-  .on("release", () => {});
-process.on("uncaughtException", handlePoolError);
-
-// 비밀번호 해시 함수
-async function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, 10);
-}
-
-interface TableResult {
-  insertId: number;
-}
-
 export async function initializeDatabase() {
   let connection;
   try {
-    connection = await mysql.createConnection({
-      host: process.env.DB_HOST || "localhost",
-      user: process.env.DB_USER || "root",
-      password: process.env.DB_PASSWORD || "",
-      connectTimeout: 10000,
-      connectionLimit: 5,
-    });
-
-    // 데이터베이스 생성
-    await connection.execute(
-      `CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME || "cms_new"}`
-    );
-    console.log(`[DB] Using database ${process.env.DB_NAME || "cms_new"}`);
-
-    // 데이터베이스 선택
-    await connection.execute(`USE ${process.env.DB_NAME || "cms_new"}`);
+    connection = await dbPool.getConnection();
 
     // 테이블 존재 여부 확인
-    const [tables] = await connection.execute("SHOW TABLES LIKE 'users'");
+    const [tables] = await connection.query("SHOW TABLES LIKE 'users'");
     const tablesExist = (tables as unknown[]).length > 0;
 
     if (!tablesExist) {
       console.log("[DB] Tables do not exist. Starting initialization...");
 
       // Users 테이블 생성
-      await connection.execute(createUsersTable);
+      await connection.query(createUsersTable);
       console.log("[DB] Users table created");
 
       // Menus 테이블 생성
-      await connection.execute(createMenusTable);
+      await connection.query(createMenusTable);
       console.log("[DB] Menus table created");
 
       // Equipment 테이블 생성
-      await connection.execute(createEquipmentTable);
+      await connection.query(createEquipmentTable);
       console.log("[DB] Equipment table created");
 
       // Monitoring 테이블 생성
-      await connection.execute(createMonitoringTable);
+      await connection.query(createMonitoringTable);
       console.log("[DB] Monitoring table created");
 
       // 초기 관리자 계정 생성
-      const hashedPassword = await hashPassword("0000");
-      await connection.execute(
+      const hashedPassword = await bcrypt.hash("0000", 10);
+      await connection.query(
         `INSERT INTO users (uuid, username, name, password, email, role) 
          VALUES (UUID(), 'admin', 'Administrator', ?, 'admin@example.com', 'admin')`,
         [hashedPassword]
@@ -96,7 +70,7 @@ export async function initializeDatabase() {
 
       // 메인 메뉴 삽입
       for (const menu of mainMenus) {
-        const [result] = await connection.execute(
+        const [result] = await connection.query(
           "INSERT INTO menus (name, type, url, display_position, visible, sort_order) VALUES (?, ?, ?, ?, ?, ?)",
           [
             menu.name,
@@ -107,11 +81,11 @@ export async function initializeDatabase() {
             menu.sort_order,
           ]
         );
-        const parentId = (result as TableResult).insertId;
+        const parentId = (result as MySQLResult).insertId;
 
         // 하위 메뉴 삽입
         for (const subMenu of subMenus) {
-          const [subResult] = await connection.execute(
+          const [subResult] = await connection.query(
             "INSERT INTO menus (name, type, url, display_position, visible, sort_order, parent_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
             [
               subMenu.name,
@@ -126,9 +100,9 @@ export async function initializeDatabase() {
 
           // 기업별 소개 하위 메뉴인 경우 추가 하위 메뉴 삽입
           if (subMenu.name === "참여기업업") {
-            const companyParentId = (subResult as TableResult).insertId;
+            const companyParentId = (subResult as MySQLResult).insertId;
             for (const companySubMenu of companySubMenus) {
-              await connection.execute(
+              await connection.query(
                 "INSERT INTO menus (name, type, url, display_position, visible, sort_order, parent_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
                 [
                   companySubMenu.name,
@@ -149,14 +123,14 @@ export async function initializeDatabase() {
       console.log("[DB] Tables already exist. Checking for admin account...");
 
       // admin 계정 존재 여부 확인
-      const [adminUsers] = await connection.execute(
+      const [adminUsers] = await connection.query(
         "SELECT * FROM users WHERE username = 'admin'"
       );
 
       if ((adminUsers as unknown[]).length === 0) {
         console.log("[DB] Admin account not found. Creating admin account...");
-        const hashedPassword = await hashPassword("0000");
-        await connection.execute(
+        const hashedPassword = await bcrypt.hash("0000", 10);
+        await connection.query(
           `INSERT INTO users (uuid, username, name, password, email, role) 
            VALUES (UUID(), 'admin', 'Administrator', ?, 'admin@example.com', 'admin')`,
           [hashedPassword]
@@ -168,9 +142,12 @@ export async function initializeDatabase() {
     }
 
     console.log("[DB] Database initialization completed");
+  } catch (error) {
+    console.error("[DB] Database initialization failed:", error);
+    throw error;
   } finally {
     if (connection) {
-      await connection.end();
+      connection.release();
     }
   }
 }
@@ -178,18 +155,6 @@ export async function initializeDatabase() {
 // 데이터베이스 초기화 실행
 initializeDatabase().catch((error) => {
   console.error("[DB] Database initialization failed:", error);
-  process.exit(1);
-});
-
-// 데이터베이스가 초기화된 후의 연결 풀 생성
-const dbPool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME || "cms_new",
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
 });
 
 // 메인 풀에도 에러 핸들러 추가
@@ -197,6 +162,7 @@ dbPool
   .on("acquire", () => {})
   .on("connection", () => {})
   .on("release", () => {});
+
 process.on("uncaughtException", handlePoolError);
 
 export default dbPool;

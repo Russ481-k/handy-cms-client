@@ -23,7 +23,6 @@ import {
   FaNetworkWired,
   FaRegComments,
 } from "react-icons/fa";
-import { useColorMode } from "@/components/ui/color-mode";
 import { Card } from "@chakra-ui/react";
 import { useColors } from "@/styles/theme";
 import { motion } from "framer-motion";

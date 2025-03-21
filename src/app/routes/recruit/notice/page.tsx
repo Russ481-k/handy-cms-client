@@ -1,32 +1,32 @@
 "use client";
 
 import { useColors } from "@/styles/theme";
-import { Box, Container, Heading, Text, Button, Badge } from "@chakra-ui/react";
+import { Box, Container, Heading, Text } from "@chakra-ui/react";
 
 export default function NoticePage() {
   const colors = useColors();
-  const notices = [
-    {
-      id: 1,
-      title: "준비중입니다.",
-      status: "준비중",
-      period: "2024.03.01 - 2024.03.31",
-      target: "예비창업자 및 3년 이내 창업기업",
-      support: "사업화 자금 최대 5천만원, 멘토링, 사무공간 등",
-      description:
-        "혁신적인 아이디어와 기술을 보유한 (예비)창업자를 모집합니다.",
-    },
-    {
-      id: 2,
-      title: "소셜벤처 특별 모집 공고",
-      status: "모집예정",
-      period: "2024.04.01 - 2024.04.30",
-      target: "사회문제 해결을 위한 비즈니스 모델 보유 기업",
-      support: "사업화 자금 최대 3천만원, 소셜임팩트 측정 지원 등",
-      description:
-        "사회적 가치와 경제적 가치를 동시에 추구하는 소셜벤처를 모집합니다.",
-    },
-  ];
+  // const notices = [
+  //   {
+  //     id: 1,
+  //     title: "준비중입니다.",
+  //     status: "준비중",
+  //     period: "2024.03.01 - 2024.03.31",
+  //     target: "예비창업자 및 3년 이내 창업기업",
+  //     support: "사업화 자금 최대 5천만원, 멘토링, 사무공간 등",
+  //     description:
+  //       "혁신적인 아이디어와 기술을 보유한 (예비)창업자를 모집합니다.",
+  //   },
+  //   {
+  //     id: 2,
+  //     title: "소셜벤처 특별 모집 공고",
+  //     status: "모집예정",
+  //     period: "2024.04.01 - 2024.04.30",
+  //     target: "사회문제 해결을 위한 비즈니스 모델 보유 기업",
+  //     support: "사업화 자금 최대 3천만원, 소셜임팩트 측정 지원 등",
+  //     description:
+  //       "사회적 가치와 경제적 가치를 동시에 추구하는 소셜벤처를 모집합니다.",
+  //   },
+  // ];
 
   return (
     <Container maxW="container.xl" py={10}>

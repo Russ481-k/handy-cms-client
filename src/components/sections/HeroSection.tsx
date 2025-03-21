@@ -13,7 +13,6 @@ import { LuArrowRight, LuChevronLeft, LuChevronRight } from "react-icons/lu";
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useState, useEffect, useCallback } from "react";
 import { useColors } from "@/styles/theme";
-import { useSlideContents } from "../ui/breadcrumb";
 import { usePathname } from "next/navigation";
 
 const MotionBox = motion.create(Box);

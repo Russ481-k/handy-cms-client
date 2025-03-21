@@ -1,82 +1,68 @@
 "use client";
 
-import { useState } from "react";
 import {
   Box,
   Container,
   Heading,
   Text,
-  SimpleGrid,
-  Input,
-  Button,
-  Badge,
-  NativeSelect,
 } from "@chakra-ui/react";
-import NextLink from "next/link";
 import { useColors } from "@/styles/theme";
 
-const resources = [
-  {
-    id: 1,
-    title: "창업가꿈 프로그램 소개서",
-    description:
-      "창업가꿈 프로그램의 상세 내용과 참여 기업 혜택을 소개하는 자료입니다.",
-    category: "프로그램 소개",
-    type: "PDF",
-    date: "2024-03-15",
-    downloadUrl: "/files/program-introduction.pdf",
-  },
-  {
-    id: 2,
-    title: "스타트업 성장 전략 가이드",
-    description:
-      "초기 스타트업의 성장을 위한 전략과 실행 방안을 담은 가이드북입니다.",
-    category: "창업 가이드",
-    type: "PDF",
-    date: "2024-03-10",
-    downloadUrl: "/files/startup-growth-guide.pdf",
-  },
-  {
-    id: 3,
-    title: "투자 유치 성공사례 분석",
-    description:
-      "창업가꿈 참여기업들의 투자 유치 성공 사례와 노하우를 분석한 자료입니다.",
-    category: "투자 유치",
-    type: "PDF",
-    date: "2024-03-05",
-    downloadUrl: "/files/investment-cases.pdf",
-  },
-  {
-    id: 4,
-    title: "2023년 데모데이 발표자료",
-    description: "2023년 창업가꿈 데모데이 참가기업들의 발표자료 모음입니다.",
-    category: "데모데이",
-    type: "PPT",
-    date: "2023-12-20",
-    downloadUrl: "/files/demo-day-2023.pptx",
-  },
-];
+// const resources = [
+//   {
+//     id: 1,
+//     title: "창업가꿈 프로그램 소개서",
+//     description:
+//       "창업가꿈 프로그램의 상세 내용과 참여 기업 혜택을 소개하는 자료입니다.",
+//     category: "프로그램 소개",
+//     type: "PDF",
+//     date: "2024-03-15",
+//     downloadUrl: "/files/program-introduction.pdf",
+//   },
+//   {
+//     id: 2,
+//     title: "스타트업 성장 전략 가이드",
+//     description:
+//       "초기 스타트업의 성장을 위한 전략과 실행 방안을 담은 가이드북입니다.",
+//     category: "창업 가이드",
+//     type: "PDF",
+//     date: "2024-03-10",
+//     downloadUrl: "/files/startup-growth-guide.pdf",
+//   },
+//   {
+//     id: 3,
+//     title: "투자 유치 성공사례 분석",
+//     description:
+//       "창업가꿈 참여기업들의 투자 유치 성공 사례와 노하우를 분석한 자료입니다.",
+//     category: "투자 유치",
+//     type: "PDF",
+//     date: "2024-03-05",
+//     downloadUrl: "/files/investment-cases.pdf",
+//   },
+//   {
+//     id: 4,
+//     title: "2023년 데모데이 발표자료",
+//     description: "2023년 창업가꿈 데모데이 참가기업들의 발표자료 모음입니다.",
+//     category: "데모데이",
+//     type: "PPT",
+//     date: "2023-12-20",
+//     downloadUrl: "/files/demo-day-2023.pptx",
+//   },
+// ];
 
-const categories = [
-  "전체",
-  "프로그램 소개",
-  "창업 가이드",
-  "투자 유치",
-  "데모데이",
-];
 
 export default function ResourcesPage() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("전체");
+  // const [searchTerm, setSearchTerm] = useState("");
+  // const [selectedCategory, setSelectedCategory] = useState("전체");
 
-  const filteredResources = resources.filter((resource) => {
-    const matchesSearch =
-      resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      resource.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "전체" || resource.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  // const filteredResources = resources.filter((resource) => {
+  //   const matchesSearch =
+  //     resource.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     resource.description.toLowerCase().includes(searchTerm.toLowerCase());
+  //   const matchesCategory =
+  //     selectedCategory === "전체" || resource.category === selectedCategory;
+  //   return matchesSearch && matchesCategory;
+  // });
 
   const colors = useColors();
 

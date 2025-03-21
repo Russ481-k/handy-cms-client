@@ -11,7 +11,7 @@ import {
   SimpleGrid,
   Card,
 } from "@chakra-ui/react";
-import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaClock } from "react-icons/fa";
+import { FaMapMarkerAlt, FaPhone, FaEnvelope } from "react-icons/fa";
 import { useColors } from "@/styles/theme";
 
 export default function LocationPage() {

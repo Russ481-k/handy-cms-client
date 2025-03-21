@@ -1,64 +1,64 @@
 "use client";
 
-import { Box, Container, Heading, Text, SimpleGrid } from "@chakra-ui/react";
-import { FaLightbulb, FaChartLine, FaHandshake, FaGlobe } from "react-icons/fa";
+import { Box, Container, Heading, Text } from "@chakra-ui/react";
+// import { FaLightbulb, FaChartLine, FaHandshake, FaGlobe } from "react-icons/fa";
 import { useColors } from "@/styles/theme";
 
 export default function EducationPage() {
   const colors = useColors();
-  const courses = [
-    {
-      title: "창업 기초",
-      description:
-        "창업의 기본 개념부터 사업계획서 작성, 법인 설립 절차까지 기초적인 내용을 학습합니다.",
-      duration: "2주",
-      topics: [
-        "창업의 이해",
-        "사업계획서 작성법",
-        "법인 설립 실무",
-        "세무/회계 기초",
-      ],
-      icon: FaLightbulb,
-      color: colors.primary.default,
-    },
-    {
-      title: "사업화 전략",
-      description:
-        "시장 분석, 마케팅 전략, 재무 계획 등 사업 운영에 필요한 실전 지식을 습득합니다.",
-      duration: "3주",
-      topics: [
-        "시장 분석 방법론",
-        "마케팅 전략 수립",
-        "재무 계획과 관리",
-        "영업/판로 개척",
-      ],
-      icon: FaChartLine,
-      color: colors.primary.default,
-    },
-    {
-      title: "투자 유치",
-      description:
-        "IR 피칭, 투자 계약, 기업 가치평가 등 투자 유치에 필요한 실무 지식을 배웁니다.",
-      duration: "2주",
-      topics: [
-        "IR 피칭 기법",
-        "투자 계약서 이해",
-        "기업 가치평가",
-        "투자자 네트워킹",
-      ],
-      icon: FaHandshake,
-      color: colors.primary.default,
-    },
-    {
-      title: "글로벌 진출",
-      description:
-        "해외 시장 진출 전략, 글로벌 마케팅, 수출입 실무 등 글로벌 비즈니스 역량을 강화합니다.",
-      duration: "3주",
-      topics: ["해외 시장 조사", "글로벌 마케팅", "수출입 실무", "현지화 전략"],
-      icon: FaGlobe,
-      color: colors.primary.default,
-    },
-  ];
+  // const courses = [
+  //   {
+  //     title: "창업 기초",
+  //     description:
+  //       "창업의 기본 개념부터 사업계획서 작성, 법인 설립 절차까지 기초적인 내용을 학습합니다.",
+  //     duration: "2주",
+  //     topics: [
+  //       "창업의 이해",
+  //       "사업계획서 작성법",
+  //       "법인 설립 실무",
+  //       "세무/회계 기초",
+  //     ],
+  //     icon: FaLightbulb,
+  //     color: colors.primary.default,
+  //   },
+  //   {
+  //     title: "사업화 전략",
+  //     description:
+  //       "시장 분석, 마케팅 전략, 재무 계획 등 사업 운영에 필요한 실전 지식을 습득합니다.",
+  //     duration: "3주",
+  //     topics: [
+  //       "시장 분석 방법론",
+  //       "마케팅 전략 수립",
+  //       "재무 계획과 관리",
+  //       "영업/판로 개척",
+  //     ],
+  //     icon: FaChartLine,
+  //     color: colors.primary.default,
+  //   },
+  //   {
+  //     title: "투자 유치",
+  //     description:
+  //       "IR 피칭, 투자 계약, 기업 가치평가 등 투자 유치에 필요한 실무 지식을 배웁니다.",
+  //     duration: "2주",
+  //     topics: [
+  //       "IR 피칭 기법",
+  //       "투자 계약서 이해",
+  //       "기업 가치평가",
+  //       "투자자 네트워킹",
+  //     ],
+  //     icon: FaHandshake,
+  //     color: colors.primary.default,
+  //   },
+  //   {
+  //     title: "글로벌 진출",
+  //     description:
+  //       "해외 시장 진출 전략, 글로벌 마케팅, 수출입 실무 등 글로벌 비즈니스 역량을 강화합니다.",
+  //     duration: "3주",
+  //     topics: ["해외 시장 조사", "글로벌 마케팅", "수출입 실무", "현지화 전략"],
+  //     icon: FaGlobe,
+  //     color: colors.primary.default,
+  //   },
+  // ];
 
   return (
     <Container maxW="container.xl" py={10}>

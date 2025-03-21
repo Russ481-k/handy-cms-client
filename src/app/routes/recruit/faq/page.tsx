@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Box, Container, Heading, Text, Input, Flex } from "@chakra-ui/react";
-import { FaSearch, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import {  FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { useColors } from "@/styles/theme";
 
 export default function FAQPage() {
