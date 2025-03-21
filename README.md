@@ -152,4 +152,7 @@
 4. **PM2 프로세스 매니저**  
    - `sudo npm i -g pm2` → `pm2 start app.js --name "my-app"` → `pm2 startup` → `pm2 save`  
 
+root@s195b36b423b:~/h-startup# systemctl daemon-reload
+root@s195b36b423b:~/h-startup# systemctl restart h-startup
+
 이 단계를 거치면 **우분투 서버**에서 Node.js 애플리케이션을 안정적으로 구동하고, MySQL 데이터베이스를 운영하며, 필요 시 firewalld로 보안을 강화할 수 있습니다.  

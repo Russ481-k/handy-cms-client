@@ -66,10 +66,10 @@ export async function initializeDatabase() {
       console.log("[DB] Initial admin account created");
 
       // 초기 메뉴 생성
-      const { mainMenus, subMenus, companySubMenus } = createInitialMenus();
+      const { menuStructure } = createInitialMenus();
 
-      // 메인 메뉴 삽입
-      for (const menu of mainMenus) {
+      // 메인 메뉴와 하위 메뉴 삽입
+      for (const menu of menuStructure) {
         const [result] = await connection.query(
           "INSERT INTO menus (name, type, url, display_position, visible, sort_order) VALUES (?, ?, ?, ?, ?, ?)",
           [
@@ -83,8 +83,8 @@ export async function initializeDatabase() {
         );
         const parentId = (result as MySQLResult).insertId;
 
-        // 하위 메뉴 삽입
-        for (const subMenu of subMenus) {
+        // 해당 메인 메뉴의 서브메뉴 추가
+        for (const subMenu of menu.subMenus) {
           const [subResult] = await connection.query(
             "INSERT INTO menus (name, type, url, display_position, visible, sort_order, parent_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
             [
@@ -98,10 +98,10 @@ export async function initializeDatabase() {
             ]
           );
 
-          // 기업별 소개 하위 메뉴인 경우 추가 하위 메뉴 삽입
-          if (subMenu.name === "참여기업업") {
+          // 기업별 소개 메뉴인 경우 추가 하위 메뉴 삽입
+          if (subMenu.name === "기업별 소개" && subMenu.companySubMenus) {
             const companyParentId = (subResult as MySQLResult).insertId;
-            for (const companySubMenu of companySubMenus) {
+            for (const companySubMenu of subMenu.companySubMenus) {
               await connection.query(
                 "INSERT INTO menus (name, type, url, display_position, visible, sort_order, parent_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
                 [

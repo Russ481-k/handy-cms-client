@@ -33,7 +33,7 @@ app.prepare().then(() => {
 
     const parsedUrl = parse(req.url, true);
     handle(req, res, parsedUrl);
-  }).listen(443, (err) => {
+  }).listen(443, '0.0.0.0', (err) => {
     if (err) throw err;
     console.log('> Ready on https://h-startup.kr');
   });
@@ -45,7 +45,7 @@ app.prepare().then(() => {
       Location: `https://${hostname}${req.url}`
     });
     res.end();
-  }).listen(80, (err) => {
+  }).listen(80, '0.0.0.0', (err) => {
     if (err) throw err;
     console.log('> HTTP redirect server ready');
   });
