@@ -94,9 +94,6 @@ export default function Cms() {
             size="xl"
             animation={`${pulse} 2s ease-in-out infinite`}
           />
-          <Box mt={4} fontSize="lg" color={colors.primary.default}>
-            로딩 중...
-          </Box>
         </Box>
       </Box>
     );

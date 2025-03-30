@@ -1,6 +1,5 @@
 import "@/styles/globals.css";
 import { Providers } from "./providers";
-import { ClientLayout } from "./client-layout";
 
 export default function RootLayout({
   children,
@@ -10,9 +9,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body>
-        <Providers>
-          <ClientLayout>{children}</ClientLayout>
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

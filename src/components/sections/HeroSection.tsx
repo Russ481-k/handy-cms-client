@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Box,
   Container,
@@ -25,13 +27,12 @@ export interface SlideContent {
 }
 
 interface HeroSectionProps {
-  slideContents: () => SlideContent[];
+  slideContents: SlideContent[];
 }
 
 export function HeroSection({ slideContents }: HeroSectionProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [contents, setContents] = useState<SlideContent[]>([]);
 
   const colors = useColors();
   const pathname = usePathname();
@@ -71,9 +72,6 @@ export function HeroSection({ slideContents }: HeroSectionProps) {
       },
     },
   };
-  useEffect(() => {
-    setContents(slideContents());
-  }, [slideContents]);
 
   const swipeConfidenceThreshold = 10000;
   const swipePower = (offset: number, velocity: number) => {
@@ -86,12 +84,12 @@ export function HeroSection({ slideContents }: HeroSectionProps) {
       setIsAnimating(true);
       setCurrentPage((prevPage) => {
         const nextPage = prevPage + newDirection;
-        if (nextPage < 0) return contents.length - 1;
-        if (nextPage >= contents.length) return 0;
+        if (nextPage < 0) return slideContents.length - 1;
+        if (nextPage >= slideContents.length) return 0;
         return nextPage;
       });
     },
-    [isAnimating, contents.length]
+    [isAnimating, slideContents.length]
   );
 
   useEffect(() => {
@@ -121,7 +119,7 @@ export function HeroSection({ slideContents }: HeroSectionProps) {
 
   return (
     <Box px={0} py={24} bg={colors.bg}>
-      <Container maxW="1920px">
+      <Container maxW="100%">
         <Box
           position="relative"
           height={{ base: "400px", md: "500px", lg: "680px" }}
@@ -129,7 +127,7 @@ export function HeroSection({ slideContents }: HeroSectionProps) {
           borderRadius={{ base: "20px", md: "26px" }}
         >
           {/* Controller Background */}
-          {contents.length > 1 && (
+          {slideContents.length > 1 && (
             <Box
               position="absolute"
               bottom={0}
@@ -157,7 +155,7 @@ export function HeroSection({ slideContents }: HeroSectionProps) {
                   left={0}
                   top={0}
                   height="100%"
-                  width={`${((currentPage + 1) / contents.length) * 100}%`}
+                  width={`${((currentPage + 1) / slideContents.length) * 100}%`}
                   bg="blue.500"
                   transition="width 0.3s ease"
                 />
@@ -171,7 +169,7 @@ export function HeroSection({ slideContents }: HeroSectionProps) {
                   </Text>
                   <Box w="1px" h="20px" bg="gray.200" />
                   <Text color="gray.400" fontSize="xl">
-                    {String(contents.length).padStart(2, "0")}
+                    {String(slideContents.length).padStart(2, "0")}
                   </Text>
                 </Flex>
                 <Flex gap={2}>
@@ -230,7 +228,7 @@ export function HeroSection({ slideContents }: HeroSectionProps) {
               position="absolute"
               width="100%"
               height="100%"
-              backgroundImage={`url(${contents[currentPage]?.image})`}
+              backgroundImage={`url(${slideContents[currentPage]?.image})`}
               backgroundSize="cover"
               backgroundPosition="center"
               onAnimationComplete={() => setIsAnimating(false)}
@@ -248,50 +246,54 @@ export function HeroSection({ slideContents }: HeroSectionProps) {
                   maxW="3xl"
                   px={{ base: 4, md: 8 }}
                 >
-                  {contents[currentPage]?.header && (
+                  {slideContents[currentPage]?.header && (
                     <Text
                       fontSize={{ base: "xl", sm: "2xl", md: "3xl" }}
                       fontWeight="bold"
                       color={
-                        contents[currentPage]?.subtitle ? "#0D344E" : "white"
+                        slideContents[currentPage]?.subtitle
+                          ? "#0D344E"
+                          : "white"
                       }
                       lineHeight="1.6"
                       whiteSpace="pre-line"
                     >
-                      {contents[currentPage]?.header}
+                      {slideContents[currentPage]?.header}
                     </Text>
                   )}
                   <Heading
                     as="h1"
                     fontSize={
-                      contents[currentPage]?.header
+                      slideContents[currentPage]?.header
                         ? { base: "4xl", sm: "5xl", md: "6xl", lg: "7xl" }
                         : { base: "2xl", sm: "3xl", md: "4xl", lg: "5xl" }
                     }
                     fontWeight="extrabold"
-                    mb={contents[currentPage]?.header ? 6 : 2}
+                    mb={slideContents[currentPage]?.header ? 6 : 2}
                     color={
-                      contents[currentPage]?.subtitle ? "#0D344E" : "white"
+                      slideContents[currentPage]?.subtitle ? "#0D344E" : "white"
                     }
                     lineHeight="1.2"
                   >
-                    {contents[currentPage]?.title}
+                    {slideContents[currentPage]?.title}
                   </Heading>
-                  {contents[currentPage]?.subtitle && (
+                  {slideContents[currentPage]?.subtitle && (
                     <Text
                       fontSize={{ base: "md", sm: "lg", md: "xl" }}
                       mb={{ base: 8, md: 28 }}
                       fontWeight="bold"
                       color={
-                        contents[currentPage]?.subtitle ? "#0D344E" : colors.bg
+                        slideContents[currentPage]?.subtitle
+                          ? "#0D344E"
+                          : colors.bg
                       }
                       lineHeight="1.6"
                       whiteSpace="pre-line"
                     >
-                      {contents[currentPage]?.subtitle}
+                      {slideContents[currentPage]?.subtitle}
                     </Text>
                   )}
-                  {contents[currentPage]?.header ? (
+                  {slideContents[currentPage]?.header ? (
                     <Box
                       backgroundColor="white"
                       borderRadius="full"

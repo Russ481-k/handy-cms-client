@@ -26,7 +26,6 @@ export default function RoutesLayout({
         flex="1"
         position="relative"
         minH="100vh"
-        maxW="1024px"
         mx="auto"
       >
         <Global styles={[getScrollbarStyle(isDark)]} />
