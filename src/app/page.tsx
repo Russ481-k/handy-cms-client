@@ -23,7 +23,6 @@ export default function Home() {
   return (
     <Layout currentPage="홈">
       <Global styles={getScrollbarStyle(isDark)} />
-
       <Box
         as="main"
         id="main-content"

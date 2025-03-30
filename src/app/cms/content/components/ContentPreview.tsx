@@ -97,7 +97,7 @@ export function ContentPreview({ content }: ContentPreviewProps) {
   };
 
   return (
-    <Layout currentPage={content.name}>
+    <Layout currentPage="컨텐츠" isPreview={true}>
       <Container maxW="container.xl" py={8}>
         <VStack gap={8} align="stretch">
           {/* 헤더 섹션 */}

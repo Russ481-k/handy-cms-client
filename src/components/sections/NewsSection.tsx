@@ -70,7 +70,7 @@ export function NewsSection() {
           </Text>
         </Flex>
         <Flex
-          direction={{ base: "column", lg: "row" }}
+          direction={{ base: "column", "2xl": "row" }}
           gap={{ base: 6, md: 8 }}
           width="100%"
         >
@@ -156,7 +156,6 @@ export function NewsSection() {
 
           <Box
             width={{ base: "100%", md: "540px" }}
-            minWidth={{ base: "100%", md: "540px" }}
             maxWidth="100%"
             alignSelf="center"
           >

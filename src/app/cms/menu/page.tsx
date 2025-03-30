@@ -53,10 +53,10 @@ export default function MenuManagementPage() {
     colors.primary.hover
   );
 
-  const badgeBg = useColorModeValue(colors.primary.light, colors.primary.light);
+  const badgeBg = useColorModeValue(colors.primary.light, colors.primary.dark);
   const badgeColor = useColorModeValue(
-    colors.primary.default,
-    colors.primary.default
+    colors.primary.dark,
+    colors.primary.light
   );
 
   // 메뉴 목록 새로고침 함수
@@ -287,7 +287,7 @@ export default function MenuManagementPage() {
           </Box>
 
           <Box>
-            <Main menus={menus} />
+            <Main menus={menus} isPreview={true} />
           </Box>
         </GridSection>
       </Box>

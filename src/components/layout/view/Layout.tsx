@@ -10,6 +10,7 @@ import { useColors } from "@/styles/theme";
 interface LayoutProps {
   children: React.ReactNode;
   currentPage?: string;
+  isPreview?: boolean;
 }
 
 // Header를 메모이제이션하여 props가 변경되지 않으면 리렌더링되지 않도록 함
@@ -44,7 +45,11 @@ const LoadingFallback = () => (
   </Box>
 );
 
-export default function Layout({ children, currentPage = "홈" }: LayoutProps) {
+export default function Layout({
+  children,
+  currentPage = "홈",
+  isPreview,
+}: LayoutProps) {
   const { menus, error } = useMenu();
   const colors = useColors();
   if (error) {
@@ -53,13 +58,17 @@ export default function Layout({ children, currentPage = "홈" }: LayoutProps) {
 
   return (
     <Flex
-      width="100vw"
+      width="100%"
       direction="column"
       bg={colors.bg}
       position="relative"
       minHeight="100vh"
     >
-      <MemoizedHeader currentPage={currentPage} menus={menus} />
+      <MemoizedHeader
+        currentPage={currentPage}
+        menus={menus}
+        isPreview={isPreview}
+      />
       <Box flex="1" position="relative">
         <Suspense fallback={<LoadingFallback />}>{children}</Suspense>
       </Box>

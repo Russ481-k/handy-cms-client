@@ -15,9 +15,10 @@ import Layout from "./Layout";
 
 interface MainProps {
   menus: Menu[];
+  isPreview?: boolean;
 }
 
-export function Main({ menus }: MainProps) {
+export function Main({ menus, isPreview }: MainProps) {
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
 
@@ -26,7 +27,7 @@ export function Main({ menus }: MainProps) {
   }, [menus]);
 
   return (
-    <Layout currentPage="메뉴">
+    <Layout currentPage="메뉴" isPreview={isPreview}>
       <Box
         width="100%"
         height="100%"

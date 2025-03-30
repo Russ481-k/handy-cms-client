@@ -299,7 +299,7 @@ export function BoardPreview({
   }
 
   return (
-    <Layout currentPage="게시판">
+    <Layout currentPage="게시판" isPreview={true}>
       <Box
         width="100%"
         height="100%"

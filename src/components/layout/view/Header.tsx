@@ -23,6 +23,7 @@ import { Menu } from "@/app/cms/menu/page";
 interface HeaderProps {
   currentPage: string;
   menus: Menu[];
+  isPreview?: boolean;
 }
 
 // MenuItem을 메모이제이션하여 props가 변경되지 않으면 리렌더링되지 않도록 함
@@ -31,6 +32,7 @@ const MemoizedMenuItem = memo(MenuItem);
 export const Header = memo(function Header({
   currentPage,
   menus,
+  isPreview,
 }: HeaderProps) {
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
@@ -78,7 +80,7 @@ export const Header = memo(function Header({
     <Box
       as="header"
       position="fixed"
-      top={0}
+      top={isPreview ? 50 : 0}
       left={0}
       right={0}
       zIndex={1000}
