@@ -3,19 +3,25 @@ import { Box, Flex, Text, IconButton } from "@chakra-ui/react";
 import { FiEdit2, FiTrash2 } from "react-icons/fi";
 import { useColors } from "@/styles/theme";
 import { useColorModeValue } from "@/components/ui/color-mode";
+import { useDrag } from "react-dnd";
 
 export interface ListItemProps {
+  id: number;
   name: string;
-  icon?: React.ReactNode;
+  icon: React.ReactElement;
   isSelected?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
   renderBadges?: () => React.ReactNode;
   renderDetails?: () => React.ReactNode;
   onClick?: () => void;
+  index?: number;
+  level?: number;
+  isDragging?: boolean;
 }
 
 export function ListItem({
+  id,
   name,
   icon,
   isSelected,
@@ -24,12 +30,18 @@ export function ListItem({
   renderBadges,
   renderDetails,
   onClick,
+  index,
+  level,
+  isDragging,
 }: ListItemProps) {
   const colors = useColors();
   const ref = useRef<HTMLDivElement>(null);
 
   // 색상 설정
-  const hoverBg = useColorModeValue(colors.primary.light, colors.primary.dark);
+  const hoverBg = useColorModeValue(
+    colors.secondary.light,
+    colors.secondary.dark
+  );
   const selectedBg = useColorModeValue(
     `${colors.primary.default}20`,
     `${colors.primary.default}20`
@@ -43,6 +55,16 @@ export function ListItem({
     colors.primary.default
   );
 
+  const [{ isDragging: dragIsDragging }, drag] = useDrag({
+    type: "LIST_ITEM",
+    item: { id, index, level },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  drag(ref);
+
   return (
     <div ref={ref}>
       <Flex
@@ -53,6 +75,8 @@ export function ListItem({
         bg={isSelected ? selectedBg : "transparent"}
         borderLeft={isSelected ? "3px solid" : "none"}
         borderColor={isSelected ? selectedBorderColor : "transparent"}
+        opacity={isDragging ? 0.5 : 1}
+        transform={isDragging ? "scale(1.02)" : "none"}
         _hover={{
           bg: hoverBg,
           transform: "translateX(2px)",
@@ -76,7 +100,7 @@ export function ListItem({
         borderRadius="md"
         position="relative"
         role="group"
-        mb={2}
+        my={1}
         onClick={onClick}
       >
         <Box

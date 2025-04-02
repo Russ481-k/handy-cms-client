@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Box, Flex, Heading, Badge } from "@chakra-ui/react";
 import { Button } from "@/components/ui/button";
 import { MenuList } from "@/app/cms/menu/components/MenuList";
@@ -36,28 +36,8 @@ export default function MenuManagementPage() {
   const [parentMenuId, setParentMenuId] = useState<number | null>(null);
   const [menus, setMenus] = useState<Menu[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isMoving, setIsMoving] = useState(false);
   const colors = useColors();
-  const bg = useColorModeValue(colors.bg, colors.darkBg);
-
-  // 테마 색상 적용
-  const headingColor = useColorModeValue(
-    colors.text.primary,
-    colors.text.primary
-  );
-  const buttonBg = useColorModeValue(
-    colors.primary.default,
-    colors.primary.default
-  );
-  const buttonHoverBg = useColorModeValue(
-    colors.primary.hover,
-    colors.primary.hover
-  );
-
-  const badgeBg = useColorModeValue(colors.primary.light, colors.primary.dark);
-  const badgeColor = useColorModeValue(
-    colors.primary.dark,
-    colors.primary.light
-  );
 
   // 메뉴 목록 새로고침 함수
   const refreshMenus = async () => {
@@ -81,31 +61,57 @@ export default function MenuManagementPage() {
   };
 
   // 메뉴 순서 변경 핸들러
-  const handleMoveMenu = async (
-    menuId: number,
-    targetId: number,
-    position: "before" | "after" | "inside"
-  ) => {
-    try {
-      const response = await fetch("/api/cms/menu/order", {
-        method: "PUT",
-        headers: {
-          ...getAuthHeader(),
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ menuId, targetId, position }),
-      });
+  const handleMoveMenu = useCallback(
+    async (
+      draggedId: number,
+      targetId: number,
+      position: "before" | "after" | "inside"
+    ) => {
+      if (isMoving) return; // 이미 이동 중이면 무시
 
-      if (!response.ok) {
-        throw new Error("Failed to update menu order");
+      try {
+        setIsMoving(true);
+        const requestBody = {
+          menuOrders: [
+            {
+              id: draggedId,
+              targetId: targetId,
+              position: position,
+            },
+          ],
+        };
+        console.log("Move Menu Request:", JSON.stringify(requestBody, null, 2));
+
+        const response = await fetch("/api/cms/menu/order", {
+          method: "PUT",
+          headers: {
+            ...getAuthHeader(),
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Move Menu Error Response:", errorData);
+          console.error("Request URL:", response.url);
+          console.error("Request Headers:", getAuthHeader());
+          throw new Error("Failed to update menu order");
+        }
+
+        await refreshMenus();
+      } catch (error) {
+        console.error("Error updating menu order:", error);
+        toaster.create({
+          title: "메뉴 순서 변경에 실패했습니다.",
+          type: "error",
+        });
+      } finally {
+        setIsMoving(false);
       }
-
-      await refreshMenus();
-    } catch (error) {
-      console.error("Error updating menu order:", error);
-      alert("메뉴 순서 변경에 실패했습니다.");
-    }
-  };
+    },
+    [isMoving, refreshMenus]
+  );
 
   const handleAddMenu = () => {
     setSelectedMenu(null);
@@ -228,17 +234,21 @@ export default function MenuManagementPage() {
   }, []);
 
   return (
-    <Box bg={bg} minH="100vh" w="full" position="relative">
+    <Box bg={colors.bg} minH="100vh" w="full" position="relative">
       <Box w="full">
         <GridSection initialLayout={menuLayout}>
           <Flex justify="space-between" align="center" h="36px">
             <Flex align="center" gap={2} px={2}>
-              <Heading size="lg" color={headingColor} letterSpacing="tight">
+              <Heading
+                size="lg"
+                color={colors.text.primary}
+                letterSpacing="tight"
+              >
                 메뉴 관리
               </Heading>
               <Badge
-                bg={badgeBg}
-                color={badgeColor}
+                bg={colors.secondary.light}
+                color={colors.secondary.default}
                 px={2}
                 py={1}
                 borderRadius="md"
@@ -250,9 +260,12 @@ export default function MenuManagementPage() {
             </Flex>
             <Button
               onClick={handleAddMenu}
-              bg={buttonBg}
-              color="white"
-              _hover={{ bg: buttonHoverBg, transform: "translateY(-2px)" }}
+              bg={colors.primary.default}
+              color={colors.text.primary}
+              _hover={{
+                bg: colors.primary.hover,
+                transform: "translateY(-2px)",
+              }}
               _active={{ transform: "translateY(0)" }}
               shadow={colors.shadow.sm}
               transition="all 0.3s ease"

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Box, Flex, Text, Spinner } from "@chakra-ui/react";
+import { useState, useRef } from "react";
+import { Box, Flex, Text, Spinner, VStack } from "@chakra-ui/react";
 import { Menu } from "../page";
 import { ListItem } from "@/components/ui/list-item";
 import {
@@ -13,13 +13,17 @@ import {
 } from "react-icons/lu";
 import { useColors } from "@/styles/theme";
 import { useColorModeValue } from "@/components/ui/color-mode";
+import { DndProvider, useDrag } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { DropZone } from "@/components/ui/drop-zone";
+import { MenuItem } from "../types";
 
-export interface MenuListProps {
+interface MenuListProps {
   menus: Menu[];
   onEditMenu: (menu: Menu) => void;
   onDeleteMenu: (menuId: number) => void;
   onMoveMenu: (
-    menuId: number,
+    draggedId: number,
     targetId: number,
     position: "before" | "after" | "inside"
   ) => void;
@@ -28,13 +32,14 @@ export interface MenuListProps {
   refreshMenus: () => Promise<void>;
 }
 
-export const MenuList = ({
+export function MenuList({
   menus,
   onEditMenu,
   onDeleteMenu,
+  onMoveMenu,
   isLoading,
   selectedMenuId,
-}: MenuListProps) => {
+}: MenuListProps) {
   const [expandedMenus, setExpandedMenus] = useState<Set<number>>(new Set());
   const colors = useColors();
   const iconColor = useColorModeValue(
@@ -45,6 +50,13 @@ export const MenuList = ({
     colors.primary.default,
     colors.primary.default
   );
+
+  const [{ isDragging }, drag] = useDrag({
+    type: "LIST_ITEM",
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
 
   const toggleMenu = (menuId: number) => {
     setExpandedMenus((prev) => {
@@ -101,12 +113,20 @@ export const MenuList = ({
     }
   };
 
-  const renderMenuItem = (menu: Menu, level: number) => {
+  const renderMenuItem = (menu: Menu, level: number, index: number) => {
     const hasChildren = menu.children && menu.children.length > 0;
+    const isFolder = menu.type === "FOLDER";
 
     return (
-      <Box key={menu.id} pl={`${level * 24}px`}>
+      <div key={menu.id}>
+        <DropZone
+          onDrop={onMoveMenu}
+          targetId={menu.id}
+          level={level}
+          isFolder={isFolder}
+        />
         <ListItem
+          id={menu.id}
           name={menu.name}
           icon={getMenuIcon(menu)}
           isSelected={menu.id === selectedMenuId}
@@ -119,16 +139,19 @@ export const MenuList = ({
               toggleMenu(menu.id);
             }
           }}
+          index={index}
+          level={level}
+          isDragging={isDragging}
         />
         {hasChildren && expandedMenus.has(menu.id) && menu.children && (
-          <Box>{renderMenuItems(menu.children, level + 1)}</Box>
+          <Box pl={6}>
+            {menu.children.map((child, childIndex) =>
+              renderMenuItem(child, level + 1, childIndex)
+            )}
+          </Box>
         )}
-      </Box>
+      </div>
     );
-  };
-
-  const renderMenuItems = (items: Menu[], level = 0) => {
-    return items.map((menu) => renderMenuItem(menu, level));
   };
 
   if (isLoading) {
@@ -147,5 +170,27 @@ export const MenuList = ({
     );
   }
 
-  return <Box data-testid="menu-list">{renderMenuItems(menus)}</Box>;
-};
+  return (
+    <DndProvider backend={HTML5Backend}>
+      <Box ref={drag}>
+        <VStack gap={0} align="stretch">
+          <DropZone
+            targetId={menus[0]?.id || 0}
+            level={0}
+            onDrop={(draggedId, targetId, position) => {
+              onMoveMenu(draggedId, targetId, "before");
+            }}
+          />
+          {menus.map((menu, index) => renderMenuItem(menu, 0, index))}
+          <DropZone
+            targetId={menus[menus.length - 1]?.id || 0}
+            level={0}
+            onDrop={(draggedId, targetId, position) => {
+              onMoveMenu(draggedId, targetId, "after");
+            }}
+          />
+        </VStack>
+      </Box>
+    </DndProvider>
+  );
+}

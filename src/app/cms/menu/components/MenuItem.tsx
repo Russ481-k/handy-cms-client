@@ -76,52 +76,55 @@ export const MenuItem = ({
     colors.primary.light
   );
 
-  const [{}, drag] = useDrag({
+  const [{ isDragging }, drag] = useDrag({
     type: "MENU_ITEM",
-    item: {
-      id: menu.id,
-      type: menu.type,
-      parentId: menu.parentId,
-      index,
-    },
+    item: { id: menu.id, index, level },
     collect: (monitor) => ({
-      isDragging: !!monitor.isDragging(),
+      isDragging: monitor.isDragging(),
     }),
   });
 
-  const [{ isOver }, drop] = useDrop({
+  const [{ isOver, dropPosition }, drop] = useDrop<
+    DragItem,
+    void,
+    { isOver: boolean; dropPosition: DragItem | null }
+  >({
     accept: "MENU_ITEM",
-    hover(item: DragItem) {
-      if (!ref.current) return;
-      if (item.id === menu.id) return;
-      if (isChildOf(menu.id, item.id, menu)) return;
-    },
-    drop: (item: DragItem, monitor) => {
-      if (!ref.current) return;
-      if (item.id === menu.id) return;
-      if (isChildOf(menu.id, item.id, menu)) return;
-
-      const hoverBoundingRect = ref.current.getBoundingClientRect();
-      const hoverMiddleY =
-        (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-      const clientOffset = monitor.getClientOffset();
-
-      if (!clientOffset) return;
-
-      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
-
-      if (hoverClientY < hoverMiddleY / 2) {
-        onMoveMenu(item.id, menu.id, "before");
-      } else if (hoverClientY > hoverMiddleY * 1.5) {
-        onMoveMenu(item.id, menu.id, "after");
-      } else {
-        onMoveMenu(item.id, menu.id, "inside");
-      }
-    },
     collect: (monitor) => ({
-      isOver: !!monitor.isOver(),
-      isOverCurrent: !!monitor.isOver({ shallow: true }),
+      isOver: monitor.isOver(),
+      dropPosition: monitor.getItem() as DragItem,
     }),
+    drop: (item: DragItem, monitor) => {
+      if (item.id === menu.id) return;
+
+      const draggedLevel = item.level;
+      const targetLevel = level;
+
+      // Calculate the new level based on drag position
+      let newLevel = targetLevel;
+      if (draggedLevel < targetLevel) {
+        // Moving deeper into the tree
+        newLevel = targetLevel + 1;
+      } else if (draggedLevel > targetLevel) {
+        // Moving up in the tree
+        newLevel = targetLevel;
+      }
+
+      // Determine the position based on the drag position
+      let position: "before" | "after" | "inside" = "after";
+      if (isOver) {
+        const dragOffset = monitor.getClientOffset();
+        if (dragOffset) {
+          const rect = dragDropRef.current?.getBoundingClientRect();
+          if (rect) {
+            const threshold = rect.top + rect.height / 2;
+            position = dragOffset.y < threshold ? "before" : "after";
+          }
+        }
+      }
+
+      onMoveMenu(item.id, menu.id, position);
+    },
   });
 
   const isChildOf = (
@@ -137,8 +140,7 @@ export const MenuItem = ({
   };
 
   const dragDropRef = useRef<HTMLDivElement>(null);
-  drag(dragDropRef);
-  drop(dragDropRef);
+  drag(drop(dragDropRef));
 
   const handleMenuClick = (e: React.MouseEvent) => {
     // 메뉴 아이콘 클릭 시 토글 동작
@@ -308,6 +310,8 @@ export const MenuItem = ({
         borderColor={
           selectedMenuId === menu.id ? selectedBorderColor : "transparent"
         }
+        opacity={isDragging ? 0.5 : 1}
+        transform={isDragging ? "scale(1.02)" : "none"}
         _hover={{
           bg: hoverBg,
           transform: "translateX(2px)",
@@ -331,6 +335,18 @@ export const MenuItem = ({
         mb={1}
         mr={1}
       >
+        {isOver && (
+          <Box
+            position="absolute"
+            left="0"
+            top="0"
+            bottom="0"
+            width="3px"
+            bg={colors.primary.default}
+            opacity={0.5}
+            transition="all 0.2s ease"
+          />
+        )}
         <Box
           position="absolute"
           left="0"

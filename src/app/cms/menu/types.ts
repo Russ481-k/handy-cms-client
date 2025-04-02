@@ -5,6 +5,7 @@ export interface DragItem {
   type: string;
   parentId?: number;
   index: number;
+  level: number;
 }
 
 export interface MenuItemProps {
@@ -36,4 +37,13 @@ export interface MenuListProps {
   isLoading: boolean;
   selectedMenuId?: number;
   refreshMenus: () => Promise<void>;
+}
+
+export interface MenuItem {
+  id: number;
+  name: string;
+  icon?: React.ReactNode;
+  isSelected?: boolean;
+  children?: MenuItem[];
+  level: number;
 }
