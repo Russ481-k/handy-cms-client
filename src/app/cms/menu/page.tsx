@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Box, Flex, Heading, Badge } from "@chakra-ui/react";
-import { Button } from "@/components/ui/button";
-import { MenuList } from "@/app/cms/menu/components/MenuList";
-import { MenuEditor } from "@/app/cms/menu/components/MenuEditor";
+import { Box, Flex, Heading, Badge, Button } from "@chakra-ui/react";
+import { MenuList } from "./components/MenuList";
+import { MenuEditor } from "./components/MenuEditor";
 import { GridSection } from "@/components/ui/grid-section";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
@@ -15,6 +14,7 @@ import { toaster } from "@/components/ui/toaster";
 import { Main } from "@/components/layout/view/Main";
 import { api } from "@/lib/api-client";
 import { MenuData } from "@/types/api";
+import { useMenu } from "@/lib/hooks/useMenu";
 
 export interface Menu {
   id: number;
@@ -38,6 +38,7 @@ export default function MenuManagementPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isMoving, setIsMoving] = useState(false);
   const colors = useColors();
+  const { refreshMenus: refreshHeaderMenus } = useMenu();
 
   // 메뉴 목록 새로고침 함수
   const refreshMenus = async () => {
@@ -49,6 +50,8 @@ export default function MenuManagementPage() {
       }
       console.log("API Response:", response.data);
       setMenus(response.data);
+      // 미리보기 헤더도 함께 업데이트
+      refreshHeaderMenus();
     } catch (error) {
       console.error("Error fetching menus:", error);
       toaster.error({

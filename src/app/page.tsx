@@ -1,28 +1,27 @@
 "use client";
 
 import { Box } from "@chakra-ui/react";
-
-// Layout Components
-import { FloatingButtons } from "@/components/layout/FloatingButtons";
-
-// Section Components
+import { Global } from "@emotion/react";
+import { getScrollbarStyle } from "@/styles/scrollbar";
+import { useColors } from "@/styles/theme";
+import { HeroSection } from "@/components/sections/HeroSection";
 import { CompanySection } from "@/components/sections/CompanySection";
 import { EducationSection } from "@/components/sections/EducationSection";
 import { NewsSection } from "@/components/sections/NewsSection";
 import { ApplicationSection } from "@/components/sections/ApplicationSection";
-import { getScrollbarStyle } from "@/styles/scrollbar";
-import { Global } from "@emotion/react";
+import { FloatingButtons } from "@/components/layout/FloatingButtons";
 import Layout from "@/components/layout/view/Layout";
 import { useColorMode } from "@/components/ui/color-mode";
-import { useColors } from "@/styles/theme";
-import { HeroSection } from "@/components/sections/HeroSection";
+import { useMenu } from "@/lib/hooks/useMenu";
 
 export default function Home() {
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
   const colors = useColors();
+  const { menus } = useMenu();
+
   return (
-    <Layout currentPage="홈">
+    <Layout currentPage="홈" menus={menus}>
       <Global styles={getScrollbarStyle(isDark)} />
       <HeroSection
         slideContents={[

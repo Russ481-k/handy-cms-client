@@ -2,9 +2,7 @@
 
 import { Box, Container, VStack } from "@chakra-ui/react";
 import { Menu } from "@/app/cms/menu/page";
-
 import { useEffect } from "react";
-
 import { CompanySection } from "@/components/sections/CompanySection";
 import { ApplicationSection } from "@/components/sections/ApplicationSection";
 import { EducationSection } from "@/components/sections/EducationSection";
@@ -23,7 +21,7 @@ export const Main = ({ menus, isPreview = false }: MainProps) => {
   }, [menus]);
 
   return (
-    <Layout currentPage="홈" isPreview={isPreview}>
+    <Layout currentPage="홈" isPreview={isPreview} menus={menus}>
       <Box as="main" flex="1" w="full">
         <HeroSection
           slideContents={[

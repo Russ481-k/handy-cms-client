@@ -1,46 +1,35 @@
 import { useState, useEffect } from "react";
-import { Menu } from "@/types/menu";
+import { Menu } from "@/app/cms/menu/page";
 import { getAuthHeader } from "@/lib/auth";
 
-interface UseMenuOptions {
-  requireAuth?: boolean;
-}
-
-export function useMenu(options: UseMenuOptions = {}) {
+export function useMenu() {
   const [menus, setMenus] = useState<Menu[]>([]);
   const [error, setError] = useState<Error | null>(null);
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const fetchMenus = async () => {
-      try {
-        const headers = options.requireAuth ? getAuthHeader() : {};
-        const response = await fetch("/api/menu", { headers });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch menus");
-        }
-
-        const data = await response.json();
-        if (isMounted) {
-          setMenus(data);
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError(
-            err instanceof Error ? err : new Error("Failed to fetch menus")
-          );
-        }
+  const fetchMenus = async () => {
+    try {
+      const response = await fetch("/api/cms/menu", {
+        headers: getAuthHeader(),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to fetch menus");
       }
-    };
+      const data = await response.json();
+      setMenus(data);
+    } catch (error) {
+      console.error("Error fetching menus:", error);
+      setError(error as Error);
+    }
+  };
 
+  useEffect(() => {
     fetchMenus();
+  }, []);
 
-    return () => {
-      isMounted = false;
-    };
-  }, [options.requireAuth]);
+  // 메뉴 데이터 새로고침 함수
+  const refreshMenus = () => {
+    fetchMenus();
+  };
 
-  return { menus, error };
+  return { menus, error, refreshMenus };
 }
