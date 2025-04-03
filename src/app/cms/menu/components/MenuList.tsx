@@ -20,6 +20,7 @@ import { MenuItem } from "../types";
 
 interface MenuListProps {
   menus: Menu[];
+  onAddMenu: (menu: Menu) => void;
   onEditMenu: (menu: Menu) => void;
   onDeleteMenu: (menuId: number) => void;
   onMoveMenu: (
@@ -34,6 +35,7 @@ interface MenuListProps {
 
 export function MenuList({
   menus,
+  onAddMenu,
   onEditMenu,
   onDeleteMenu,
   onMoveMenu,
@@ -113,6 +115,40 @@ export function MenuList({
     }
   };
 
+  const findParentMenu = (menus: Menu[], targetId: number): Menu | null => {
+    for (const menu of menus) {
+      if (menu.id === targetId) {
+        return menu;
+      }
+      if (menu.children && menu.children.length > 0) {
+        const found = findParentMenu(menu.children, targetId);
+        if (found) {
+          return found;
+        }
+      }
+    }
+    return null;
+  };
+
+  const handleAddMenu = (parentMenu: Menu) => {
+    console.log("MenuList handleAddMenu called with parentMenu:", parentMenu);
+
+    // 부모 메뉴의 전체 트리 구조를 찾기
+    const fullParentMenu = findParentMenu(menus, parentMenu.id);
+    console.log("Found full parent menu:", fullParentMenu);
+
+    if (!fullParentMenu) return;
+
+    // 부모 메뉴가 접혀있으면 펼치기
+    if (!expandedMenus.has(fullParentMenu.id)) {
+      console.log("Expanding parent menu:", fullParentMenu.id);
+      toggleMenu(fullParentMenu.id);
+    }
+
+    // 부모 컴포넌트의 handleAddMenu 함수 호출
+    onAddMenu(fullParentMenu);
+  };
+
   const renderMenuItem = (menu: Menu, level: number, index: number) => {
     const hasChildren = menu.children && menu.children.length > 0;
     const isFolder = menu.type === "FOLDER";
@@ -130,7 +166,7 @@ export function MenuList({
           name={menu.name}
           icon={getMenuIcon(menu)}
           isSelected={menu.id === selectedMenuId}
-          onEdit={() => onEditMenu(menu)}
+          onAddMenu={() => handleAddMenu(menu)}
           onDelete={() => onDeleteMenu(menu.id)}
           renderBadges={() => !menu.visible && "비활성"}
           onClick={() => {
@@ -142,6 +178,7 @@ export function MenuList({
           index={index}
           level={level}
           isDragging={isDragging}
+          type={menu.type}
         />
         {hasChildren && expandedMenus.has(menu.id) && menu.children && (
           <Box pl={6}>

@@ -4,7 +4,7 @@ export interface Menu {
   type: "LINK" | "FOLDER" | "BOARD" | "CONTENT";
   url?: string;
   targetId?: number;
-  displayPosition: string;
+  displayPosition: "HEADER" | "FOOTER";
   visible: boolean;
   sortOrder: number;
   parentId?: number;

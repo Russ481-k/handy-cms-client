@@ -22,10 +22,10 @@ export interface Menu {
   type: "LINK" | "FOLDER" | "BOARD" | "CONTENT";
   url?: string;
   targetId?: number;
-  displayPosition: string;
+  displayPosition: "HEADER" | "FOOTER";
   visible: boolean;
   sortOrder: number;
-  parentId?: number;
+  parentId?: number | null;
   children?: Menu[] | null;
   createdAt: string;
   updatedAt: string;
@@ -37,8 +37,10 @@ export default function MenuManagementPage() {
   const [menus, setMenus] = useState<Menu[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isMoving, setIsMoving] = useState(false);
+  const [tempMenu, setTempMenu] = useState<Menu | null>(null);
   const colors = useColors();
   const { refreshMenus: refreshHeaderMenus } = useMenu();
+  const bg = useColorModeValue(colors.bg, colors.darkBg);
 
   // 메뉴 목록 새로고침 함수
   const refreshMenus = async () => {
@@ -116,50 +118,216 @@ export default function MenuManagementPage() {
     [isMoving, refreshMenus]
   );
 
-  const handleAddMenu = () => {
-    setSelectedMenu(null);
-    setParentMenuId(null);
+  // 메뉴 목록에 새 메뉴 추가하는 함수
+  const addMenuToList = (newMenu: Menu, targetMenu: Menu | null = null) => {
+    setMenus((prevMenus) => {
+      if (!targetMenu) {
+        // 최상위 레벨에 추가
+        return [...prevMenus, newMenu];
+      }
+
+      // 메뉴 트리를 업데이트하는 재귀 함수
+      const updateMenuTree = (menuList: Menu[]): Menu[] => {
+        return menuList.map((menu) => {
+          if (menu.id === targetMenu.id) {
+            // 대상 메뉴를 찾았을 때
+            const updatedChildren = [...(menu.children || [])];
+            updatedChildren.push(newMenu);
+            return {
+              ...menu,
+              children: updatedChildren,
+            };
+          }
+          if (menu.children && menu.children.length > 0) {
+            // 자식 메뉴가 있으면 재귀적으로 탐색
+            return {
+              ...menu,
+              children: updateMenuTree(menu.children),
+            };
+          }
+          return menu;
+        });
+      };
+
+      return updateMenuTree(prevMenus);
+    });
+  };
+
+  // 새 메뉴 추가 핸들러
+  const handleAddMenu = (parentMenu: Menu) => {
+    console.log("handleAddMenu called with parentMenu:", parentMenu);
+
+    // 고유한 ID 생성 (타임스탬프 + 랜덤 숫자)
+    const generateUniqueId = () => {
+      const timestamp = Date.now();
+      const random = Math.floor(Math.random() * 1000);
+      return parseInt(`${timestamp}${random}`);
+    };
+
+    const newTempMenu: Menu = {
+      id: generateUniqueId(),
+      name: "새 메뉴",
+      type: "LINK", // 기본 타입을 LINK로 설정
+      parentId: parentMenu.id,
+      sortOrder: parentMenu.children ? parentMenu.children.length + 1 : 1,
+      visible: true,
+      children: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      displayPosition: "HEADER",
+    };
+
+    console.log("New temp menu created:", newTempMenu);
+
+    // 선택된 메뉴 아래에 추가
+    setMenus((prevMenus) => {
+      const updateMenuTree = (menus: Menu[]): Menu[] => {
+        return menus.map((menu) => {
+          if (menu.id === parentMenu.id) {
+            return {
+              ...menu,
+              children: [...(menu.children || []), newTempMenu],
+            };
+          }
+          if (menu.children && menu.children.length > 0) {
+            return {
+              ...menu,
+              children: updateMenuTree(menu.children),
+            };
+          }
+          return menu;
+        });
+      };
+      return updateMenuTree(prevMenus);
+    });
+
+    console.log("Setting temp menu and selected menu:", newTempMenu);
+    // 새 메뉴를 선택하고 임시 메뉴로 설정
+    setTempMenu(newTempMenu);
+    setSelectedMenu(newTempMenu);
+    setParentMenuId(parentMenu.id);
+
+    // 메뉴 편집기로 포커스 이동
+    setTimeout(() => {
+      const nameInput = document.querySelector(
+        'input[name="name"]'
+      ) as HTMLInputElement;
+      console.log("Looking for name input:", nameInput);
+      if (nameInput) {
+        nameInput.focus();
+        nameInput.setSelectionRange(
+          nameInput.value.length,
+          nameInput.value.length
+        );
+        console.log("Name input focused");
+      }
+    }, 100);
+  };
+
+  // 최상단 메뉴 추가 핸들러
+  const handleAddTopMenu = () => {
+    // 고유한 ID 생성 (타임스탬프 + 랜덤 숫자)
+    const generateUniqueId = () => {
+      const timestamp = Date.now();
+      const random = Math.floor(Math.random() * 1000);
+      return parseInt(`${timestamp}${random}`);
+    };
+
+    const newTempMenu: Menu = {
+      id: generateUniqueId(), // 고유한 ID 생성
+      name: "새 메뉴",
+      type: "LINK",
+      url: "",
+      displayPosition: "HEADER",
+      visible: true,
+      parentId: null, // 최상단 메뉴는 parentId가 null
+      sortOrder: 1, // 최상단에 추가되므로 sortOrder는 1
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    // 기존 메뉴들의 sortOrder를 1씩 증가
+    setMenus((prevMenus) => {
+      const updatedMenus = prevMenus.map((menu) => ({
+        ...menu,
+        sortOrder: menu.sortOrder + 1,
+      }));
+      // 새 메뉴를 최상단에 추가
+      updatedMenus.unshift(newTempMenu);
+      return updatedMenus;
+    });
+
+    setTempMenu(newTempMenu);
+    setSelectedMenu(newTempMenu);
   };
 
   const handleEditMenu = (menu: Menu) => {
-    setSelectedMenu(menu);
-    setParentMenuId(menu.parentId || null);
+    if (tempMenu) {
+      // 임시 메뉴 수정 중인 경우 경고 모달 표시
+      if (window.confirm("새 메뉴 추가가 취소됩니다. 계속하시겠습니까?")) {
+        // 임시 메뉴를 메뉴 목록에서 제거
+        setMenus((prevMenus) => prevMenus.filter((m) => m.id !== tempMenu.id));
+        setTempMenu(null);
+        setSelectedMenu(menu);
+        setParentMenuId(menu.parentId || null);
+      }
+    } else {
+      setSelectedMenu(menu);
+      setParentMenuId(menu.parentId || null);
+    }
   };
 
   const handleCloseEditor = () => {
-    setSelectedMenu(null);
-    setParentMenuId(null);
+    if (tempMenu) {
+      // 임시 메뉴인 경우 삭제
+      setTempMenu(null);
+      setSelectedMenu(menus[0] || null);
+    } else {
+      // 기존 메뉴 편집 중 취소
+      setSelectedMenu(null);
+    }
   };
 
-  const handleSubmit = async (menuData: MenuData) => {
+  const handleSubmit = async (
+    menuData: Omit<Menu, "id" | "createdAt" | "updatedAt">
+  ) => {
     try {
-      if (selectedMenu) {
-        const response = await api.private.updateCmsMenu(
-          selectedMenu.id.toString(),
-          menuData
-        );
-        if (!response.data) {
-          throw new Error("Failed to update menu");
+      const response = await fetch(
+        tempMenu ? "/api/cms/menu" : `/api/cms/menu/${selectedMenu?.id}`,
+        {
+          method: tempMenu ? "POST" : "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            ...getAuthHeader(),
+          },
+          body: JSON.stringify(menuData),
         }
-      } else {
-        const response = await api.private.createCmsMenu(menuData);
-        if (!response.data) {
-          throw new Error("Failed to create menu");
-        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to save menu");
       }
 
+      const savedMenu = await response.json();
+
+      // 메뉴 목록 새로고침
       await refreshMenus();
-      setSelectedMenu(null);
+
+      // 임시 메뉴 초기화
+      setTempMenu(null);
+
+      // 저장된 메뉴 선택
+      setSelectedMenu(savedMenu);
+      setParentMenuId(savedMenu.parentId || null);
+
       toaster.create({
-        title: selectedMenu
-          ? "메뉴가 수정되었습니다."
-          : "메뉴가 생성되었습니다.",
+        title: "메뉴가 저장되었습니다.",
         type: "success",
       });
     } catch (error) {
       console.error("Error saving menu:", error);
       toaster.create({
-        title: "메뉴 저장에 실패했습니다.",
+        title: "메뉴 저장 중 오류가 발생했습니다.",
         type: "error",
       });
     }
@@ -167,9 +335,12 @@ export default function MenuManagementPage() {
 
   const handleDeleteMenu = async (menuId: number) => {
     try {
-      const response = await fetch(`/api/cms/menu/${menuId}`, {
+      const response = await fetch(`/api/cms/menu?id=${menuId}`, {
         method: "DELETE",
-        headers: getAuthHeader(),
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeader(),
+        },
       });
 
       if (!response.ok) {
@@ -231,13 +402,20 @@ export default function MenuManagementPage() {
     },
   ];
 
+  // 초기 메뉴 선택
+  useEffect(() => {
+    if (menus.length > 0 && !selectedMenu && !tempMenu) {
+      setSelectedMenu(menus[0]);
+    }
+  }, [menus, selectedMenu, tempMenu]);
+
   // 메뉴 목록 불러오기
   useEffect(() => {
     refreshMenus();
   }, []);
 
   return (
-    <Box bg={colors.bg} minH="100vh" w="full" position="relative">
+    <Box bg={bg} minH="100vh" w="full" position="relative">
       <Box w="full">
         <GridSection initialLayout={menuLayout}>
           <Flex justify="space-between" align="center" h="36px">
@@ -261,27 +439,45 @@ export default function MenuManagementPage() {
                 관리자
               </Badge>
             </Flex>
-            <Button
-              onClick={handleAddMenu}
-              bg={colors.primary.default}
-              color={colors.text.primary}
-              _hover={{
-                bg: colors.primary.hover,
-                transform: "translateY(-2px)",
-              }}
-              _active={{ transform: "translateY(0)" }}
-              shadow={colors.shadow.sm}
-              transition="all 0.3s ease"
-              size="sm"
-            >
-              새 메뉴 추가
-            </Button>
+            <Flex gap={2}>
+              <Button
+                onClick={handleAddTopMenu}
+                bg={colors.primary.default}
+                color={colors.text.primary}
+                _hover={{
+                  bg: colors.primary.hover,
+                  transform: "translateY(-2px)",
+                }}
+                _active={{ transform: "translateY(0)" }}
+                shadow={colors.shadow.sm}
+                transition="all 0.3s ease"
+                size="sm"
+              >
+                최상단 메뉴 추가
+              </Button>
+              <Button
+                onClick={() => handleAddMenu(menus[0])}
+                bg={colors.primary.default}
+                color={colors.text.primary}
+                _hover={{
+                  bg: colors.primary.hover,
+                  transform: "translateY(-2px)",
+                }}
+                _active={{ transform: "translateY(0)" }}
+                shadow={colors.shadow.sm}
+                transition="all 0.3s ease"
+                size="sm"
+              >
+                새 메뉴 추가
+              </Button>
+            </Flex>
           </Flex>
 
           <Box>
             <DndProvider backend={HTML5Backend}>
               <MenuList
                 menus={menus}
+                onAddMenu={handleAddMenu}
                 onEditMenu={handleEditMenu}
                 onDeleteMenu={handleDeleteMenu}
                 onMoveMenu={handleMoveMenu}
@@ -299,6 +495,10 @@ export default function MenuManagementPage() {
               onDelete={handleDeleteMenu}
               onSubmit={handleSubmit}
               parentId={parentMenuId}
+              onAddMenu={() => handleAddMenu(menus[0])}
+              existingMenus={menus}
+              isTempMenu={!!tempMenu}
+              tempMenu={tempMenu}
             />
           </Box>
 

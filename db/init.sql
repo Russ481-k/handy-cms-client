@@ -24,9 +24,9 @@ CREATE TABLE IF NOT EXISTS users (
 -- Menus 테이블
 CREATE TABLE IF NOT EXISTS menus (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
+    name VARCHAR(100) UNIQUE NOT NULL,
     type ENUM('LINK', 'FOLDER', 'BOARD', 'CONTENT') NOT NULL,
-    url VARCHAR(255),
+    url VARCHAR(255) UNIQUE,
     target_id INT,
     display_position VARCHAR(50) NOT NULL,
     visible BOOLEAN DEFAULT true,

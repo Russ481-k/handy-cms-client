@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { Box, Flex, Text, IconButton } from "@chakra-ui/react";
-import { FiEdit2, FiTrash2 } from "react-icons/fi";
+import { FiPlus, FiTrash2 } from "react-icons/fi";
 import { useColors } from "@/styles/theme";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useDrag } from "react-dnd";
@@ -10,7 +10,7 @@ export interface ListItemProps {
   name: string;
   icon: React.ReactElement;
   isSelected?: boolean;
-  onEdit?: () => void;
+  onAddMenu?: () => void;
   onDelete?: () => void;
   renderBadges?: () => React.ReactNode;
   renderDetails?: () => React.ReactNode;
@@ -18,6 +18,7 @@ export interface ListItemProps {
   index?: number;
   level?: number;
   isDragging?: boolean;
+  type?: "LINK" | "FOLDER" | "BOARD" | "CONTENT";
 }
 
 export function ListItem({
@@ -25,7 +26,7 @@ export function ListItem({
   name,
   icon,
   isSelected,
-  onEdit,
+  onAddMenu,
   onDelete,
   renderBadges,
   renderDetails,
@@ -33,6 +34,7 @@ export function ListItem({
   index,
   level,
   isDragging,
+  type,
 }: ListItemProps) {
   const colors = useColors();
   const ref = useRef<HTMLDivElement>(null);
@@ -142,18 +144,18 @@ export function ListItem({
             transition="all 0.2s ease-in-out"
             ml={2}
           >
-            {onEdit && (
+            {onAddMenu && type === "FOLDER" && (
               <IconButton
-                aria-label="Edit"
+                aria-label="Add"
                 size="sm"
                 variant="ghost"
                 colorScheme="blue"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onEdit();
+                  onAddMenu();
                 }}
               >
-                <FiEdit2 />
+                <FiPlus />
               </IconButton>
             )}
             {onDelete && (

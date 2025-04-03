@@ -20,43 +20,66 @@ import * as z from "zod";
 import { Menu } from "../page";
 import { getAuthHeader } from "@/lib/auth";
 import { toaster } from "@/components/ui/toaster";
+import { CheckIcon } from "lucide-react";
+import { DeleteIcon, PlusIcon } from "lucide-react";
+import { SubmitHandler } from "react-hook-form";
 
 interface MenuEditorProps {
-  menu?: Menu | null;
+  menu: Menu | null;
   onClose: () => void;
-  onDelete?: (menuId: number) => void;
-  onSubmit: (menu: Omit<Menu, "id" | "createdAt" | "updatedAt">) => void;
+  onDelete: (id: number) => void;
+  onSubmit: (data: Omit<Menu, "id" | "createdAt" | "updatedAt">) => void;
   parentId?: number | null;
+  onAddMenu?: () => void;
+  existingMenus: Menu[];
+  isTempMenu?: boolean;
+  tempMenu?: Menu | null;
 }
 
-const menuSchema = z
-  .object({
-    name: z.string().min(1, "메뉴명을 입력해주세요."),
-    type: z.enum(["LINK", "FOLDER", "BOARD", "CONTENT"]),
-    url: z.string().optional(),
-    targetId: z.string().optional(),
-    displayPosition: z.string().min(1, "출력 위치를 선택해주세요."),
-    visible: z.boolean().default(true),
-    parentId: z.string().optional(),
-    sortOrder: z.number().default(0),
-  })
-  .refine(
-    (data) => {
-      if (data.type === "LINK") {
-        return !!data.url;
+// 메뉴 스키마 정의
+const createMenuSchema = (currentMenu: Menu | null, existingMenus: Menu[]) =>
+  z
+    .object({
+      name: z.string().min(1, "메뉴 이름을 입력해주세요."),
+      type: z.enum(["LINK", "FOLDER", "BOARD", "CONTENT"]),
+      url: z.string().optional(),
+      targetId: z.number().optional(),
+      displayPosition: z.enum(["HEADER", "FOOTER"]),
+      visible: z.boolean(),
+      sortOrder: z.number(),
+      parentId: z.number().nullable(),
+    })
+    .refine(
+      (data) => {
+        // LINK 타입일 때는 url이 필수
+        if (data.type === "LINK") {
+          return data.url && data.url.trim().length > 0;
+        }
+        return true;
+      },
+      {
+        message: "링크 타입의 메뉴는 URL을 입력해야 합니다.",
+        path: ["url"],
       }
-      if (data.type === "BOARD" || data.type === "CONTENT") {
-        return !!data.targetId;
+    )
+    .refine(
+      (data) => {
+        // LINK 타입일 때는 url이 중복되지 않아야 함
+        if (data.type === "LINK" && data.url) {
+          const isDuplicate = existingMenus.some(
+            (menu) => menu.url === data.url && menu.id !== currentMenu?.id
+          );
+          return !isDuplicate;
+        }
+        return true;
+      },
+      {
+        message: "이미 사용 중인 URL입니다.",
+        path: ["url"],
       }
-      return true;
-    },
-    {
-      message: "필수 항목을 입력해주세요.",
-      path: ["url", "targetId"],
-    }
-  );
+    );
 
-type MenuFormData = z.infer<typeof menuSchema>;
+type MenuFormData = z.infer<ReturnType<typeof createMenuSchema>>;
 
 interface BoardResponse {
   id: number;
@@ -89,6 +112,10 @@ export function MenuEditor({
   onDelete,
   onSubmit,
   parentId,
+  onAddMenu,
+  existingMenus,
+  isTempMenu,
+  tempMenu,
 }: MenuEditorProps) {
   const [boards, setBoards] = useState<Array<{ id: number; name: string }>>([]);
   const [contents, setContents] = useState<Array<{ id: number; name: string }>>(
@@ -99,19 +126,19 @@ export function MenuEditor({
     control,
     handleSubmit,
     watch,
-    formState: { errors },
     reset,
+    formState: { errors },
   } = useForm<MenuFormData>({
-    resolver: zodResolver(menuSchema),
+    resolver: zodResolver(createMenuSchema(menu, existingMenus)),
     defaultValues: {
       name: menu?.name || "",
       type: menu?.type || "LINK",
       url: menu?.url || "",
-      targetId: menu?.targetId?.toString() || "",
-      displayPosition: menu?.displayPosition || "HEADER",
+      targetId: menu?.targetId || undefined,
+      displayPosition: menu?.displayPosition === "FOOTER" ? "FOOTER" : "HEADER",
       visible: menu?.visible ?? true,
-      parentId: menu?.parentId?.toString() || parentId?.toString() || "",
-      sortOrder: menu?.sortOrder || 0,
+      sortOrder: menu?.sortOrder || 1,
+      parentId: menu?.parentId || null,
     },
   });
 
@@ -124,25 +151,45 @@ export function MenuEditor({
         name: menu.name,
         type: menu.type,
         url: menu.url || "",
-        targetId: menu.targetId?.toString() || "",
+        targetId: menu.targetId || undefined,
         displayPosition: menu.displayPosition,
         visible: menu.visible,
-        parentId: menu.parentId?.toString() || "",
         sortOrder: menu.sortOrder,
+        parentId: menu.parentId || null,
       });
     } else {
       reset({
         name: "",
         type: "LINK",
         url: "",
-        targetId: "",
+        targetId: undefined,
         displayPosition: "HEADER",
         visible: true,
-        parentId: parentId?.toString() || "",
-        sortOrder: 0,
+        sortOrder: 1,
+        parentId: parentId || null,
       });
     }
   }, [menu, reset, parentId]);
+
+  // 새 메뉴가 생성되면 이름 입력 필드에 포커스
+  useEffect(() => {
+    if (menu && isTempMenu) {
+      // 약간의 지연을 두어 DOM이 업데이트된 후에 포커스
+      setTimeout(() => {
+        const nameInput = document.querySelector(
+          'input[name="name"]'
+        ) as HTMLInputElement;
+        if (nameInput) {
+          nameInput.focus();
+          // 커서를 입력 필드 끝으로 이동
+          nameInput.setSelectionRange(
+            nameInput.value.length,
+            nameInput.value.length
+          );
+        }
+      }, 100);
+    }
+  }, [menu, isTempMenu]);
 
   // 컬러 모드에 맞는 색상 설정
   const colors = useColors();
@@ -219,20 +266,25 @@ export function MenuEditor({
     }
   };
 
-  const handleFormSubmit = async (data: MenuFormData) => {
+  const handleFormSubmit: SubmitHandler<MenuFormData> = async (data) => {
     try {
-      const submitData = {
-        ...data,
-        targetId: data.targetId ? Number(data.targetId) : undefined,
-        parentId: data.parentId ? Number(data.parentId) : undefined,
-        sortOrder: menu?.sortOrder || 0,
-      };
+      // LINK 타입일 때는 url이 필수
+      if (data.type === "LINK" && !data.url?.trim()) {
+        toaster.error({
+          title: "URL을 입력해주세요.",
+          duration: 3000,
+        });
+        return;
+      }
 
-      onSubmit(submitData);
-      onClose();
+      // 폼 데이터를 서버에 전송
+      await onSubmit(data);
     } catch (error) {
-      console.error("Error saving menu:", error);
-      alert("메뉴 저장 중 오류가 발생했습니다.");
+      console.error("Error submitting form:", error);
+      toaster.error({
+        title: "메뉴 저장에 실패했습니다.",
+        duration: 3000,
+      });
     }
   };
 
@@ -293,36 +345,6 @@ export function MenuEditor({
               )}
             />
           </Box>
-
-          {menuType === "LINK" && (
-            <Box>
-              <Flex mb={1}>
-                <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                  URL
-                </Text>
-                <Text fontSize="sm" color={errorColor} ml={1}>
-                  *
-                </Text>
-              </Flex>
-              <Controller
-                name="url"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    borderColor={errors.url ? errorColor : borderColor}
-                    color={textColor}
-                    bg="transparent"
-                  />
-                )}
-              />
-              {errors.url && (
-                <Text color={errorColor} fontSize="sm" mt={1}>
-                  {errors.url.message}
-                </Text>
-              )}
-            </Box>
-          )}
 
           {menuType === "BOARD" && (
             <Box>
@@ -403,7 +425,65 @@ export function MenuEditor({
               )}
             </Box>
           )}
+          <Box>
+            <Flex mb={1}>
+              <Text fontSize="sm" fontWeight="medium" color={textColor}>
+                URL
+              </Text>
+              <Text fontSize="sm" color={errorColor} ml={1}>
+                *
+              </Text>
+            </Flex>
+            <Controller
+              name="url"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  borderColor={errors.url ? errorColor : borderColor}
+                  color={textColor}
+                  bg="transparent"
+                  onBlur={(e) => {
+                    field.onBlur();
+                    const value = e.target.value;
+                    if (value && !value.startsWith("/")) {
+                      field.onChange("/" + value);
+                    }
+                    // URL 유효성 검사 실행
+                    const normalizedUrl = value.replace(/^\/+|\/+$/g, "");
+                    const isDuplicate = existingMenus.some((existingMenu) => {
+                      if (existingMenu.id === menu?.id) return false;
+                      if (existingMenu.type === "LINK" && existingMenu.url) {
+                        const existingUrl = existingMenu.url.replace(
+                          /^\/+|\/+$/g,
+                          ""
+                        );
+                        return existingUrl === normalizedUrl;
+                      }
+                      return false;
+                    });
 
+                    if (isDuplicate) {
+                      console.log("Duplicate URL detected:", {
+                        currentUrl: normalizedUrl,
+                        existingMenus: existingMenus.map((m) => ({
+                          id: m.id,
+                          name: m.name,
+                          url: m.url,
+                          type: m.type,
+                        })),
+                      });
+                    }
+                  }}
+                />
+              )}
+            />
+            {errors.url && (
+              <Text color={errorColor} fontSize="sm" mt={1}>
+                {errors.url.message}
+              </Text>
+            )}
+          </Box>
           <Flex alignItems="center">
             <Controller
               name="visible"
@@ -458,27 +538,29 @@ export function MenuEditor({
                 _active={{ transform: "translateY(0)" }}
                 transition="all 0.2s ease"
               >
+                <DeleteIcon />
                 삭제
               </Button>
             ) : (
               <Box />
             )}
             <Flex gap={2}>
-              <Button
-                borderColor={borderColor}
-                color={textColor}
-                onClick={onClose}
-                variant="outline"
-                _hover={{ bg: colors.secondary.hover }}
-              >
-                취소
-              </Button>
+              {!isTempMenu && (
+                <Button
+                  onClick={onAddMenu}
+                  variant="outline"
+                  colorScheme="blue"
+                >
+                  <PlusIcon /> 메뉴
+                </Button>
+              )}
               <Button
                 type="submit"
                 bg={buttonBg}
                 color="white"
                 _hover={{ bg: colors.primary.hover }}
               >
+                <CheckIcon />
                 저장
               </Button>
             </Flex>
