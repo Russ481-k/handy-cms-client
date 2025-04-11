@@ -42,7 +42,9 @@ export function MenuList({
   isLoading,
   selectedMenuId,
 }: MenuListProps) {
-  const [expandedMenus, setExpandedMenus] = useState<Set<number>>(new Set());
+  const [expandedMenus, setExpandedMenus] = useState<Set<number>>(
+    new Set([-1])
+  );
   const colors = useColors();
   const iconColor = useColorModeValue(
     colors.text.secondary,
@@ -61,6 +63,8 @@ export function MenuList({
   });
 
   const toggleMenu = (menuId: number) => {
+    if (menuId === -1) return;
+
     setExpandedMenus((prev) => {
       const next = new Set(prev);
       if (next.has(menuId)) {
@@ -116,6 +120,21 @@ export function MenuList({
   };
 
   const findParentMenu = (menus: Menu[], targetId: number): Menu | null => {
+    // 전체 메뉴인 경우
+    if (targetId === -1) {
+      return {
+        id: -1,
+        name: "전체",
+        type: "FOLDER",
+        visible: true,
+        sortOrder: 0,
+        children: menus,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        displayPosition: "HEADER",
+      };
+    }
+
     for (const menu of menus) {
       if (menu.id === targetId) {
         return menu;
@@ -133,6 +152,13 @@ export function MenuList({
   const handleAddMenu = (parentMenu: Menu) => {
     console.log("MenuList handleAddMenu called with parentMenu:", parentMenu);
 
+    // 전체 메뉴인 경우 (id가 -1)
+    if (parentMenu.id === -1) {
+      // 전체 메뉴를 부모로 사용
+      onAddMenu(parentMenu);
+      return;
+    }
+
     // 부모 메뉴의 전체 트리 구조를 찾기
     const fullParentMenu = findParentMenu(menus, parentMenu.id);
     console.log("Found full parent menu:", fullParentMenu);
@@ -149,40 +175,65 @@ export function MenuList({
     onAddMenu(fullParentMenu);
   };
 
+  const handleMoveMenu = (
+    draggedId: number,
+    targetId: number,
+    position: "before" | "after" | "inside"
+  ) => {
+    // 전체 메뉴로의 이동은 최상위로 이동하는 것으로 처리
+    if (targetId === -1) {
+      onMoveMenu(draggedId, 0, position); // 0은 최상위 메뉴를 나타냄
+      return;
+    }
+    onMoveMenu(draggedId, targetId, position);
+  };
+
   const renderMenuItem = (menu: Menu, level: number, index: number) => {
     const hasChildren = menu.children && menu.children.length > 0;
     const isFolder = menu.type === "FOLDER";
+    const isExpanded = expandedMenus.has(menu.id);
 
     return (
       <div key={menu.id}>
         <DropZone
-          onDrop={onMoveMenu}
+          onDrop={handleMoveMenu}
           targetId={menu.id}
           level={level}
           isFolder={isFolder}
         />
-        <ListItem
-          id={menu.id}
-          name={menu.name}
-          icon={getMenuIcon(menu)}
-          isSelected={menu.id === selectedMenuId}
-          onAddMenu={() => handleAddMenu(menu)}
-          onDelete={() => onDeleteMenu(menu.id)}
-          renderBadges={() => !menu.visible && "비활성"}
-          onClick={() => {
-            onEditMenu(menu);
-            if (hasChildren) {
-              toggleMenu(menu.id);
-            }
-          }}
-          index={index}
-          level={level}
-          isDragging={isDragging}
-          type={menu.type}
-        />
-        {hasChildren && expandedMenus.has(menu.id) && menu.children && (
-          <Box pl={6}>
-            {menu.children.map((child, childIndex) =>
+        <Box cursor={menu.id === -1 ? "not-allowed" : "pointer"}>
+          <ListItem
+            id={menu.id}
+            name={menu.name}
+            icon={getMenuIcon(menu)}
+            isSelected={menu.id === selectedMenuId}
+            onAddMenu={() => handleAddMenu(menu)}
+            onDelete={menu.id === -1 ? undefined : () => onDeleteMenu(menu.id)}
+            renderBadges={() => !menu.visible && "비활성"}
+            onClick={() => {
+              onEditMenu(menu);
+              if (hasChildren) {
+                toggleMenu(menu.id);
+              }
+            }}
+            index={index}
+            level={level}
+            isDragging={isDragging}
+            type={menu.type}
+          />
+        </Box>
+        {hasChildren && (
+          <Box
+            pl={6}
+            style={{
+              maxHeight: isExpanded ? "1000px" : "0",
+              overflow: "hidden",
+              opacity: isExpanded ? 1 : 0,
+              transform: isExpanded ? "translateY(0)" : "translateY(-10px)",
+              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            }}
+          >
+            {menu.children?.map((child, childIndex) =>
               renderMenuItem(child, level + 1, childIndex)
             )}
           </Box>
@@ -199,6 +250,19 @@ export function MenuList({
     );
   }
 
+  // 전체 메뉴를 최상위 루트로 추가
+  const rootMenu: Menu = {
+    id: -1,
+    name: "전체",
+    type: "FOLDER",
+    visible: true,
+    sortOrder: 0,
+    children: menus,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    displayPosition: "HEADER",
+  };
+
   if (menus.length === 0) {
     return (
       <Flex justify="center" align="center" h="200px">
@@ -212,15 +276,15 @@ export function MenuList({
       <Box ref={drag}>
         <VStack gap={0} align="stretch">
           <DropZone
-            targetId={menus[0]?.id || 0}
+            targetId={rootMenu.id}
             level={0}
             onDrop={(draggedId, targetId, position) => {
               onMoveMenu(draggedId, targetId, "before");
             }}
           />
-          {menus.map((menu, index) => renderMenuItem(menu, 0, index))}
+          {renderMenuItem(rootMenu, 0, 0)}
           <DropZone
-            targetId={menus[menus.length - 1]?.id || 0}
+            targetId={rootMenu.id}
             level={0}
             onDrop={(draggedId, targetId, position) => {
               onMoveMenu(draggedId, targetId, "after");

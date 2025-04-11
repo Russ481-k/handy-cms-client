@@ -82,6 +82,7 @@ export const MenuItem = ({
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
+    canDrag: () => menu.id !== -1,
   });
 
   const [{ isOver, dropPosition }, drop] = useDrop<
@@ -95,6 +96,8 @@ export const MenuItem = ({
       dropPosition: monitor.getItem() as DragItem,
     }),
     drop: (item: DragItem, monitor) => {
+      // 전체 메뉴(id: -1)에 대한 드래그앤드롭 방지
+      if (item.id === -1 || menu.id === -1) return;
       if (item.id === menu.id) return;
 
       const draggedLevel = item.level;
@@ -140,27 +143,23 @@ export const MenuItem = ({
   };
 
   const dragDropRef = useRef<HTMLDivElement>(null);
-  drag(drop(dragDropRef));
+  if (menu.id !== -1) {
+    drag(drop(dragDropRef));
+  }
 
   const handleMenuClick = (e: React.MouseEvent) => {
-    // 메뉴 아이콘 클릭 시 토글 동작
+    // 메뉴 아이콘 클릭 시 이벤트 전파 중단
     if ((e.target as HTMLElement).closest(".menu-icon")) {
-      e.stopPropagation();
-      if (menu.children && menu.children.length > 0) {
-        onToggle();
-      }
       return;
     }
 
     // 액션 버튼 클릭 시 이벤트 전파 중단
     if ((e.target as HTMLElement).closest(".action-buttons")) {
-      e.stopPropagation();
       return;
     }
 
     // 메뉴 편집 모드일 때는 이벤트 전파 중단
     if (isEditing) {
-      e.stopPropagation();
       return;
     }
 
@@ -168,6 +167,14 @@ export const MenuItem = ({
     e.preventDefault();
     e.stopPropagation();
     onEditMenu(menu);
+  };
+
+  const handleIconClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (menu.children && menu.children.length > 0) {
+      onToggle();
+    }
   };
 
   const handleEditClick = (e: React.MouseEvent) => {
@@ -292,7 +299,15 @@ export const MenuItem = ({
   };
 
   return (
-    <div ref={dragDropRef}>
+    <div
+      ref={menu.id === -1 ? null : dragDropRef}
+      style={{
+        cursor: menu.id === -1 ? "default" : "pointer",
+        pointerEvents: menu.id === -1 ? "none" : "auto",
+        userSelect: menu.id === -1 ? "none" : "auto",
+      }}
+      draggable={menu.id !== -1}
+    >
       <Flex
         pl={`${level * 0.5}rem`}
         py={1.5}
@@ -329,7 +344,6 @@ export const MenuItem = ({
         }}
         transition="all 0.2s ease-out"
         borderRadius="md"
-        onClick={handleMenuClick}
         position="relative"
         role="group"
         mb={1}
@@ -386,30 +400,24 @@ export const MenuItem = ({
           />
         )}
         <Flex width="100%" alignItems="center">
-          <Box width="24px" mr={2} textAlign="center">
+          <Box
+            width="24px"
+            mr={2}
+            textAlign="center"
+            onClick={handleIconClick}
+            className="menu-icon"
+            style={{ cursor: "pointer" }}
+          >
             <Flex
               width="24px"
               height="24px"
               alignItems="center"
               justifyContent="center"
-              className="menu-icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (menu.children && menu.children.length > 0) {
-                  onToggle();
-                }
-              }}
             >
               {getMenuIcon()}
             </Flex>
           </Box>
-          <Flex
-            flex="1"
-            alignItems="center"
-            pl={level > 0 ? 1 : 0}
-            position="relative"
-            minHeight="24px"
-          >
+          <Box flex="1" onClick={handleMenuClick} style={{ cursor: "pointer" }}>
             {isEditing ? (
               <form onSubmit={handleNameSubmit} style={{ width: "100%" }}>
                 <Flex gap={1} alignItems="center">
@@ -463,7 +471,7 @@ export const MenuItem = ({
                 </Text>
               </Box>
             )}
-          </Flex>
+          </Box>
           {menu.name !== "홈" && !isEditing && (
             <Flex
               className="action-buttons"
@@ -506,6 +514,35 @@ export const MenuItem = ({
           )}
         </Flex>
       </Flex>
+      {menu.children && menu.children.length > 0 && (
+        <Box
+          style={{
+            maxHeight: expanded ? "1000px" : "0",
+            overflow: "hidden",
+            opacity: expanded ? 1 : 0,
+            transform: expanded ? "translateY(0)" : "translateY(-10px)",
+            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            marginLeft: `${level * 0.5}rem`,
+          }}
+        >
+          123
+          {menu.children.map((child, index) => (
+            <MenuItem
+              key={child.id}
+              menu={child}
+              level={level + 1}
+              onEditMenu={onEditMenu}
+              expanded={expanded}
+              onToggle={onToggle}
+              onMoveMenu={onMoveMenu}
+              onDeleteMenu={onDeleteMenu}
+              index={index}
+              selectedMenuId={selectedMenuId}
+              refreshMenus={refreshMenus}
+            />
+          ))}
+        </Box>
+      )}
     </div>
   );
 };

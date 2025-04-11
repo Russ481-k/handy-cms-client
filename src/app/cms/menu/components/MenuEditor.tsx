@@ -310,6 +310,7 @@ export function MenuEditor({
                   borderColor={errors.name ? errorColor : borderColor}
                   color={textColor}
                   bg="transparent"
+                  disabled={menu?.id === -1}
                 />
               )}
             />
@@ -333,15 +334,21 @@ export function MenuEditor({
               name="type"
               control={control}
               render={({ field }) => (
-                <NativeSelect.Root>
-                  <NativeSelect.Field {...field} style={selectStyle}>
-                    <option value="LINK">링크</option>
-                    <option value="FOLDER">폴더</option>
-                    <option value="BOARD">게시판</option>
-                    <option value="CONTENT">컨텐츠</option>
-                  </NativeSelect.Field>
-                  <NativeSelect.Indicator />
-                </NativeSelect.Root>
+                <select
+                  {...field}
+                  style={{
+                    ...selectStyle,
+                    borderColor: errors.type
+                      ? "var(--chakra-colors-red-500)"
+                      : "inherit",
+                  }}
+                  disabled={menu?.id === -1}
+                >
+                  <option value="LINK">링크</option>
+                  <option value="FOLDER">폴더</option>
+                  <option value="BOARD">게시판</option>
+                  <option value="CONTENT">컨텐츠</option>
+                </select>
               )}
             />
           </Box>
@@ -368,6 +375,7 @@ export function MenuEditor({
                         ? "var(--chakra-colors-red-500)"
                         : "inherit",
                     }}
+                    disabled={menu?.id === -1}
                   >
                     <option value="">게시판 선택</option>
                     {boards.map((board) => (
@@ -408,6 +416,7 @@ export function MenuEditor({
                         ? "var(--chakra-colors-red-500)"
                         : "inherit",
                     }}
+                    disabled={menu?.id === -1}
                   >
                     <option value="">컨텐츠 선택</option>
                     {contents.map((content) => (
@@ -425,65 +434,37 @@ export function MenuEditor({
               )}
             </Box>
           )}
-          <Box>
-            <Flex mb={1}>
-              <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                URL
-              </Text>
-              <Text fontSize="sm" color={errorColor} ml={1}>
-                *
-              </Text>
-            </Flex>
-            <Controller
-              name="url"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  borderColor={errors.url ? errorColor : borderColor}
-                  color={textColor}
-                  bg="transparent"
-                  onBlur={(e) => {
-                    field.onBlur();
-                    const value = e.target.value;
-                    if (value && !value.startsWith("/")) {
-                      field.onChange("/" + value);
-                    }
-                    // URL 유효성 검사 실행
-                    const normalizedUrl = value.replace(/^\/+|\/+$/g, "");
-                    const isDuplicate = existingMenus.some((existingMenu) => {
-                      if (existingMenu.id === menu?.id) return false;
-                      if (existingMenu.type === "LINK" && existingMenu.url) {
-                        const existingUrl = existingMenu.url.replace(
-                          /^\/+|\/+$/g,
-                          ""
-                        );
-                        return existingUrl === normalizedUrl;
-                      }
-                      return false;
-                    });
 
-                    if (isDuplicate) {
-                      console.log("Duplicate URL detected:", {
-                        currentUrl: normalizedUrl,
-                        existingMenus: existingMenus.map((m) => ({
-                          id: m.id,
-                          name: m.name,
-                          url: m.url,
-                          type: m.type,
-                        })),
-                      });
-                    }
-                  }}
-                />
+          {menuType === "LINK" && (
+            <Box>
+              <Flex mb={1}>
+                <Text fontSize="sm" fontWeight="medium" color={textColor}>
+                  URL
+                </Text>
+                <Text fontSize="sm" color={errorColor} ml={1}>
+                  *
+                </Text>
+              </Flex>
+              <Controller
+                name="url"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    borderColor={errors.url ? errorColor : borderColor}
+                    color={textColor}
+                    bg="transparent"
+                    disabled={menu?.id === -1}
+                  />
+                )}
+              />
+              {errors.url && (
+                <Text color={errorColor} fontSize="sm" mt={1}>
+                  {errors.url.message}
+                </Text>
               )}
-            />
-            {errors.url && (
-              <Text color={errorColor} fontSize="sm" mt={1}>
-                {errors.url.message}
-              </Text>
-            )}
-          </Box>
+            </Box>
+          )}
           <Flex alignItems="center">
             <Controller
               name="visible"
@@ -494,6 +475,7 @@ export function MenuEditor({
                   onCheckedChange={(e) => onChange(!!e.checked)}
                   colorPalette="blue"
                   size="sm"
+                  disabled={menu?.id === -1}
                 >
                   <Checkbox.HiddenInput />
                   <Checkbox.Control
@@ -537,6 +519,7 @@ export function MenuEditor({
                 }}
                 _active={{ transform: "translateY(0)" }}
                 transition="all 0.2s ease"
+                disabled={menu?.id === -1}
               >
                 <DeleteIcon />
                 삭제
@@ -559,6 +542,7 @@ export function MenuEditor({
                 bg={buttonBg}
                 color="white"
                 _hover={{ bg: colors.primary.hover }}
+                disabled={menu?.id === -1}
               >
                 <CheckIcon />
                 저장

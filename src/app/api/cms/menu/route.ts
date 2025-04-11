@@ -20,21 +20,6 @@ interface MenuRow {
 // GET /api/cms/menu
 export async function GET(request: Request) {
   try {
-    // 인증 확인
-    const authHeader = request.headers.get("authorization");
-    console.log("Auth header received:", authHeader?.substring(0, 20) + "...");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const token = authHeader.split(" ")[1];
-    try {
-      verifyToken(token);
-    } catch (error) {
-      console.error("Error verifying token:", error);
-      return NextResponse.json({ message: "Invalid token" }, { status: 401 });
-    }
-
     // URL에서 type 파라미터 추출
     const url = new URL(request.url);
     const type = url.searchParams.get("type");
@@ -89,7 +74,8 @@ export async function GET(request: Request) {
           type: menu.type as Menu["type"],
           url: menu.url || undefined,
           targetId: menu.target_id || undefined,
-          displayPosition: menu.display_position,
+          displayPosition:
+            menu.display_position === "FOOTER" ? "FOOTER" : ("HEADER" as const),
           visible: menu.visible === 1,
           sortOrder: menu.sort_order,
           parentId: menu.parent_id || undefined,
@@ -144,7 +130,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("Error fetching menus:", error);
     return NextResponse.json(
-      { message: "Internal server error" },
+      { error: "Failed to fetch menus" },
       { status: 500 }
     );
   }
@@ -221,7 +207,10 @@ export async function POST(request: Request) {
         type: menuRow.type as Menu["type"],
         url: menuRow.url || undefined,
         targetId: menuRow.target_id || undefined,
-        displayPosition: menuRow.display_position,
+        displayPosition:
+          menuRow.display_position === "FOOTER"
+            ? "FOOTER"
+            : ("HEADER" as const),
         visible: menuRow.visible === 1,
         sortOrder: menuRow.sort_order,
         parentId: menuRow.parent_id || undefined,

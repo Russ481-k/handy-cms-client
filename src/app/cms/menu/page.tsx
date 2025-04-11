@@ -69,7 +69,7 @@ export default function MenuManagementPage() {
   const handleMoveMenu = useCallback(
     async (
       draggedId: number,
-      targetId: number,
+      targetId: number | null,
       position: "before" | "after" | "inside"
     ) => {
       if (isMoving) return; // 이미 이동 중이면 무시
@@ -168,7 +168,7 @@ export default function MenuManagementPage() {
       id: generateUniqueId(),
       name: "새 메뉴",
       type: "LINK", // 기본 타입을 LINK로 설정
-      parentId: parentMenu.id,
+      parentId: parentMenu.id === -1 ? null : parentMenu.id, // 전체 메뉴인 경우 parentId를 null로 설정
       sortOrder: parentMenu.children ? parentMenu.children.length + 1 : 1,
       visible: true,
       children: [],
@@ -181,6 +181,12 @@ export default function MenuManagementPage() {
 
     // 선택된 메뉴 아래에 추가
     setMenus((prevMenus) => {
+      // 전체 메뉴인 경우 최상위에 추가
+      if (parentMenu.id === -1) {
+        return [...prevMenus, newTempMenu];
+      }
+
+      // 메뉴 트리를 업데이트하는 재귀 함수
       const updateMenuTree = (menus: Menu[]): Menu[] => {
         return menus.map((menu) => {
           if (menu.id === parentMenu.id) {
@@ -198,6 +204,8 @@ export default function MenuManagementPage() {
           return menu;
         });
       };
+
+      // 전체 메뉴의 자식들에서 시작
       return updateMenuTree(prevMenus);
     });
 
@@ -205,7 +213,7 @@ export default function MenuManagementPage() {
     // 새 메뉴를 선택하고 임시 메뉴로 설정
     setTempMenu(newTempMenu);
     setSelectedMenu(newTempMenu);
-    setParentMenuId(parentMenu.id);
+    setParentMenuId(parentMenu.id === -1 ? null : parentMenu.id);
 
     // 메뉴 편집기로 포커스 이동
     setTimeout(() => {
@@ -264,9 +272,24 @@ export default function MenuManagementPage() {
   const handleEditMenu = (menu: Menu) => {
     if (tempMenu) {
       // 임시 메뉴 수정 중인 경우 경고 모달 표시
-      if (window.confirm("새 메뉴 추가가 취소됩니다. 계속하시겠습니까?")) {
+      if (window.confirm("새 메뉴 추가가 취소됩니다. 취소하시겠습니까?")) {
         // 임시 메뉴를 메뉴 목록에서 제거
-        setMenus((prevMenus) => prevMenus.filter((m) => m.id !== tempMenu.id));
+        setMenus((prevMenus) => {
+          const updateMenuTree = (menus: Menu[]): Menu[] => {
+            return menus
+              .filter((m) => m.id !== tempMenu.id)
+              .map((menu) => {
+                if (menu.children && menu.children.length > 0) {
+                  return {
+                    ...menu,
+                    children: updateMenuTree(menu.children),
+                  };
+                }
+                return menu;
+              });
+          };
+          return updateMenuTree(prevMenus);
+        });
         setTempMenu(null);
         setSelectedMenu(menu);
         setParentMenuId(menu.parentId || null);
@@ -439,38 +462,6 @@ export default function MenuManagementPage() {
                 관리자
               </Badge>
             </Flex>
-            <Flex gap={2}>
-              <Button
-                onClick={handleAddTopMenu}
-                bg={colors.primary.default}
-                color={colors.text.primary}
-                _hover={{
-                  bg: colors.primary.hover,
-                  transform: "translateY(-2px)",
-                }}
-                _active={{ transform: "translateY(0)" }}
-                shadow={colors.shadow.sm}
-                transition="all 0.3s ease"
-                size="sm"
-              >
-                최상단 메뉴 추가
-              </Button>
-              <Button
-                onClick={() => handleAddMenu(menus[0])}
-                bg={colors.primary.default}
-                color={colors.text.primary}
-                _hover={{
-                  bg: colors.primary.hover,
-                  transform: "translateY(-2px)",
-                }}
-                _active={{ transform: "translateY(0)" }}
-                shadow={colors.shadow.sm}
-                transition="all 0.3s ease"
-                size="sm"
-              >
-                새 메뉴 추가
-              </Button>
-            </Flex>
           </Flex>
 
           <Box>
@@ -495,7 +486,13 @@ export default function MenuManagementPage() {
               onDelete={handleDeleteMenu}
               onSubmit={handleSubmit}
               parentId={parentMenuId}
-              onAddMenu={() => handleAddMenu(menus[0])}
+              onAddMenu={() => {
+                if (selectedMenu?.id === -1) {
+                  handleAddMenu(selectedMenu);
+                } else {
+                  handleAddMenu(menus[0]);
+                }
+              }}
               existingMenus={menus}
               isTempMenu={!!tempMenu}
               tempMenu={tempMenu}
