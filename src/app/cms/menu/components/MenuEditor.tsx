@@ -8,7 +8,6 @@ import {
   VStack,
   Text,
   Checkbox,
-  NativeSelect,
   Input,
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
@@ -287,7 +286,10 @@ export function MenuEditor({
       }
 
       // 폼 데이터를 서버에 전송
-      await onSubmit(data);
+      await onSubmit({
+        ...data,
+        parentId: data.parentId || undefined,
+      });
     } catch (error) {
       console.error("Error submitting form:", error);
       toaster.error({

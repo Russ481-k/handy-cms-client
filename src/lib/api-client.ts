@@ -125,6 +125,11 @@ export const api = {
       createApiRequest<Post[]>(publicApi, `/board/${boardId}/posts`)(),
     getPost: (boardId: string, postId: string) =>
       createApiRequest<Post>(publicApi, `/board/${boardId}/posts/${postId}`)(),
+
+    get: async <T>(url: string) => {
+      const response = await publicApi.get<T>(url);
+      return response;
+    },
   },
 
   // 인증이 필요한 API 요청 (CMS 관리용)
@@ -137,15 +142,6 @@ export const api = {
         "POST",
         credentials
       )(),
-
-    // CMS 메뉴 관리
-    getCmsMenus: () => createApiRequest<Menu[]>(privateApi, "/cms/menu")(),
-    createCmsMenu: (data: MenuData) =>
-      createApiRequest<Menu>(privateApi, "/cms/menu", "POST", data)(),
-    updateCmsMenu: (id: string, data: MenuData) =>
-      createApiRequest<Menu>(privateApi, `/cms/menu/${id}`, "PUT", data)(),
-    deleteCmsMenu: (id: string) =>
-      createApiRequest<void>(privateApi, `/cms/menu/${id}`, "DELETE")(),
 
     // CMS 컨텐츠 관리
     getCmsContents: () =>
@@ -179,5 +175,25 @@ export const api = {
       createApiRequest<User>(privateApi, `/cms/users/${id}`, "PUT", data)(),
     deleteCmsUser: (id: string) =>
       createApiRequest<void>(privateApi, `/cms/users/${id}`, "DELETE")(),
+
+    get: async <T>(url: string) => {
+      const response = await privateApi.get<T>(url);
+      return response;
+    },
+
+    post: async <T>(url: string, data?: any) => {
+      const response = await privateApi.post<T>(url, data);
+      return response;
+    },
+
+    put: async <T>(url: string, data?: any) => {
+      const response = await privateApi.put<T>(url, data);
+      return response;
+    },
+
+    delete: async <T>(url: string) => {
+      const response = await privateApi.delete<T>(url);
+      return response;
+    },
   },
 };

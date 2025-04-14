@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useDrag, useDrop } from "react-dnd";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   FiCircle,
   FiX,
@@ -28,6 +29,7 @@ import { getAuthHeader } from "@/lib/auth";
 import { toaster } from "@/components/ui/toaster";
 import { Menu } from "../page";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { menuApi, menuKeys } from "@/lib/api/menu";
 
 export const MenuItem = ({
   menu,
@@ -189,6 +191,29 @@ export const MenuItem = ({
     setEditedName(e.target.value);
   };
 
+  const queryClient = useQueryClient();
+
+  const updateMenuMutation = useMutation({
+    mutationFn: (data: { id: number; name: string }) =>
+      menuApi.updateMenu(data.id, { ...menu, name: data.name }),
+    onSuccess: (updatedMenu) => {
+      queryClient.invalidateQueries({ queryKey: menuKeys.lists() });
+      onEditMenu(updatedMenu);
+      toaster.create({
+        title: "메뉴 이름이 수정되었습니다.",
+        type: "success",
+      });
+    },
+    onError: (error) => {
+      console.error("Failed to update menu name:", error);
+      setEditedName(menu.name);
+      toaster.create({
+        title: "메뉴 이름 수정에 실패했습니다.",
+        type: "error",
+      });
+    },
+  });
+
   const handleNameSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -196,34 +221,8 @@ export const MenuItem = ({
     if (newName && newName !== menu.name) {
       setIsSaving(true);
       try {
-        const response = await fetch(`/api/cms/menu/${menu.id}`, {
-          method: "PUT",
-          headers: {
-            ...getAuthHeader(),
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ ...menu, name: newName }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to update menu name");
-        }
-
-        const updatedMenu = await response.json();
-        await onEditMenu(updatedMenu);
-        await refreshMenus();
+        await updateMenuMutation.mutateAsync({ id: menu.id, name: newName });
         setEditedName(newName);
-        toaster.create({
-          title: "메뉴 이름이 수정되었습니다.",
-          type: "success",
-        });
-      } catch (error) {
-        console.error("Failed to update menu name:", error);
-        setEditedName(menu.name);
-        toaster.create({
-          title: "메뉴 이름 수정에 실패했습니다.",
-          type: "error",
-        });
       } finally {
         setIsSaving(false);
         setIsEditing(false);

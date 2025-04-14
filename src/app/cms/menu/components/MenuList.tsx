@@ -18,6 +18,8 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { DropZone } from "@/components/ui/drop-zone";
 import { MenuItem } from "../types";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { menuApi, menuKeys } from "@/lib/api/menu";
 
 interface MenuListProps {
   menus: Menu[];
@@ -29,9 +31,9 @@ interface MenuListProps {
     targetId: number,
     position: "before" | "after" | "inside"
   ) => void;
+  onSelectMenu: (menuId: number | null) => void;
   isLoading: boolean;
   selectedMenuId?: number;
-  refreshMenus: () => Promise<void>;
 }
 
 export function MenuList({
@@ -40,6 +42,7 @@ export function MenuList({
   onEditMenu,
   onDeleteMenu,
   onMoveMenu,
+  onSelectMenu,
   isLoading,
   selectedMenuId,
 }: MenuListProps) {
@@ -63,6 +66,53 @@ export function MenuList({
       isDragging: monitor.isDragging(),
     }),
   });
+
+  const queryClient = useQueryClient();
+
+  const { data: menuData, isLoading: queryLoading } = useQuery({
+    queryKey: menuKeys.lists(),
+    queryFn: menuApi.getMenus,
+    initialData: menus,
+  });
+
+  const updateOrderMutation = useMutation({
+    mutationFn: menuApi.updateMenuOrder,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: menuKeys.lists() });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: menuApi.deleteMenu,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: menuKeys.lists() });
+    },
+  });
+
+  const handleDeleteMenu = async (menuId: number) => {
+    try {
+      await deleteMutation.mutateAsync(menuId);
+      if (selectedMenuId === menuId) {
+        onSelectMenu(null);
+      }
+    } catch (error) {
+      console.error("Error deleting menu:", error);
+    }
+  };
+
+  const handleUpdateMenuOrder = async (
+    orders: Array<{
+      id: number;
+      targetId: number | null;
+      position: "before" | "after" | "inside";
+    }>
+  ) => {
+    try {
+      await updateOrderMutation.mutateAsync(orders);
+    } catch (error) {
+      console.error("Error updating menu order:", error);
+    }
+  };
 
   const toggleMenu = (menuId: number) => {
     if (menuId === -1) return;
@@ -261,7 +311,7 @@ export function MenuList({
     );
   };
 
-  if (isLoading) {
+  if (queryLoading) {
     return (
       <Flex justify="center" align="center" h="200px">
         <Spinner />

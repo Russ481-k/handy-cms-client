@@ -9,12 +9,13 @@ import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { getAuthHeader } from "@/lib/auth";
 import { toaster, Toaster } from "@/components/ui/toaster";
 import { Main } from "@/components/layout/view/Main";
-import { api } from "@/lib/api-client";
+
 import { useMenu } from "@/lib/hooks/useMenu";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { menuApi, menuKeys, UpdateMenuOrderRequest } from "@/lib/api/menu";
 
 export interface Menu {
   id: number;
@@ -25,107 +26,156 @@ export interface Menu {
   displayPosition: "HEADER" | "FOOTER";
   visible: boolean;
   sortOrder: number;
-  parentId?: number | null;
+  parentId?: number;
   children?: Menu[] | null;
   createdAt: string;
   updatedAt: string;
 }
 
 export default function MenuManagementPage() {
+  const queryClient = useQueryClient();
   const [selectedMenu, setSelectedMenu] = useState<Menu | null>(null);
   const [parentMenuId, setParentMenuId] = useState<number | null>(null);
-  const [menus, setMenus] = useState<Menu[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isMoving, setIsMoving] = useState(false);
   const [tempMenu, setTempMenu] = useState<Menu | null>(null);
+  const [localMenus, setLocalMenus] = useState<Menu[]>([]);
   const colors = useColors();
   const { refreshMenus: refreshHeaderMenus } = useMenu();
   const bg = useColorModeValue(colors.bg, colors.darkBg);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const [selectedMenuId, setSelectedMenuId] = useState<number | undefined>(
+    undefined
+  );
+  const [menuToDelete, setMenuToDelete] = useState<Menu | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  // 메뉴 목록 새로고침 함수
-  const refreshMenus = async () => {
-    try {
-      setIsLoading(true);
-      const response = await api.private.getCmsMenus();
-      if (!response.data) {
-        throw new Error("Failed to fetch menus");
-      }
-      console.log("API Response:", response.data);
-      setMenus(response.data);
-      // 미리보기 헤더도 함께 업데이트
+  // 메뉴 목록을 가져오는 쿼리
+  const { data: menus = [], isLoading } = useQuery({
+    queryKey: menuKeys.lists(),
+    queryFn: menuApi.getMenus,
+  });
+
+  // 서버 데이터가 변경되면 로컬 상태도 업데이트
+  useEffect(() => {
+    setLocalMenus(menus);
+  }, [menus]);
+
+  // 메뉴 순서 업데이트 뮤테이션
+  const updateOrderMutation = useMutation({
+    mutationFn: menuApi.updateMenuOrder,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: menuKeys.lists() });
       refreshHeaderMenus();
-    } catch (error) {
-      console.error("Error fetching menus:", error);
-      toaster.error({
-        title: "메뉴 목록을 불러오는데 실패했습니다.",
-        duration: 3000,
+      toaster.create({
+        title: "메뉴 순서가 변경되었습니다.",
+        type: "success",
       });
+    },
+    onError: (error) => {
+      console.error("Error updating menu order:", error);
+      toaster.create({
+        title: "메뉴 순서 변경에 실패했습니다.",
+        type: "error",
+      });
+    },
+  });
+
+  // 메뉴 삭제 뮤테이션
+  const deleteMutation = useMutation({
+    mutationFn: menuApi.deleteMenu,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: menuKeys.lists() });
+      refreshHeaderMenus();
+      setSelectedMenu(null);
+      toaster.create({
+        title: "메뉴가 삭제되었습니다.",
+        type: "success",
+      });
+    },
+    onError: (error) => {
+      console.error("Error deleting menu:", error);
+      toaster.create({
+        title: "메뉴 삭제에 실패했습니다.",
+        type: "error",
+      });
+    },
+  });
+
+  // 메뉴 저장/업데이트 뮤테이션
+  const saveMenuMutation = useMutation({
+    mutationFn: (data: {
+      id?: number;
+      menuData: Omit<Menu, "id" | "createdAt" | "updatedAt">;
+    }) => {
+      return data.id
+        ? menuApi.updateMenu(data.id, data.menuData)
+        : menuApi.createMenu(data.menuData);
+    },
+    onSuccess: (savedMenu) => {
+      queryClient.invalidateQueries({ queryKey: menuKeys.lists() });
+      refreshHeaderMenus();
+      setTempMenu(null);
+      setSelectedMenu(savedMenu);
+      setParentMenuId(savedMenu.parentId || null);
+      toaster.create({
+        title: tempMenu ? "메뉴가 생성되었습니다." : "메뉴가 수정되었습니다.",
+        type: "success",
+      });
+    },
+    onError: (error) => {
+      console.error("Error saving menu:", error);
+      toaster.create({
+        title: tempMenu
+          ? "메뉴 생성에 실패했습니다."
+          : "메뉴 수정에 실패했습니다.",
+        type: "error",
+      });
+    },
+  });
+
+  const handleMoveMenu = async (
+    draggedId: number,
+    targetId: number,
+    position: "before" | "after" | "inside"
+  ) => {
+    try {
+      setIsMoving(true);
+      const request: UpdateMenuOrderRequest = {
+        id: draggedId,
+        targetId: targetId === -1 ? null : targetId,
+        position: targetId === -1 ? "inside" : position,
+      };
+      await updateOrderMutation.mutateAsync([request]);
     } finally {
-      setIsLoading(false);
+      setIsMoving(false);
     }
   };
 
-  // 메뉴 순서 변경 핸들러
-  const handleMoveMenu = useCallback(
-    async (
-      draggedId: number,
-      targetId: number | null,
-      position: "before" | "after" | "inside"
-    ) => {
-      if (isMoving) return; // 이미 이동 중이면 무시
+  const handleDeleteMenu = async (menuId: number) => {
+    try {
+      setIsDeleting(true);
+      await deleteMutation.mutateAsync(menuId);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
-      try {
-        setIsMoving(true);
-        const requestBody = {
-          menuOrders: [
-            {
-              id: draggedId,
-              targetId: targetId,
-              position: position,
-            },
-          ],
-        };
-        console.log("Move Menu Request:", JSON.stringify(requestBody, null, 2));
-
-        const response = await fetch("/api/cms/menu/order", {
-          method: "PUT",
-          headers: {
-            ...getAuthHeader(),
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestBody),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error("Move Menu Error Response:", errorData);
-          console.error("Request URL:", response.url);
-          console.error("Request Headers:", getAuthHeader());
-          throw new Error("Failed to update menu order");
-        }
-
-        await refreshMenus();
-        toaster.create({
-          title: "메뉴 순서가 변경되었습니다.",
-          type: "success",
-        });
-      } catch (error) {
-        console.error("Error updating menu order:", error);
-        toaster.create({
-          title: "메뉴 순서 변경에 실패했습니다.",
-          type: "error",
-        });
-      } finally {
-        setIsMoving(false);
-      }
-    },
-    [isMoving, refreshMenus]
-  );
+  const handleSubmit = async (
+    menuData: Omit<Menu, "id" | "createdAt" | "updatedAt">
+  ) => {
+    try {
+      await saveMenuMutation.mutateAsync({
+        id: tempMenu ? undefined : selectedMenu?.id,
+        menuData,
+      });
+    } catch (error) {
+      console.error("Error saving menu:", error);
+    }
+  };
 
   // 메뉴 목록에 새 메뉴 추가하는 함수
   const addMenuToList = (newMenu: Menu, targetMenu: Menu | null = null) => {
-    setMenus((prevMenus) => {
+    setLocalMenus((prevMenus) => {
       if (!targetMenu) {
         // 최상위 레벨에 추가
         return [...prevMenus, newMenu];
@@ -160,20 +210,11 @@ export default function MenuManagementPage() {
 
   // 새 메뉴 추가 핸들러
   const handleAddMenu = (parentMenu: Menu) => {
-    console.log("handleAddMenu called with parentMenu:", parentMenu);
-
-    // 고유한 ID 생성 (타임스탬프 + 랜덤 숫자)
-    const generateUniqueId = () => {
-      const timestamp = Date.now();
-      const random = Math.floor(Math.random() * 1000);
-      return parseInt(`${timestamp}${random}`);
-    };
-
     const newTempMenu: Menu = {
-      id: generateUniqueId(),
+      id: Date.now(), // 임시 ID
       name: "새 메뉴",
       type: "LINK",
-      parentId: parentMenu.id === -1 ? null : parentMenu.id,
+      parentId: parentMenu.id === -1 ? undefined : parentMenu.id,
       sortOrder: parentMenu.children ? parentMenu.children.length + 1 : 1,
       visible: true,
       children: [],
@@ -182,62 +223,38 @@ export default function MenuManagementPage() {
       displayPosition: "HEADER",
     };
 
-    console.log("New temp menu created:", newTempMenu);
-
-    // 선택된 메뉴 아래에 추가
-    setMenus((prevMenus) => {
-      // 전체 메뉴인 경우 최상위에 추가
+    setLocalMenus((prevMenus) => {
       if (parentMenu.id === -1) {
         return [...prevMenus, newTempMenu];
       }
-
-      // 메뉴 트리를 업데이트하는 재귀 함수
-      const updateMenuTree = (menus: Menu[]): Menu[] => {
-        return menus.map((menu) => {
-          if (menu.id === parentMenu.id) {
-            return {
-              ...menu,
-              children: [...(menu.children || []), newTempMenu],
-            };
-          }
-          if (menu.children && menu.children.length > 0) {
-            return {
-              ...menu,
-              children: updateMenuTree(menu.children),
-            };
-          }
-          return menu;
-        });
-      };
-
-      return updateMenuTree(prevMenus);
+      return updateMenuTree(prevMenus, parentMenu.id, newTempMenu);
     });
 
-    console.log("Setting temp menu and selected menu:", newTempMenu);
     setTempMenu(newTempMenu);
     setSelectedMenu(newTempMenu);
     setParentMenuId(parentMenu.id === -1 ? null : parentMenu.id);
+  };
 
-    toaster.create({
-      title: "새 메뉴가 추가되었습니다.",
-      type: "success",
-    });
-
-    // 메뉴 편집기로 포커스 이동
-    setTimeout(() => {
-      const nameInput = document.querySelector(
-        'input[name="name"]'
-      ) as HTMLInputElement;
-      console.log("Looking for name input:", nameInput);
-      if (nameInput) {
-        nameInput.focus();
-        nameInput.setSelectionRange(
-          nameInput.value.length,
-          nameInput.value.length
-        );
-        console.log("Name input focused");
+  const updateMenuTree = (
+    menus: Menu[],
+    targetId: number,
+    newMenu: Menu
+  ): Menu[] => {
+    return menus.map((menu) => {
+      if (menu.id === targetId) {
+        return {
+          ...menu,
+          children: [...(menu.children || []), newMenu],
+        };
       }
-    }, 100);
+      if (menu.children && menu.children.length > 0) {
+        return {
+          ...menu,
+          children: updateMenuTree(menu.children, targetId, newMenu),
+        };
+      }
+      return menu;
+    });
   };
 
   const handleEditMenu = (menu: Menu) => {
@@ -245,7 +262,7 @@ export default function MenuManagementPage() {
       // 임시 메뉴 수정 중인 경우 경고 모달 표시
       if (window.confirm("새 메뉴 추가가 취소됩니다. 취소하시겠습니까?")) {
         // 임시 메뉴를 메뉴 목록에서 제거
-        setMenus((prevMenus) => {
+        setLocalMenus((prevMenus) => {
           const updateMenuTree = (menus: Menu[]): Menu[] => {
             return menus
               .filter((m) => m.id !== tempMenu.id)
@@ -275,101 +292,10 @@ export default function MenuManagementPage() {
     if (tempMenu) {
       // 임시 메뉴인 경우 삭제
       setTempMenu(null);
-      setSelectedMenu(menus[0] || null);
+      setSelectedMenu(localMenus[0] || null);
     } else {
       // 기존 메뉴 편집 중 취소
       setSelectedMenu(null);
-    }
-  };
-
-  const handleSubmit = async (
-    menuData: Omit<Menu, "id" | "createdAt" | "updatedAt">
-  ) => {
-    console.log("handleSubmit called with menuData:", menuData);
-    console.log("tempMenu:", tempMenu);
-    console.log("selectedMenu:", selectedMenu);
-
-    try {
-      const url = tempMenu
-        ? "/api/cms/menu"
-        : `/api/cms/menu/${selectedMenu?.id}`;
-      const method = tempMenu ? "POST" : "PUT";
-      console.log("Making API request:", { url, method });
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          ...getAuthHeader(),
-        },
-        body: JSON.stringify(menuData),
-      });
-
-      console.log("API response status:", response.status);
-
-      if (!response.ok) {
-        throw new Error("Failed to save menu");
-      }
-
-      const savedMenu = await response.json();
-      console.log("Saved menu response:", savedMenu);
-
-      // 메뉴 목록 새로고침
-      await refreshMenus();
-
-      // 임시 메뉴 초기화
-      setTempMenu(null);
-
-      // 저장된 메뉴 선택
-      setSelectedMenu(savedMenu);
-      setParentMenuId(savedMenu.parentId || null);
-
-      console.log(
-        "Showing success toast for:",
-        tempMenu ? "creation" : "update"
-      );
-      toaster.create({
-        title: tempMenu ? "메뉴가 생성되었습니다." : "메뉴가 수정되었습니다.",
-        type: "success",
-      });
-    } catch (error) {
-      console.error("Error saving menu:", error);
-      console.log("Showing error toast for:", tempMenu ? "creation" : "update");
-      toaster.create({
-        title: tempMenu
-          ? "메뉴 생성에 실패했습니다."
-          : "메뉴 수정에 실패했습니다.",
-        type: "error",
-      });
-    }
-  };
-
-  const handleDeleteMenu = async (menuId: number) => {
-    try {
-      const response = await fetch(`/api/cms/menu?id=${menuId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          ...getAuthHeader(),
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete menu");
-      }
-
-      await refreshMenus();
-      setSelectedMenu(null);
-      toaster.create({
-        title: "메뉴가 삭제되었습니다.",
-        type: "success",
-      });
-    } catch (error) {
-      console.error("Error deleting menu:", error);
-      toaster.create({
-        title: "메뉴 삭제에 실패했습니다.",
-        type: "error",
-      });
     }
   };
 
@@ -426,15 +352,10 @@ export default function MenuManagementPage() {
 
   // 초기 메뉴 선택
   useEffect(() => {
-    if (menus.length > 0 && !selectedMenu && !tempMenu) {
-      setSelectedMenu(menus[0]);
+    if (localMenus.length > 0 && !selectedMenu && !tempMenu) {
+      setSelectedMenu(localMenus[0]);
     }
-  }, [menus, selectedMenu, tempMenu]);
-
-  // 메뉴 목록 불러오기
-  useEffect(() => {
-    refreshMenus();
-  }, []);
+  }, [localMenus, selectedMenu, tempMenu]);
 
   return (
     <Box bg={bg} minH="100vh" w="full" position="relative">
@@ -466,14 +387,14 @@ export default function MenuManagementPage() {
           <Box>
             <DndProvider backend={HTML5Backend}>
               <MenuList
-                menus={menus}
+                menus={localMenus}
                 onAddMenu={handleAddMenu}
                 onEditMenu={handleEditMenu}
                 onDeleteMenu={handleDeleteMenu}
                 onMoveMenu={handleMoveMenu}
+                onSelectMenu={(id) => setSelectedMenuId(id ?? undefined)}
                 isLoading={isLoading}
-                selectedMenuId={selectedMenu?.id}
-                refreshMenus={refreshMenus}
+                selectedMenuId={selectedMenuId}
               />
             </DndProvider>
           </Box>
@@ -489,17 +410,17 @@ export default function MenuManagementPage() {
                 if (selectedMenu?.id === -1) {
                   handleAddMenu(selectedMenu);
                 } else {
-                  handleAddMenu(menus[0]);
+                  handleAddMenu(localMenus[0]);
                 }
               }}
-              existingMenus={menus}
+              existingMenus={localMenus}
               isTempMenu={!!tempMenu}
               tempMenu={tempMenu}
             />
           </Box>
 
           <Box>
-            <Main menus={menus} isPreview={true} />
+            <Main menus={localMenus} isPreview={true} />
           </Box>
         </GridSection>
       </Box>
