@@ -79,10 +79,10 @@ export async function PUT(request: Request) {
       // 2. 각 메뉴 이동 처리
       for (const { id, targetId, position } of menuOrders as MenuOrder[]) {
         const currentMenu = menuMap.get(id);
-        const targetMenu = menuMap.get(targetId);
+        const targetMenu = targetId ? menuMap.get(targetId) : null;
 
-        if (!currentMenu || !targetMenu) {
-          throw new Error(`Menu not found: id=${id}, targetId=${targetId}`);
+        if (!currentMenu) {
+          throw new Error(`Menu not found: id=${id}`);
         }
 
         // 3. 새로운 parent_id 결정
@@ -96,14 +96,16 @@ export async function PUT(request: Request) {
 
         // 5. 새로운 위치에 메뉴 삽입
         const menuArray = Array.from(menuMap.values());
-        const targetIndex = menuArray.findIndex((menu) => menu.id === targetId);
+        const targetIndex = targetId
+          ? menuArray.findIndex((menu) => menu.id === targetId)
+          : menuArray.length;
 
         // 6. 새로운 메뉴 객체 생성
         const newMenu: Menu = {
           ...currentMenu,
           parent_id: newParentId,
           path:
-            position === "inside"
+            position === "inside" && targetMenu
               ? `${targetMenu.path},${id}`
               : currentMenu.path,
         };
@@ -113,6 +115,8 @@ export async function PUT(request: Request) {
           menuArray.splice(targetIndex, 0, newMenu);
         } else if (position === "after") {
           menuArray.splice(targetIndex + 1, 0, newMenu);
+        } else if (position === "inside") {
+          menuArray.push(newMenu);
         }
 
         // 8. 메뉴 맵 업데이트

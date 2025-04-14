@@ -9,6 +9,7 @@ import {
   Text,
   Checkbox,
   Input,
+  Spinner,
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
@@ -19,8 +20,7 @@ import * as z from "zod";
 import { Menu } from "../page";
 import { getAuthHeader } from "@/lib/auth";
 import { toaster } from "@/components/ui/toaster";
-import { CheckIcon } from "lucide-react";
-import { DeleteIcon, PlusIcon } from "lucide-react";
+import { CheckIcon, DeleteIcon, PlusIcon, Loader2 } from "lucide-react";
 import { SubmitHandler } from "react-hook-form";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
@@ -122,6 +122,8 @@ export function MenuEditor({
     []
   );
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const {
     control,
@@ -263,11 +265,16 @@ export function MenuEditor({
     setIsDeleteDialogOpen(true);
   };
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = async () => {
     if (!menu || !onDelete) return;
-    onDelete(menu.id);
-    onClose();
     setIsDeleteDialogOpen(false);
+    try {
+      setIsDeleting(true);
+      await onDelete(menu.id);
+      onClose();
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleDeleteCancel = () => {
@@ -276,6 +283,7 @@ export function MenuEditor({
 
   const handleFormSubmit: SubmitHandler<MenuFormData> = async (data) => {
     try {
+      setIsSubmitting(true);
       // LINK 타입일 때는 url이 필수
       if (data.type === "LINK" && !data.url?.trim()) {
         toaster.error({
@@ -296,6 +304,8 @@ export function MenuEditor({
         title: "메뉴 저장에 실패했습니다.",
         duration: 3000,
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -531,10 +541,12 @@ export function MenuEditor({
                   }}
                   _active={{ transform: "translateY(0)" }}
                   transition="all 0.2s ease"
-                  disabled={menu?.id === -1}
+                  disabled={menu?.id === -1 || isDeleting || isSubmitting}
                 >
-                  <DeleteIcon />
-                  삭제
+                  <Box display="flex" alignItems="center" gap={2} w={4}>
+                    {isDeleting ? <Spinner size="sm" /> : <DeleteIcon />}
+                  </Box>
+                  <Text>삭제</Text>
                 </Button>
               ) : (
                 <Box />
@@ -554,10 +566,12 @@ export function MenuEditor({
                   bg={buttonBg}
                   color="white"
                   _hover={{ bg: colors.primary.hover }}
-                  disabled={menu?.id === -1}
+                  disabled={menu?.id === -1 || isDeleting || isSubmitting}
                 >
-                  <CheckIcon />
-                  저장
+                  <Box display="flex" alignItems="center" gap={2} w={4}>
+                    {isSubmitting ? <Spinner size="sm" /> : <CheckIcon />}
+                  </Box>
+                  <Text>저장</Text>
                 </Button>
               </Flex>
             </Flex>

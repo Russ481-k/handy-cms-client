@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Box, Flex, Text, Spinner, VStack } from "@chakra-ui/react";
 import { Menu } from "../page";
 import { ListItem } from "@/components/ui/list-item";
@@ -34,6 +34,7 @@ interface MenuListProps {
   onSelectMenu: (menuId: number | null) => void;
   isLoading: boolean;
   selectedMenuId?: number;
+  loadingMenuId?: number | null;
 }
 
 export function MenuList({
@@ -45,11 +46,13 @@ export function MenuList({
   onSelectMenu,
   isLoading,
   selectedMenuId,
+  loadingMenuId,
 }: MenuListProps) {
   const [expandedMenus, setExpandedMenus] = useState<Set<number>>(
     new Set([-1])
   );
   const [menuToDelete, setMenuToDelete] = useState<Menu | null>(null);
+  const menuListRef = useRef<HTMLDivElement>(null);
   const colors = useColors();
   const iconColor = useColorModeValue(
     colors.text.secondary,
@@ -255,13 +258,26 @@ export function MenuList({
     setMenuToDelete(null);
   };
 
+  // 선택된 메뉴로 스크롤 이동
+  useEffect(() => {
+    if (selectedMenuId && menuListRef.current) {
+      const selectedElement = menuListRef.current.querySelector(
+        `[data-menu-id="${selectedMenuId}"]`
+      );
+      if (selectedElement) {
+        selectedElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  }, [selectedMenuId]);
+
   const renderMenuItem = (menu: Menu, level: number, index: number) => {
     const hasChildren = menu.children && menu.children.length > 0;
     const isFolder = menu.type === "FOLDER";
     const isExpanded = expandedMenus.has(menu.id);
+    const isLoading = loadingMenuId === menu.id;
 
     return (
-      <div key={menu.id}>
+      <div key={menu.id} data-menu-id={menu.id}>
         <DropZone
           onDrop={handleMoveMenu}
           targetId={menu.id}
@@ -272,7 +288,7 @@ export function MenuList({
           <ListItem
             id={menu.id}
             name={menu.name}
-            icon={getMenuIcon(menu)}
+            icon={isLoading ? <Spinner size="sm" /> : getMenuIcon(menu)}
             isSelected={menu.id === selectedMenuId}
             onAddMenu={() => handleAddMenu(menu)}
             onDelete={
@@ -342,7 +358,14 @@ export function MenuList({
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <Box ref={drag}>
+      <Box
+        ref={(node: HTMLDivElement | null) => {
+          if (node) {
+            drag(node);
+            menuListRef.current = node;
+          }
+        }}
+      >
         <VStack gap={0} align="stretch">
           <DropZone
             targetId={rootMenu.id}

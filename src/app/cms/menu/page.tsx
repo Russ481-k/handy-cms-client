@@ -39,6 +39,7 @@ export default function MenuManagementPage() {
   const [isMoving, setIsMoving] = useState(false);
   const [tempMenu, setTempMenu] = useState<Menu | null>(null);
   const [localMenus, setLocalMenus] = useState<Menu[]>([]);
+  const [loadingMenuId, setLoadingMenuId] = useState<number | null>(null);
   const colors = useColors();
   const { refreshMenus: refreshHeaderMenus } = useMenu();
   const bg = useColorModeValue(colors.bg, colors.darkBg);
@@ -140,6 +141,7 @@ export default function MenuManagementPage() {
   ) => {
     try {
       setIsMoving(true);
+      setLoadingMenuId(draggedId);
       const request: UpdateMenuOrderRequest = {
         id: draggedId,
         targetId: targetId === -1 ? null : targetId,
@@ -148,15 +150,18 @@ export default function MenuManagementPage() {
       await updateOrderMutation.mutateAsync([request]);
     } finally {
       setIsMoving(false);
+      setLoadingMenuId(null);
     }
   };
 
   const handleDeleteMenu = async (menuId: number) => {
     try {
       setIsDeleting(true);
+      setLoadingMenuId(menuId);
       await deleteMutation.mutateAsync(menuId);
     } finally {
       setIsDeleting(false);
+      setLoadingMenuId(null);
     }
   };
 
@@ -164,12 +169,24 @@ export default function MenuManagementPage() {
     menuData: Omit<Menu, "id" | "createdAt" | "updatedAt">
   ) => {
     try {
+      const menuId = tempMenu ? undefined : selectedMenu?.id;
+      if (menuId !== undefined) {
+        setLoadingMenuId(menuId);
+      }
       await saveMenuMutation.mutateAsync({
         id: tempMenu ? undefined : selectedMenu?.id,
         menuData,
       });
+      // 메뉴 생성/수정 후 선택된 메뉴 ID 업데이트
+      if (tempMenu) {
+        setSelectedMenuId(undefined);
+      } else {
+        setSelectedMenuId(selectedMenu?.id);
+      }
     } catch (error) {
       console.error("Error saving menu:", error);
+    } finally {
+      setLoadingMenuId(null);
     }
   };
 
@@ -233,6 +250,7 @@ export default function MenuManagementPage() {
     setTempMenu(newTempMenu);
     setSelectedMenu(newTempMenu);
     setParentMenuId(parentMenu.id === -1 ? null : parentMenu.id);
+    setSelectedMenuId(newTempMenu.id);
   };
 
   const updateMenuTree = (
@@ -394,7 +412,8 @@ export default function MenuManagementPage() {
                 onMoveMenu={handleMoveMenu}
                 onSelectMenu={(id) => setSelectedMenuId(id ?? undefined)}
                 isLoading={isLoading}
-                selectedMenuId={selectedMenuId}
+                selectedMenuId={selectedMenu?.id}
+                loadingMenuId={loadingMenuId}
               />
             </DndProvider>
           </Box>
