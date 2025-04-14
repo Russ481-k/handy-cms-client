@@ -27,6 +27,7 @@ import { MenuItemProps, DragItem } from "../types";
 import { getAuthHeader } from "@/lib/auth";
 import { toaster } from "@/components/ui/toaster";
 import { Menu } from "../page";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export const MenuItem = ({
   menu,
@@ -45,6 +46,7 @@ export const MenuItem = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(menu.name);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   // 컬러 모드에 맞는 호버 색상 설정
   const hoverBg = useColorModeValue(
@@ -241,15 +243,21 @@ export const MenuItem = ({
     }
   };
 
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (window.confirm("정말로 이 메뉴를 삭제하시겠습니까?")) {
-      onDeleteMenu(menu.id);
-      toaster.create({
-        title: "메뉴가 삭제되었습니다.",
-        type: "success",
-      });
-    }
+  const handleDelete = () => {
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    onDeleteMenu(menu.id);
+    toaster.create({
+      title: "메뉴가 삭제되었습니다.",
+      type: "success",
+    });
+    setIsDeleteDialogOpen(false);
+  };
+
+  const handleDeleteCancel = () => {
+    setIsDeleteDialogOpen(false);
   };
 
   const getMenuIcon = () => {
@@ -299,250 +307,265 @@ export const MenuItem = ({
   };
 
   return (
-    <div
-      ref={menu.id === -1 ? null : dragDropRef}
-      style={{
-        cursor: menu.id === -1 ? "default" : "pointer",
-        pointerEvents: menu.id === -1 ? "none" : "auto",
-        userSelect: menu.id === -1 ? "none" : "auto",
-      }}
-      draggable={menu.id !== -1}
-    >
-      <Flex
-        pl={`${level * 0.5}rem`}
-        py={1.5}
-        px={2}
-        alignItems="center"
-        cursor="pointer"
-        bg={
-          isOver
-            ? dropBg
-            : selectedMenuId === menu.id
-            ? selectedBg
-            : "transparent"
-        }
-        borderLeft={selectedMenuId === menu.id ? "3px solid" : "none"}
-        borderColor={
-          selectedMenuId === menu.id ? selectedBorderColor : "transparent"
-        }
-        opacity={isDragging ? 0.5 : 1}
-        transform={isDragging ? "scale(1.02)" : "none"}
-        _hover={{
-          bg: hoverBg,
-          transform: "translateX(2px)",
-          boxShadow: "sm",
-          backdropFilter: "blur(4px)",
-          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-          "& .menu-icon": {
-            opacity: 1,
-            transform: "scale(1.1)",
-          },
-          "& .action-buttons": {
-            opacity: 1,
-            transform: "translateX(0)",
-          },
+    <>
+      <div
+        ref={menu.id === -1 ? null : dragDropRef}
+        style={{
+          cursor: menu.id === -1 ? "default" : "pointer",
+          pointerEvents: menu.id === -1 ? "none" : "auto",
+          userSelect: menu.id === -1 ? "none" : "auto",
         }}
-        transition="all 0.2s ease-out"
-        borderRadius="md"
-        position="relative"
-        role="group"
-        mb={1}
-        mr={1}
+        draggable={menu.id !== -1}
       >
-        {isOver && (
+        <Flex
+          pl={`${level * 0.5}rem`}
+          py={1.5}
+          px={2}
+          alignItems="center"
+          cursor="pointer"
+          bg={
+            isOver
+              ? dropBg
+              : selectedMenuId === menu.id
+              ? selectedBg
+              : "transparent"
+          }
+          borderLeft={selectedMenuId === menu.id ? "3px solid" : "none"}
+          borderColor={
+            selectedMenuId === menu.id ? selectedBorderColor : "transparent"
+          }
+          opacity={isDragging ? 0.5 : 1}
+          transform={isDragging ? "scale(1.02)" : "none"}
+          _hover={{
+            bg: hoverBg,
+            transform: "translateX(2px)",
+            boxShadow: "sm",
+            backdropFilter: "blur(4px)",
+            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            "& .menu-icon": {
+              opacity: 1,
+              transform: "scale(1.1)",
+            },
+            "& .action-buttons": {
+              opacity: 1,
+              transform: "translateX(0)",
+            },
+          }}
+          transition="all 0.2s ease-out"
+          borderRadius="md"
+          position="relative"
+          role="group"
+          mb={1}
+          mr={1}
+        >
+          {isOver && (
+            <Box
+              position="absolute"
+              left="0"
+              top="0"
+              bottom="0"
+              width="3px"
+              bg={colors.primary.default}
+              opacity={0.5}
+              transition="all 0.2s ease"
+            />
+          )}
           <Box
             position="absolute"
             left="0"
             top="0"
             bottom="0"
-            width="3px"
-            bg={colors.primary.default}
-            opacity={0.5}
-            transition="all 0.2s ease"
-          />
-        )}
-        <Box
-          position="absolute"
-          left="0"
-          top="0"
-          bottom="0"
-          width="0"
-          bg={indicatorColor}
-          opacity={0}
-          transition="all 0.3s ease"
-          className="menu-indicator"
-          _groupHover={{
-            opacity: 0.5,
-            width: "3px",
-          }}
-        />
-        {isOver && (
-          <Box
-            position="absolute"
-            left="0"
-            right="0"
-            height="2px"
+            width="0"
             bg={indicatorColor}
-            zIndex="1"
-            boxShadow={`0 0 8px ${indicatorColor}`}
+            opacity={0}
             transition="all 0.3s ease"
-            opacity={0.8}
-            _after={{
-              content: '""',
-              position: "absolute",
-              top: "-1px",
-              left: 0,
-              right: 0,
-              height: "4px",
-              background: `linear-gradient(90deg, transparent, ${indicatorColor}, transparent)`,
+            className="menu-indicator"
+            _groupHover={{
               opacity: 0.5,
+              width: "3px",
             }}
           />
-        )}
-        <Flex width="100%" alignItems="center">
-          <Box
-            width="24px"
-            mr={2}
-            textAlign="center"
-            onClick={handleIconClick}
-            className="menu-icon"
-            style={{ cursor: "pointer" }}
-          >
-            <Flex
+          {isOver && (
+            <Box
+              position="absolute"
+              left="0"
+              right="0"
+              height="2px"
+              bg={indicatorColor}
+              zIndex="1"
+              boxShadow={`0 0 8px ${indicatorColor}`}
+              transition="all 0.3s ease"
+              opacity={0.8}
+              _after={{
+                content: '""',
+                position: "absolute",
+                top: "-1px",
+                left: 0,
+                right: 0,
+                height: "4px",
+                background: `linear-gradient(90deg, transparent, ${indicatorColor}, transparent)`,
+                opacity: 0.5,
+              }}
+            />
+          )}
+          <Flex width="100%" alignItems="center">
+            <Box
               width="24px"
-              height="24px"
-              alignItems="center"
-              justifyContent="center"
+              mr={2}
+              textAlign="center"
+              onClick={handleIconClick}
+              className="menu-icon"
+              style={{ cursor: "pointer" }}
             >
-              {getMenuIcon()}
-            </Flex>
-          </Box>
-          <Box flex="1" onClick={handleMenuClick} style={{ cursor: "pointer" }}>
-            {isEditing ? (
-              <form onSubmit={handleNameSubmit} style={{ width: "100%" }}>
-                <Flex gap={1} alignItems="center">
-                  <Input
-                    value={editedName}
-                    onChange={handleNameChange}
-                    onKeyDown={handleNameKeyDown}
-                    size="sm"
-                    autoFocus
-                    onClick={(e) => e.stopPropagation()}
-                    onBlur={handleNameSubmit}
-                    borderColor={colors.primary.default}
-                    _focus={{
-                      borderColor: colors.primary.default,
-                      boxShadow: `0 0 0 1px ${colors.primary.default}`,
-                    }}
-                    placeholder="Enter to save"
-                  />
-                  {isSaving ? (
-                    <Spinner size="xs" color="blue.500" />
-                  ) : (
-                    <Kbd size="sm" color={colors.primary.default}>
-                      Enter
-                    </Kbd>
-                  )}
-                </Flex>
-              </form>
-            ) : (
-              <Text
-                color={!menu.visible ? disabledTextColor : textColor}
-                transition="all 0.2s ease"
-                _groupHover={{ fontWeight: "medium" }}
-                fontSize={level === 0 ? "sm" : "xs"}
-                fontWeight={level === 0 ? "medium" : "normal"}
-                lineHeight="short"
+              <Flex
+                width="24px"
+                height="24px"
+                alignItems="center"
+                justifyContent="center"
               >
-                {menu.name}
-              </Text>
-            )}
-            {!menu.visible && (
-              <Box
-                px={1.5}
-                py={0.5}
-                borderRadius="full"
-                bg={menuBgColor}
-                fontSize="xs"
+                {getMenuIcon()}
+              </Flex>
+            </Box>
+            <Box
+              flex="1"
+              onClick={handleMenuClick}
+              style={{ cursor: "pointer" }}
+            >
+              {isEditing ? (
+                <form onSubmit={handleNameSubmit} style={{ width: "100%" }}>
+                  <Flex gap={1} alignItems="center">
+                    <Input
+                      value={editedName}
+                      onChange={handleNameChange}
+                      onKeyDown={handleNameKeyDown}
+                      size="sm"
+                      autoFocus
+                      onClick={(e) => e.stopPropagation()}
+                      onBlur={handleNameSubmit}
+                      borderColor={colors.primary.default}
+                      _focus={{
+                        borderColor: colors.primary.default,
+                        boxShadow: `0 0 0 1px ${colors.primary.default}`,
+                      }}
+                      placeholder="Enter to save"
+                    />
+                    {isSaving ? (
+                      <Spinner size="xs" color="blue.500" />
+                    ) : (
+                      <Kbd size="sm" color={colors.primary.default}>
+                        Enter
+                      </Kbd>
+                    )}
+                  </Flex>
+                </form>
+              ) : (
+                <Text
+                  color={!menu.visible ? disabledTextColor : textColor}
+                  transition="all 0.2s ease"
+                  _groupHover={{ fontWeight: "medium" }}
+                  fontSize={level === 0 ? "sm" : "xs"}
+                  fontWeight={level === 0 ? "medium" : "normal"}
+                  lineHeight="short"
+                >
+                  {menu.name}
+                </Text>
+              )}
+              {!menu.visible && (
+                <Box
+                  px={1.5}
+                  py={0.5}
+                  borderRadius="full"
+                  bg={menuBgColor}
+                  fontSize="xs"
+                  ml={2}
+                >
+                  <Text fontSize="2xs" color={disabledTextColor}>
+                    숨김
+                  </Text>
+                </Box>
+              )}
+            </Box>
+            {menu.name !== "홈" && !isEditing && (
+              <Flex
+                className="action-buttons"
+                opacity={0}
+                transform="translateX(10px)"
+                transition="all 0.2s ease"
+                gap={1}
                 ml={2}
               >
-                <Text fontSize="2xs" color={disabledTextColor}>
-                  숨김
-                </Text>
-              </Box>
+                <IconButton
+                  aria-label="Edit menu"
+                  size="xs"
+                  variant="ghost"
+                  onClick={handleEditClick}
+                  color="gray.500"
+                  _hover={{ color: "blue.500", bg: "blue.50" }}
+                  p={1}
+                  minW="auto"
+                  h="auto"
+                  borderRadius="full"
+                  className="action-button"
+                >
+                  <FiEdit2 size={14} />
+                </IconButton>
+                <IconButton
+                  aria-label="Delete menu"
+                  size="xs"
+                  variant="ghost"
+                  onClick={handleDelete}
+                  color="gray.500"
+                  _hover={{ color: "red.500", bg: "red.50" }}
+                  p={1}
+                  minW="auto"
+                  h="auto"
+                  borderRadius="full"
+                >
+                  <FiX size={14} />
+                </IconButton>
+              </Flex>
             )}
-          </Box>
-          {menu.name !== "홈" && !isEditing && (
-            <Flex
-              className="action-buttons"
-              opacity={0}
-              transform="translateX(10px)"
-              transition="all 0.2s ease"
-              gap={1}
-              ml={2}
-            >
-              <IconButton
-                aria-label="Edit menu"
-                size="xs"
-                variant="ghost"
-                onClick={handleEditClick}
-                color="gray.500"
-                _hover={{ color: "blue.500", bg: "blue.50" }}
-                p={1}
-                minW="auto"
-                h="auto"
-                borderRadius="full"
-                className="action-button"
-              >
-                <FiEdit2 size={14} />
-              </IconButton>
-              <IconButton
-                aria-label="Delete menu"
-                size="xs"
-                variant="ghost"
-                onClick={handleDelete}
-                color="gray.500"
-                _hover={{ color: "red.500", bg: "red.50" }}
-                p={1}
-                minW="auto"
-                h="auto"
-                borderRadius="full"
-              >
-                <FiX size={14} />
-              </IconButton>
-            </Flex>
-          )}
+          </Flex>
         </Flex>
-      </Flex>
-      {menu.children && menu.children.length > 0 && (
-        <Box
-          style={{
-            maxHeight: expanded ? "1000px" : "0",
-            overflow: "hidden",
-            opacity: expanded ? 1 : 0,
-            transform: expanded ? "translateY(0)" : "translateY(-10px)",
-            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-            marginLeft: `${level * 0.5}rem`,
-          }}
-        >
-          123
-          {menu.children.map((child, index) => (
-            <MenuItem
-              key={child.id}
-              menu={child}
-              level={level + 1}
-              onEditMenu={onEditMenu}
-              expanded={expanded}
-              onToggle={onToggle}
-              onMoveMenu={onMoveMenu}
-              onDeleteMenu={onDeleteMenu}
-              index={index}
-              selectedMenuId={selectedMenuId}
-              refreshMenus={refreshMenus}
-            />
-          ))}
-        </Box>
-      )}
-    </div>
+        {menu.children && menu.children.length > 0 && (
+          <Box
+            style={{
+              maxHeight: expanded ? "1000px" : "0",
+              overflow: "hidden",
+              opacity: expanded ? 1 : 0,
+              transform: expanded ? "translateY(0)" : "translateY(-10px)",
+              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+              marginLeft: `${level * 0.5}rem`,
+            }}
+          >
+            {menu.children.map((child, index) => (
+              <MenuItem
+                key={child.id}
+                menu={child}
+                level={level + 1}
+                onEditMenu={onEditMenu}
+                expanded={expanded}
+                onToggle={onToggle}
+                onMoveMenu={onMoveMenu}
+                onDeleteMenu={onDeleteMenu}
+                index={index}
+                selectedMenuId={selectedMenuId}
+                refreshMenus={refreshMenus}
+              />
+            ))}
+          </Box>
+        )}
+      </div>
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="메뉴 삭제"
+        description="정말로 이 메뉴를 삭제하시겠습니까?"
+        confirmText="삭제"
+        cancelText="취소"
+        backdrop="rgba(0, 0, 0, 0.5)"
+      />
+    </>
   );
 };

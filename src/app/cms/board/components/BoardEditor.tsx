@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Flex,
@@ -18,6 +18,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { TreeItem } from "@/components/ui/tree-list";
 import { toaster } from "@/components/ui/toaster";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface BoardEditorProps {
   board?: TreeItem | null;
@@ -56,6 +57,8 @@ export function BoardEditor({
     },
   });
 
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
   // board prop이 변경될 때마다 폼 데이터 업데이트
   useEffect(() => {
     if (board) {
@@ -86,13 +89,19 @@ export function BoardEditor({
     colors.primary.default
   );
 
-  const handleDelete = async () => {
-    if (!board || !onDelete) return;
+  const handleDelete = () => {
+    setIsDeleteDialogOpen(true);
+  };
 
-    if (window.confirm("정말로 이 게시판을 삭제하시겠습니까?")) {
+  const handleDeleteConfirm = () => {
+    if (onDelete && board) {
       onDelete(board.id);
-      onClose();
     }
+    setIsDeleteDialogOpen(false);
+  };
+
+  const handleDeleteCancel = () => {
+    setIsDeleteDialogOpen(false);
   };
 
   const handleFormSubmit = async (data: BoardFormData) => {
@@ -115,146 +124,156 @@ export function BoardEditor({
   };
 
   return (
-    <Box>
-      <form onSubmit={handleSubmit(handleFormSubmit)}>
-        <VStack gap={3} align="stretch">
-          <Box>
-            <Flex mb={1}>
-              <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                게시판명
-              </Text>
-              <Text fontSize="sm" color={errorColor} ml={1}>
-                *
-              </Text>
-            </Flex>
-            <Controller
-              name="name"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  borderColor={errors.name ? errorColor : borderColor}
-                  color={textColor}
-                  bg="transparent"
-                />
+    <>
+      <Box>
+        <form onSubmit={handleSubmit(handleFormSubmit)}>
+          <VStack gap={3} align="stretch">
+            <Box>
+              <Flex mb={1}>
+                <Text fontSize="sm" fontWeight="medium" color={textColor}>
+                  게시판명
+                </Text>
+                <Text fontSize="sm" color={errorColor} ml={1}>
+                  *
+                </Text>
+              </Flex>
+              <Controller
+                name="name"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    borderColor={errors.name ? errorColor : borderColor}
+                    color={textColor}
+                    bg="transparent"
+                  />
+                )}
+              />
+              {errors.name && (
+                <Text color={errorColor} fontSize="sm" mt={1}>
+                  {errors.name.message}
+                </Text>
               )}
-            />
-            {errors.name && (
-              <Text color={errorColor} fontSize="sm" mt={1}>
-                {errors.name.message}
-              </Text>
-            )}
-          </Box>
+            </Box>
 
-          <Box>
-            <Flex mb={1}>
-              <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                URL
-              </Text>
-              <Text fontSize="sm" color={errorColor} ml={1}>
-                *
-              </Text>
-            </Flex>
-            <Controller
-              name="url"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  borderColor={errors.url ? errorColor : borderColor}
-                  color={textColor}
-                  bg="transparent"
-                />
+            <Box>
+              <Flex mb={1}>
+                <Text fontSize="sm" fontWeight="medium" color={textColor}>
+                  URL
+                </Text>
+                <Text fontSize="sm" color={errorColor} ml={1}>
+                  *
+                </Text>
+              </Flex>
+              <Controller
+                name="url"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    borderColor={errors.url ? errorColor : borderColor}
+                    color={textColor}
+                    bg="transparent"
+                  />
+                )}
+              />
+              {errors.url && (
+                <Text color={errorColor} fontSize="sm" mt={1}>
+                  {errors.url.message}
+                </Text>
               )}
-            />
-            {errors.url && (
-              <Text color={errorColor} fontSize="sm" mt={1}>
-                {errors.url.message}
-              </Text>
-            )}
-          </Box>
+            </Box>
 
-          <Flex alignItems="center" gap={2}>
-            <Controller
-              name="visible"
-              control={control}
-              render={({ field: { value, onChange } }) => (
-                <Checkbox.Root
-                  checked={value}
-                  onCheckedChange={(e) => onChange(!!e.checked)}
-                  colorPalette="blue"
-                  size="sm"
-                >
-                  <Checkbox.HiddenInput />
-                  <Checkbox.Control
-                    borderColor={borderColor}
-                    bg={bgColor}
-                    _checked={{
-                      borderColor: "transparent",
-                      bgGradient: colors.gradient.primary,
-                      color: "white",
-                      _hover: {
-                        opacity: 0.8,
-                      },
-                    }}
+            <Flex alignItems="center" gap={2}>
+              <Controller
+                name="visible"
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <Checkbox.Root
+                    checked={value}
+                    onCheckedChange={(e) => onChange(!!e.checked)}
+                    colorPalette="blue"
+                    size="sm"
                   >
-                    <Checkbox.Indicator>
-                      <LuCheck />
-                    </Checkbox.Indicator>
-                  </Checkbox.Control>
-                  <Checkbox.Label>
-                    <Text fontWeight="medium" color={textColor}>
-                      게시판 노출
-                    </Text>
-                  </Checkbox.Label>
-                </Checkbox.Root>
-              )}
-            />
-          </Flex>
-
-          <Flex justify="space-between" mt={4}>
-            {board ? (
-              <Button
-                borderColor={colors.accent.delete.default}
-                color={colors.accent.delete.default}
-                onClick={handleDelete}
-                variant="outline"
-                _hover={{
-                  bg: colors.accent.delete.bg,
-                  borderColor: colors.accent.delete.hover,
-                  color: colors.accent.delete.hover,
-                  transform: "translateY(-1px)",
-                }}
-                _active={{ transform: "translateY(0)" }}
-                transition="all 0.2s ease"
-              >
-                삭제
-              </Button>
-            ) : (
-              <Box />
-            )}
-            <Flex gap={2}>
-              <Button
-                borderColor={borderColor}
-                color={textColor}
-                onClick={onClose}
-                variant="outline"
-                _hover={{ bg: colors.secondary.hover }}
-              >
-                취소
-              </Button>
-              <Button
-                type="submit"
-                bg={buttonBg}
-                color="white"
-                _hover={{ bg: colors.primary.hover }}
-              >
-                저장
-              </Button>
+                    <Checkbox.HiddenInput />
+                    <Checkbox.Control
+                      borderColor={borderColor}
+                      bg={bgColor}
+                      _checked={{
+                        borderColor: "transparent",
+                        bgGradient: colors.gradient.primary,
+                        color: "white",
+                        _hover: {
+                          opacity: 0.8,
+                        },
+                      }}
+                    >
+                      <Checkbox.Indicator>
+                        <LuCheck />
+                      </Checkbox.Indicator>
+                    </Checkbox.Control>
+                    <Checkbox.Label>
+                      <Text fontWeight="medium" color={textColor}>
+                        게시판 노출
+                      </Text>
+                    </Checkbox.Label>
+                  </Checkbox.Root>
+                )}
+              />
             </Flex>
-          </Flex>
-        </VStack>
-      </form>
-    </Box>
+
+            <Flex justify="space-between" mt={4}>
+              {board && (
+                <Button
+                  borderColor={colors.accent.delete.default}
+                  color={colors.accent.delete.default}
+                  onClick={handleDelete}
+                  variant="outline"
+                  _hover={{
+                    bg: colors.accent.delete.bg,
+                    borderColor: colors.accent.delete.hover,
+                    color: colors.accent.delete.hover,
+                    transform: "translateY(-1px)",
+                  }}
+                  _active={{ transform: "translateY(0)" }}
+                  transition="all 0.2s ease"
+                >
+                  삭제
+                </Button>
+              )}
+              <Flex gap={2}>
+                <Button
+                  borderColor={borderColor}
+                  color={textColor}
+                  onClick={onClose}
+                  variant="outline"
+                  _hover={{ bg: colors.secondary.hover }}
+                >
+                  취소
+                </Button>
+                <Button
+                  type="submit"
+                  bg={buttonBg}
+                  color="white"
+                  _hover={{ bg: colors.primary.hover }}
+                >
+                  저장
+                </Button>
+              </Flex>
+            </Flex>
+          </VStack>
+        </form>
+      </Box>
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="게시판 삭제"
+        description="정말로 이 게시판을 삭제하시겠습니까?"
+        confirmText="삭제"
+        cancelText="취소"
+        backdrop="rgba(0, 0, 0, 0.5)"
+      />
+    </>
   );
 }

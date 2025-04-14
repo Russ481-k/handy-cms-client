@@ -13,6 +13,7 @@ interface ConfirmDialogProps {
   confirmText?: string;
   cancelText?: string;
   isLoading?: boolean;
+  backdrop?: string;
 }
 
 export const ConfirmDialog = ({
@@ -24,6 +25,7 @@ export const ConfirmDialog = ({
   confirmText = "확인",
   cancelText = "취소",
   isLoading = false,
+  backdrop = "rgba(0, 0, 0, 0.5)",
 }: ConfirmDialogProps) => {
   const cancelRef = useRef<HTMLButtonElement>(null);
   const colors = useColors();
@@ -31,7 +33,7 @@ export const ConfirmDialog = ({
   return (
     <Dialog.Root open={isOpen} onOpenChange={(e) => !e.open && onClose()}>
       <Portal>
-        <Dialog.Backdrop bg={colors.bg} backdropFilter={colors.bg} />
+        <Dialog.Backdrop bg={backdrop} backdropFilter={colors.bg} />
         <Dialog.Positioner>
           <Dialog.Content
             bg={colors.cardBg}

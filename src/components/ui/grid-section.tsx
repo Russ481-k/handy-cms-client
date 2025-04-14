@@ -142,7 +142,7 @@ export function GridSection({
         onLayoutChange={onLayoutChange}
         isDraggable
         isResizable
-        margin={[16, 16]}
+        margin={[12, 12]}
         draggableHandle=".drag-handle"
       >
         {initialLayout.map((layout, index) => {
@@ -173,7 +173,7 @@ export function GridSection({
               {/* Section Header */}
               {(layout.title || !isStatic) && (
                 <Flex
-                  p="3"
+                  p={3}
                   borderBottom="1px solid"
                   borderColor={borderColor}
                   justify="space-between"

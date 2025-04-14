@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Box, Flex, Heading, Badge, Button } from "@chakra-ui/react";
+import { Box, Flex, Heading, Badge } from "@chakra-ui/react";
 import { MenuList } from "./components/MenuList";
 import { MenuEditor } from "./components/MenuEditor";
 import { GridSection } from "@/components/ui/grid-section";
@@ -10,11 +10,11 @@ import { useColors } from "@/styles/theme";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { getAuthHeader } from "@/lib/auth";
-import { toaster } from "@/components/ui/toaster";
+import { toaster, Toaster } from "@/components/ui/toaster";
 import { Main } from "@/components/layout/view/Main";
 import { api } from "@/lib/api-client";
-import { MenuData } from "@/types/api";
 import { useMenu } from "@/lib/hooks/useMenu";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export interface Menu {
   id: number;
@@ -41,6 +41,7 @@ export default function MenuManagementPage() {
   const colors = useColors();
   const { refreshMenus: refreshHeaderMenus } = useMenu();
   const bg = useColorModeValue(colors.bg, colors.darkBg);
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
 
   // 메뉴 목록 새로고침 함수
   const refreshMenus = async () => {
@@ -105,6 +106,10 @@ export default function MenuManagementPage() {
         }
 
         await refreshMenus();
+        toaster.create({
+          title: "메뉴 순서가 변경되었습니다.",
+          type: "success",
+        });
       } catch (error) {
         console.error("Error updating menu order:", error);
         toaster.create({
@@ -167,8 +172,8 @@ export default function MenuManagementPage() {
     const newTempMenu: Menu = {
       id: generateUniqueId(),
       name: "새 메뉴",
-      type: "LINK", // 기본 타입을 LINK로 설정
-      parentId: parentMenu.id === -1 ? null : parentMenu.id, // 전체 메뉴인 경우 parentId를 null로 설정
+      type: "LINK",
+      parentId: parentMenu.id === -1 ? null : parentMenu.id,
       sortOrder: parentMenu.children ? parentMenu.children.length + 1 : 1,
       visible: true,
       children: [],
@@ -205,15 +210,18 @@ export default function MenuManagementPage() {
         });
       };
 
-      // 전체 메뉴의 자식들에서 시작
       return updateMenuTree(prevMenus);
     });
 
     console.log("Setting temp menu and selected menu:", newTempMenu);
-    // 새 메뉴를 선택하고 임시 메뉴로 설정
     setTempMenu(newTempMenu);
     setSelectedMenu(newTempMenu);
     setParentMenuId(parentMenu.id === -1 ? null : parentMenu.id);
+
+    toaster.create({
+      title: "새 메뉴가 추가되었습니다.",
+      type: "success",
+    });
 
     // 메뉴 편집기로 포커스 이동
     setTimeout(() => {
@@ -230,43 +238,6 @@ export default function MenuManagementPage() {
         console.log("Name input focused");
       }
     }, 100);
-  };
-
-  // 최상단 메뉴 추가 핸들러
-  const handleAddTopMenu = () => {
-    // 고유한 ID 생성 (타임스탬프 + 랜덤 숫자)
-    const generateUniqueId = () => {
-      const timestamp = Date.now();
-      const random = Math.floor(Math.random() * 1000);
-      return parseInt(`${timestamp}${random}`);
-    };
-
-    const newTempMenu: Menu = {
-      id: generateUniqueId(), // 고유한 ID 생성
-      name: "새 메뉴",
-      type: "LINK",
-      url: "",
-      displayPosition: "HEADER",
-      visible: true,
-      parentId: null, // 최상단 메뉴는 parentId가 null
-      sortOrder: 1, // 최상단에 추가되므로 sortOrder는 1
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    // 기존 메뉴들의 sortOrder를 1씩 증가
-    setMenus((prevMenus) => {
-      const updatedMenus = prevMenus.map((menu) => ({
-        ...menu,
-        sortOrder: menu.sortOrder + 1,
-      }));
-      // 새 메뉴를 최상단에 추가
-      updatedMenus.unshift(newTempMenu);
-      return updatedMenus;
-    });
-
-    setTempMenu(newTempMenu);
-    setSelectedMenu(newTempMenu);
   };
 
   const handleEditMenu = (menu: Menu) => {
@@ -314,24 +285,34 @@ export default function MenuManagementPage() {
   const handleSubmit = async (
     menuData: Omit<Menu, "id" | "createdAt" | "updatedAt">
   ) => {
+    console.log("handleSubmit called with menuData:", menuData);
+    console.log("tempMenu:", tempMenu);
+    console.log("selectedMenu:", selectedMenu);
+
     try {
-      const response = await fetch(
-        tempMenu ? "/api/cms/menu" : `/api/cms/menu/${selectedMenu?.id}`,
-        {
-          method: tempMenu ? "POST" : "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            ...getAuthHeader(),
-          },
-          body: JSON.stringify(menuData),
-        }
-      );
+      const url = tempMenu
+        ? "/api/cms/menu"
+        : `/api/cms/menu/${selectedMenu?.id}`;
+      const method = tempMenu ? "POST" : "PUT";
+      console.log("Making API request:", { url, method });
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeader(),
+        },
+        body: JSON.stringify(menuData),
+      });
+
+      console.log("API response status:", response.status);
 
       if (!response.ok) {
         throw new Error("Failed to save menu");
       }
 
       const savedMenu = await response.json();
+      console.log("Saved menu response:", savedMenu);
 
       // 메뉴 목록 새로고침
       await refreshMenus();
@@ -343,14 +324,21 @@ export default function MenuManagementPage() {
       setSelectedMenu(savedMenu);
       setParentMenuId(savedMenu.parentId || null);
 
+      console.log(
+        "Showing success toast for:",
+        tempMenu ? "creation" : "update"
+      );
       toaster.create({
-        title: "메뉴가 저장되었습니다.",
+        title: tempMenu ? "메뉴가 생성되었습니다." : "메뉴가 수정되었습니다.",
         type: "success",
       });
     } catch (error) {
       console.error("Error saving menu:", error);
+      console.log("Showing error toast for:", tempMenu ? "creation" : "update");
       toaster.create({
-        title: "메뉴 저장 중 오류가 발생했습니다.",
+        title: tempMenu
+          ? "메뉴 생성에 실패했습니다."
+          : "메뉴 수정에 실패했습니다.",
         type: "error",
       });
     }
@@ -383,6 +371,17 @@ export default function MenuManagementPage() {
         type: "error",
       });
     }
+  };
+
+  const handleCancelConfirm = () => {
+    setTempMenu(null);
+    setSelectedMenu(null);
+    setParentMenuId(null);
+    setIsCancelDialogOpen(false);
+  };
+
+  const handleCancelCancel = () => {
+    setIsCancelDialogOpen(false);
   };
 
   // 메뉴 관리 페이지 레이아웃 정의
@@ -504,6 +503,17 @@ export default function MenuManagementPage() {
           </Box>
         </GridSection>
       </Box>
+      <ConfirmDialog
+        isOpen={isCancelDialogOpen}
+        onClose={handleCancelCancel}
+        onConfirm={handleCancelConfirm}
+        title="메뉴 추가 취소"
+        description="새 메뉴 추가가 취소됩니다. 취소하시겠습니까?"
+        confirmText="취소"
+        cancelText="계속"
+        backdrop="rgba(0, 0, 0, 0.5)"
+      />
+      <Toaster />
     </Box>
   );
 }

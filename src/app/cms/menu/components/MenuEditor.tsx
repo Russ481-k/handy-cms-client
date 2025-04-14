@@ -23,6 +23,7 @@ import { toaster } from "@/components/ui/toaster";
 import { CheckIcon } from "lucide-react";
 import { DeleteIcon, PlusIcon } from "lucide-react";
 import { SubmitHandler } from "react-hook-form";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface MenuEditorProps {
   menu: Menu | null;
@@ -121,6 +122,7 @@ export function MenuEditor({
   const [contents, setContents] = useState<Array<{ id: number; name: string }>>(
     []
   );
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const {
     control,
@@ -259,11 +261,18 @@ export function MenuEditor({
 
   const handleDelete = async () => {
     if (!menu || !onDelete) return;
+    setIsDeleteDialogOpen(true);
+  };
 
-    if (window.confirm("정말로 이 메뉴를 삭제하시겠습니까?")) {
-      onDelete(menu.id);
-      onClose();
-    }
+  const handleDeleteConfirm = () => {
+    if (!menu || !onDelete) return;
+    onDelete(menu.id);
+    onClose();
+    setIsDeleteDialogOpen(false);
+  };
+
+  const handleDeleteCancel = () => {
+    setIsDeleteDialogOpen(false);
   };
 
   const handleFormSubmit: SubmitHandler<MenuFormData> = async (data) => {
@@ -289,268 +298,280 @@ export function MenuEditor({
   };
 
   return (
-    <Box>
-      <form onSubmit={handleSubmit(handleFormSubmit)}>
-        <VStack gap={3} align="stretch">
-          <Box>
-            <Flex mb={1}>
-              <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                메뉴명
-              </Text>
-              <Text fontSize="sm" color={errorColor} ml={1}>
-                *
-              </Text>
-            </Flex>
-            <Controller
-              name="name"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  borderColor={errors.name ? errorColor : borderColor}
-                  color={textColor}
-                  bg="transparent"
-                  disabled={menu?.id === -1}
-                />
-              )}
-            />
-            {errors.name && (
-              <Text color={errorColor} fontSize="sm" mt={1}>
-                {errors.name.message}
-              </Text>
-            )}
-          </Box>
-
-          <Box>
-            <Flex mb={1}>
-              <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                메뉴 유형
-              </Text>
-              <Text fontSize="sm" color={errorColor} ml={1}>
-                *
-              </Text>
-            </Flex>
-            <Controller
-              name="type"
-              control={control}
-              render={({ field }) => (
-                <select
-                  {...field}
-                  style={{
-                    ...selectStyle,
-                    borderColor: errors.type
-                      ? "var(--chakra-colors-red-500)"
-                      : "inherit",
-                  }}
-                  disabled={menu?.id === -1}
-                >
-                  <option value="LINK">링크</option>
-                  <option value="FOLDER">폴더</option>
-                  <option value="BOARD">게시판</option>
-                  <option value="CONTENT">컨텐츠</option>
-                </select>
-              )}
-            />
-          </Box>
-
-          {menuType === "BOARD" && (
+    <>
+      <Box>
+        <form onSubmit={handleSubmit(handleFormSubmit)}>
+          <VStack gap={3} align="stretch">
             <Box>
               <Flex mb={1}>
                 <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                  게시판
+                  메뉴명
                 </Text>
                 <Text fontSize="sm" color={errorColor} ml={1}>
                   *
                 </Text>
               </Flex>
               <Controller
-                name="targetId"
-                control={control}
-                render={({ field }) => (
-                  <select
-                    {...field}
-                    style={{
-                      ...selectStyle,
-                      borderColor: errors.targetId
-                        ? "var(--chakra-colors-red-500)"
-                        : "inherit",
-                    }}
-                    disabled={menu?.id === -1}
-                  >
-                    <option value="">게시판 선택</option>
-                    {boards.map((board) => (
-                      <option key={board.id} value={board.id}>
-                        {board.name}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              />
-              {errors.targetId && (
-                <Text color={errorColor} fontSize="sm" mt={1}>
-                  {errors.targetId.message}
-                </Text>
-              )}
-            </Box>
-          )}
-
-          {menuType === "CONTENT" && (
-            <Box>
-              <Flex mb={1}>
-                <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                  컨텐츠
-                </Text>
-                <Text fontSize="sm" color={errorColor} ml={1}>
-                  *
-                </Text>
-              </Flex>
-              <Controller
-                name="targetId"
-                control={control}
-                render={({ field }) => (
-                  <select
-                    {...field}
-                    style={{
-                      ...selectStyle,
-                      borderColor: errors.targetId
-                        ? "var(--chakra-colors-red-500)"
-                        : "inherit",
-                    }}
-                    disabled={menu?.id === -1}
-                  >
-                    <option value="">컨텐츠 선택</option>
-                    {contents.map((content) => (
-                      <option key={content.id} value={content.id}>
-                        {content.name}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              />
-              {errors.targetId && (
-                <Text color={errorColor} fontSize="sm" mt={1}>
-                  {errors.targetId.message}
-                </Text>
-              )}
-            </Box>
-          )}
-
-          {menuType === "LINK" && (
-            <Box>
-              <Flex mb={1}>
-                <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                  URL
-                </Text>
-                <Text fontSize="sm" color={errorColor} ml={1}>
-                  *
-                </Text>
-              </Flex>
-              <Controller
-                name="url"
+                name="name"
                 control={control}
                 render={({ field }) => (
                   <Input
                     {...field}
-                    borderColor={errors.url ? errorColor : borderColor}
+                    borderColor={errors.name ? errorColor : borderColor}
                     color={textColor}
                     bg="transparent"
                     disabled={menu?.id === -1}
                   />
                 )}
               />
-              {errors.url && (
+              {errors.name && (
                 <Text color={errorColor} fontSize="sm" mt={1}>
-                  {errors.url.message}
+                  {errors.name.message}
                 </Text>
               )}
             </Box>
-          )}
-          <Flex alignItems="center">
-            <Controller
-              name="visible"
-              control={control}
-              render={({ field: { value, onChange } }) => (
-                <Checkbox.Root
-                  checked={value}
-                  onCheckedChange={(e) => onChange(!!e.checked)}
-                  colorPalette="blue"
-                  size="sm"
+
+            <Box>
+              <Flex mb={1}>
+                <Text fontSize="sm" fontWeight="medium" color={textColor}>
+                  메뉴 유형
+                </Text>
+                <Text fontSize="sm" color={errorColor} ml={1}>
+                  *
+                </Text>
+              </Flex>
+              <Controller
+                name="type"
+                control={control}
+                render={({ field }) => (
+                  <select
+                    {...field}
+                    style={{
+                      ...selectStyle,
+                      borderColor: errors.type
+                        ? "var(--chakra-colors-red-500)"
+                        : "inherit",
+                    }}
+                    disabled={menu?.id === -1}
+                  >
+                    <option value="LINK">링크</option>
+                    <option value="FOLDER">폴더</option>
+                    <option value="BOARD">게시판</option>
+                    <option value="CONTENT">컨텐츠</option>
+                  </select>
+                )}
+              />
+            </Box>
+
+            {menuType === "BOARD" && (
+              <Box>
+                <Flex mb={1}>
+                  <Text fontSize="sm" fontWeight="medium" color={textColor}>
+                    게시판
+                  </Text>
+                  <Text fontSize="sm" color={errorColor} ml={1}>
+                    *
+                  </Text>
+                </Flex>
+                <Controller
+                  name="targetId"
+                  control={control}
+                  render={({ field }) => (
+                    <select
+                      {...field}
+                      style={{
+                        ...selectStyle,
+                        borderColor: errors.targetId
+                          ? "var(--chakra-colors-red-500)"
+                          : "inherit",
+                      }}
+                      disabled={menu?.id === -1}
+                    >
+                      <option value="">게시판 선택</option>
+                      {boards.map((board) => (
+                        <option key={board.id} value={board.id}>
+                          {board.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                />
+                {errors.targetId && (
+                  <Text color={errorColor} fontSize="sm" mt={1}>
+                    {errors.targetId.message}
+                  </Text>
+                )}
+              </Box>
+            )}
+
+            {menuType === "CONTENT" && (
+              <Box>
+                <Flex mb={1}>
+                  <Text fontSize="sm" fontWeight="medium" color={textColor}>
+                    컨텐츠
+                  </Text>
+                  <Text fontSize="sm" color={errorColor} ml={1}>
+                    *
+                  </Text>
+                </Flex>
+                <Controller
+                  name="targetId"
+                  control={control}
+                  render={({ field }) => (
+                    <select
+                      {...field}
+                      style={{
+                        ...selectStyle,
+                        borderColor: errors.targetId
+                          ? "var(--chakra-colors-red-500)"
+                          : "inherit",
+                      }}
+                      disabled={menu?.id === -1}
+                    >
+                      <option value="">컨텐츠 선택</option>
+                      {contents.map((content) => (
+                        <option key={content.id} value={content.id}>
+                          {content.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                />
+                {errors.targetId && (
+                  <Text color={errorColor} fontSize="sm" mt={1}>
+                    {errors.targetId.message}
+                  </Text>
+                )}
+              </Box>
+            )}
+
+            {menuType === "LINK" && (
+              <Box>
+                <Flex mb={1}>
+                  <Text fontSize="sm" fontWeight="medium" color={textColor}>
+                    URL
+                  </Text>
+                  <Text fontSize="sm" color={errorColor} ml={1}>
+                    *
+                  </Text>
+                </Flex>
+                <Controller
+                  name="url"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      borderColor={errors.url ? errorColor : borderColor}
+                      color={textColor}
+                      bg="transparent"
+                      disabled={menu?.id === -1}
+                    />
+                  )}
+                />
+                {errors.url && (
+                  <Text color={errorColor} fontSize="sm" mt={1}>
+                    {errors.url.message}
+                  </Text>
+                )}
+              </Box>
+            )}
+            <Flex alignItems="center">
+              <Controller
+                name="visible"
+                control={control}
+                render={({ field: { value, onChange } }) => (
+                  <Checkbox.Root
+                    checked={value}
+                    onCheckedChange={(e) => onChange(!!e.checked)}
+                    colorPalette="blue"
+                    size="sm"
+                    disabled={menu?.id === -1}
+                  >
+                    <Checkbox.HiddenInput />
+                    <Checkbox.Control
+                      borderColor={borderColor}
+                      bg={bgColor}
+                      _checked={{
+                        borderColor: "transparent",
+                        bgGradient: colors.gradient.primary,
+                        color: "white",
+                        _hover: {
+                          opacity: 0.8,
+                        },
+                      }}
+                    >
+                      <Checkbox.Indicator>
+                        <LuCheck />
+                      </Checkbox.Indicator>
+                    </Checkbox.Control>
+                    <Checkbox.Label>
+                      <Text fontWeight="medium" color={textColor}>
+                        메뉴 노출
+                      </Text>
+                    </Checkbox.Label>
+                  </Checkbox.Root>
+                )}
+              />
+            </Flex>
+
+            <Flex justify="space-between" gap={2} mt={4}>
+              {menu && menu.name !== "홈" ? (
+                <Button
+                  borderColor={colors.accent.delete.default}
+                  color={colors.accent.delete.default}
+                  onClick={handleDelete}
+                  variant="outline"
+                  _hover={{
+                    bg: colors.accent.delete.bg,
+                    borderColor: colors.accent.delete.hover,
+                    color: colors.accent.delete.hover,
+                    transform: "translateY(-1px)",
+                  }}
+                  _active={{ transform: "translateY(0)" }}
+                  transition="all 0.2s ease"
                   disabled={menu?.id === -1}
                 >
-                  <Checkbox.HiddenInput />
-                  <Checkbox.Control
-                    borderColor={borderColor}
-                    bg={bgColor}
-                    _checked={{
-                      borderColor: "transparent",
-                      bgGradient: colors.gradient.primary,
-                      color: "white",
-                      _hover: {
-                        opacity: 0.8,
-                      },
-                    }}
-                  >
-                    <Checkbox.Indicator>
-                      <LuCheck />
-                    </Checkbox.Indicator>
-                  </Checkbox.Control>
-                  <Checkbox.Label>
-                    <Text fontWeight="medium" color={textColor}>
-                      메뉴 노출
-                    </Text>
-                  </Checkbox.Label>
-                </Checkbox.Root>
-              )}
-            />
-          </Flex>
-
-          <Flex justify="space-between" gap={2} mt={4}>
-            {menu && menu.name !== "홈" ? (
-              <Button
-                borderColor={colors.accent.delete.default}
-                color={colors.accent.delete.default}
-                onClick={handleDelete}
-                variant="outline"
-                _hover={{
-                  bg: colors.accent.delete.bg,
-                  borderColor: colors.accent.delete.hover,
-                  color: colors.accent.delete.hover,
-                  transform: "translateY(-1px)",
-                }}
-                _active={{ transform: "translateY(0)" }}
-                transition="all 0.2s ease"
-                disabled={menu?.id === -1}
-              >
-                <DeleteIcon />
-                삭제
-              </Button>
-            ) : (
-              <Box />
-            )}
-            <Flex gap={2}>
-              {!isTempMenu && (
-                <Button
-                  onClick={onAddMenu}
-                  variant="outline"
-                  colorScheme="blue"
-                >
-                  <PlusIcon /> 메뉴
+                  <DeleteIcon />
+                  삭제
                 </Button>
+              ) : (
+                <Box />
               )}
-              <Button
-                type="submit"
-                bg={buttonBg}
-                color="white"
-                _hover={{ bg: colors.primary.hover }}
-                disabled={menu?.id === -1}
-              >
-                <CheckIcon />
-                저장
-              </Button>
+              <Flex gap={2}>
+                {!isTempMenu && (
+                  <Button
+                    onClick={onAddMenu}
+                    variant="outline"
+                    colorScheme="blue"
+                  >
+                    <PlusIcon /> 메뉴
+                  </Button>
+                )}
+                <Button
+                  type="submit"
+                  bg={buttonBg}
+                  color="white"
+                  _hover={{ bg: colors.primary.hover }}
+                  disabled={menu?.id === -1}
+                >
+                  <CheckIcon />
+                  저장
+                </Button>
+              </Flex>
             </Flex>
-          </Flex>
-        </VStack>
-      </form>
-    </Box>
+          </VStack>
+        </form>
+      </Box>
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="메뉴 삭제"
+        description="정말로 이 메뉴를 삭제하시겠습니까?"
+        confirmText="삭제"
+        cancelText="취소"
+        backdrop="rgba(0, 0, 0, 0.5)"
+      />
+    </>
   );
 }

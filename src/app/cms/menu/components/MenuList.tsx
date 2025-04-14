@@ -17,6 +17,7 @@ import { DndProvider, useDrag } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { DropZone } from "@/components/ui/drop-zone";
 import { MenuItem } from "../types";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface MenuListProps {
   menus: Menu[];
@@ -45,6 +46,7 @@ export function MenuList({
   const [expandedMenus, setExpandedMenus] = useState<Set<number>>(
     new Set([-1])
   );
+  const [menuToDelete, setMenuToDelete] = useState<Menu | null>(null);
   const colors = useColors();
   const iconColor = useColorModeValue(
     colors.text.secondary,
@@ -188,6 +190,21 @@ export function MenuList({
     onMoveMenu(draggedId, targetId, position);
   };
 
+  const handleDeleteClick = (menu: Menu) => {
+    setMenuToDelete(menu);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (menuToDelete) {
+      onDeleteMenu(menuToDelete.id);
+      setMenuToDelete(null);
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setMenuToDelete(null);
+  };
+
   const renderMenuItem = (menu: Menu, level: number, index: number) => {
     const hasChildren = menu.children && menu.children.length > 0;
     const isFolder = menu.type === "FOLDER";
@@ -208,7 +225,9 @@ export function MenuList({
             icon={getMenuIcon(menu)}
             isSelected={menu.id === selectedMenuId}
             onAddMenu={() => handleAddMenu(menu)}
-            onDelete={menu.id === -1 ? undefined : () => onDeleteMenu(menu.id)}
+            onDelete={
+              menu.id === -1 ? undefined : () => handleDeleteClick(menu)
+            }
             renderBadges={() => !menu.visible && "비활성"}
             onClick={() => {
               onEditMenu(menu);
@@ -292,6 +311,16 @@ export function MenuList({
           />
         </VStack>
       </Box>
+      <ConfirmDialog
+        isOpen={!!menuToDelete}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="메뉴 삭제"
+        description={`"${menuToDelete?.name}" 메뉴를 삭제하시겠습니까?`}
+        confirmText="삭제"
+        cancelText="취소"
+        backdrop="rgba(0, 0, 0, 0.5)"
+      />
     </DndProvider>
   );
 }

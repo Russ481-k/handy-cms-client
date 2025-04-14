@@ -26,7 +26,7 @@ function convertToMenu(row: MenuRow): Menu {
     type: row.type as Menu["type"],
     url: row.url || undefined,
     targetId: row.target_id || undefined,
-    displayPosition: row.display_position,
+    displayPosition: row.display_position as Menu["displayPosition"],
     visible: row.visible === 1,
     sortOrder: row.sort_order,
     parentId: row.parent_id || undefined,

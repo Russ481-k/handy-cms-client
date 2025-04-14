@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Flex,
@@ -20,6 +20,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { User } from "../page";
 import { toaster } from "@/components/ui/toaster";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface UserEditorProps {
   user?: User | null;
@@ -74,6 +75,8 @@ export function UserEditor({
     },
   });
 
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
   useEffect(() => {
     if (user) {
       reset({
@@ -101,13 +104,19 @@ export function UserEditor({
     colors.primary.default
   );
 
-  const handleDelete = async () => {
-    if (!user || !onDelete) return;
+  const handleDelete = () => {
+    setIsDeleteDialogOpen(true);
+  };
 
-    if (window.confirm("정말로 이 사용자를 삭제하시겠습니까?")) {
+  const handleDeleteConfirm = () => {
+    if (onDelete && user) {
       onDelete(user.id);
-      onClose();
     }
+    setIsDeleteDialogOpen(false);
+  };
+
+  const handleDeleteCancel = () => {
+    setIsDeleteDialogOpen(false);
   };
 
   const handleFormSubmit = async (data: UserFormData) => {
@@ -142,218 +151,230 @@ export function UserEditor({
   }
 
   return (
-    <Box>
-      <form onSubmit={handleSubmit(handleFormSubmit)}>
-        <VStack gap={3} align="stretch">
-          <Box>
-            <Flex mb={1}>
-              <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                사용자명
-              </Text>
-              <Text fontSize="sm" color={errorColor} ml={1}>
-                *
-              </Text>
-            </Flex>
-            <Controller
-              name="username"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  borderColor={errors.username ? errorColor : borderColor}
+    <>
+      <Box>
+        <form onSubmit={handleSubmit(handleFormSubmit)}>
+          <VStack gap={3} align="stretch">
+            <Box>
+              <Flex mb={1}>
+                <Text fontSize="sm" fontWeight="medium" color={textColor}>
+                  사용자명
+                </Text>
+                <Text fontSize="sm" color={errorColor} ml={1}>
+                  *
+                </Text>
+              </Flex>
+              <Controller
+                name="username"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    borderColor={errors.username ? errorColor : borderColor}
+                    color={textColor}
+                    bg="transparent"
+                  />
+                )}
+              />
+              {errors.username && (
+                <Text color={errorColor} fontSize="sm" mt={1}>
+                  {errors.username.message}
+                </Text>
+              )}
+            </Box>
+
+            <Box>
+              <Flex mb={1}>
+                <Text fontSize="sm" fontWeight="medium" color={textColor}>
+                  이메일
+                </Text>
+                <Text fontSize="sm" color={errorColor} ml={1}>
+                  *
+                </Text>
+              </Flex>
+              <Controller
+                name="email"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    borderColor={errors.email ? errorColor : borderColor}
+                    color={textColor}
+                    bg="transparent"
+                  />
+                )}
+              />
+              {errors.email && (
+                <Text color={errorColor} fontSize="sm" mt={1}>
+                  {errors.email.message}
+                </Text>
+              )}
+            </Box>
+
+            <Box>
+              <Flex mb={1}>
+                <Text fontSize="sm" fontWeight="medium" color={textColor}>
+                  권한
+                </Text>
+                <Text fontSize="sm" color={errorColor} ml={1}>
+                  *
+                </Text>
+              </Flex>
+              <Controller
+                name="role"
+                control={control}
+                render={({ field }) => (
+                  <Field.Root invalid={!!errors.role}>
+                    <Select.Root
+                      name={field.name}
+                      value={[field.value]}
+                      onValueChange={({ value }) => field.onChange(value[0])}
+                      onInteractOutside={() => field.onBlur()}
+                      collection={roleOptions}
+                    >
+                      <Select.HiddenSelect />
+                      <Select.Control>
+                        <Select.Trigger
+                          borderColor={errors.role ? errorColor : borderColor}
+                          color={textColor}
+                          bg="transparent"
+                        >
+                          <Select.ValueText />
+                        </Select.Trigger>
+                        <Select.IndicatorGroup>
+                          <Select.Indicator />
+                        </Select.IndicatorGroup>
+                      </Select.Control>
+                      <Portal>
+                        <Select.Positioner>
+                          <Select.Content>
+                            {roleOptions.items.map((option) => (
+                              <Select.Item key={option.value} item={option}>
+                                {option.label}
+                                <Select.ItemIndicator />
+                              </Select.Item>
+                            ))}
+                          </Select.Content>
+                        </Select.Positioner>
+                      </Portal>
+                    </Select.Root>
+                    {errors.role && (
+                      <Field.ErrorText>{errors.role.message}</Field.ErrorText>
+                    )}
+                  </Field.Root>
+                )}
+              />
+            </Box>
+
+            <Box>
+              <Flex mb={1}>
+                <Text fontSize="sm" fontWeight="medium" color={textColor}>
+                  상태
+                </Text>
+                <Text fontSize="sm" color={errorColor} ml={1}>
+                  *
+                </Text>
+              </Flex>
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <Field.Root invalid={!!errors.status}>
+                    <Select.Root
+                      name={field.name}
+                      value={[field.value]}
+                      onValueChange={({ value }) => field.onChange(value[0])}
+                      onInteractOutside={() => field.onBlur()}
+                      collection={statusOptions}
+                    >
+                      <Select.HiddenSelect />
+                      <Select.Control>
+                        <Select.Trigger
+                          borderColor={errors.status ? errorColor : borderColor}
+                          color={textColor}
+                          bg="transparent"
+                        >
+                          <Select.ValueText />
+                        </Select.Trigger>
+                        <Select.IndicatorGroup>
+                          <Select.Indicator />
+                        </Select.IndicatorGroup>
+                      </Select.Control>
+                      <Portal>
+                        <Select.Positioner>
+                          <Select.Content>
+                            {statusOptions.items.map((option) => (
+                              <Select.Item key={option.value} item={option}>
+                                {option.label}
+                                <Select.ItemIndicator />
+                              </Select.Item>
+                            ))}
+                          </Select.Content>
+                        </Select.Positioner>
+                      </Portal>
+                    </Select.Root>
+                    {errors.status && (
+                      <Field.ErrorText>{errors.status.message}</Field.ErrorText>
+                    )}
+                  </Field.Root>
+                )}
+              />
+            </Box>
+
+            <Flex justify="space-between" mt={4}>
+              {user ? (
+                <Button
+                  borderColor={colors.accent.delete.default}
+                  color={colors.accent.delete.default}
+                  onClick={handleDelete}
+                  variant="outline"
+                  _hover={{
+                    bg: colors.accent.delete.bg,
+                    borderColor: colors.accent.delete.hover,
+                    color: colors.accent.delete.hover,
+                    transform: "translateY(-1px)",
+                  }}
+                  _active={{ transform: "translateY(0)" }}
+                  transition="all 0.2s ease"
+                >
+                  삭제
+                </Button>
+              ) : (
+                <Box />
+              )}
+              <Flex gap={2}>
+                <Button
+                  borderColor={borderColor}
                   color={textColor}
-                  bg="transparent"
-                />
-              )}
-            />
-            {errors.username && (
-              <Text color={errorColor} fontSize="sm" mt={1}>
-                {errors.username.message}
-              </Text>
-            )}
-          </Box>
-
-          <Box>
-            <Flex mb={1}>
-              <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                이메일
-              </Text>
-              <Text fontSize="sm" color={errorColor} ml={1}>
-                *
-              </Text>
+                  onClick={onClose}
+                  variant="outline"
+                  _hover={{ bg: colors.secondary.hover }}
+                >
+                  취소
+                </Button>
+                <Button
+                  type="submit"
+                  bg={buttonBg}
+                  color="white"
+                  _hover={{ bg: colors.primary.hover }}
+                >
+                  저장
+                </Button>
+              </Flex>
             </Flex>
-            <Controller
-              name="email"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  borderColor={errors.email ? errorColor : borderColor}
-                  color={textColor}
-                  bg="transparent"
-                />
-              )}
-            />
-            {errors.email && (
-              <Text color={errorColor} fontSize="sm" mt={1}>
-                {errors.email.message}
-              </Text>
-            )}
-          </Box>
-
-          <Box>
-            <Flex mb={1}>
-              <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                권한
-              </Text>
-              <Text fontSize="sm" color={errorColor} ml={1}>
-                *
-              </Text>
-            </Flex>
-            <Controller
-              name="role"
-              control={control}
-              render={({ field }) => (
-                <Field.Root invalid={!!errors.role}>
-                  <Select.Root
-                    name={field.name}
-                    value={[field.value]}
-                    onValueChange={({ value }) => field.onChange(value[0])}
-                    onInteractOutside={() => field.onBlur()}
-                    collection={roleOptions}
-                  >
-                    <Select.HiddenSelect />
-                    <Select.Control>
-                      <Select.Trigger
-                        borderColor={errors.role ? errorColor : borderColor}
-                        color={textColor}
-                        bg="transparent"
-                      >
-                        <Select.ValueText />
-                      </Select.Trigger>
-                      <Select.IndicatorGroup>
-                        <Select.Indicator />
-                      </Select.IndicatorGroup>
-                    </Select.Control>
-                    <Portal>
-                      <Select.Positioner>
-                        <Select.Content>
-                          {roleOptions.items.map((option) => (
-                            <Select.Item key={option.value} item={option}>
-                              {option.label}
-                              <Select.ItemIndicator />
-                            </Select.Item>
-                          ))}
-                        </Select.Content>
-                      </Select.Positioner>
-                    </Portal>
-                  </Select.Root>
-                  {errors.role && (
-                    <Field.ErrorText>{errors.role.message}</Field.ErrorText>
-                  )}
-                </Field.Root>
-              )}
-            />
-          </Box>
-
-          <Box>
-            <Flex mb={1}>
-              <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                상태
-              </Text>
-              <Text fontSize="sm" color={errorColor} ml={1}>
-                *
-              </Text>
-            </Flex>
-            <Controller
-              name="status"
-              control={control}
-              render={({ field }) => (
-                <Field.Root invalid={!!errors.status}>
-                  <Select.Root
-                    name={field.name}
-                    value={[field.value]}
-                    onValueChange={({ value }) => field.onChange(value[0])}
-                    onInteractOutside={() => field.onBlur()}
-                    collection={statusOptions}
-                  >
-                    <Select.HiddenSelect />
-                    <Select.Control>
-                      <Select.Trigger
-                        borderColor={errors.status ? errorColor : borderColor}
-                        color={textColor}
-                        bg="transparent"
-                      >
-                        <Select.ValueText />
-                      </Select.Trigger>
-                      <Select.IndicatorGroup>
-                        <Select.Indicator />
-                      </Select.IndicatorGroup>
-                    </Select.Control>
-                    <Portal>
-                      <Select.Positioner>
-                        <Select.Content>
-                          {statusOptions.items.map((option) => (
-                            <Select.Item key={option.value} item={option}>
-                              {option.label}
-                              <Select.ItemIndicator />
-                            </Select.Item>
-                          ))}
-                        </Select.Content>
-                      </Select.Positioner>
-                    </Portal>
-                  </Select.Root>
-                  {errors.status && (
-                    <Field.ErrorText>{errors.status.message}</Field.ErrorText>
-                  )}
-                </Field.Root>
-              )}
-            />
-          </Box>
-
-          <Flex justify="space-between" mt={4}>
-            {user ? (
-              <Button
-                borderColor={colors.accent.delete.default}
-                color={colors.accent.delete.default}
-                onClick={handleDelete}
-                variant="outline"
-                _hover={{
-                  bg: colors.accent.delete.bg,
-                  borderColor: colors.accent.delete.hover,
-                  color: colors.accent.delete.hover,
-                  transform: "translateY(-1px)",
-                }}
-                _active={{ transform: "translateY(0)" }}
-                transition="all 0.2s ease"
-              >
-                삭제
-              </Button>
-            ) : (
-              <Box />
-            )}
-            <Flex gap={2}>
-              <Button
-                borderColor={borderColor}
-                color={textColor}
-                onClick={onClose}
-                variant="outline"
-                _hover={{ bg: colors.secondary.hover }}
-              >
-                취소
-              </Button>
-              <Button
-                type="submit"
-                bg={buttonBg}
-                color="white"
-                _hover={{ bg: colors.primary.hover }}
-              >
-                저장
-              </Button>
-            </Flex>
-          </Flex>
-        </VStack>
-      </form>
-    </Box>
+          </VStack>
+        </form>
+      </Box>
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="사용자 삭제"
+        description="정말로 이 사용자를 삭제하시겠습니까?"
+        confirmText="삭제"
+        cancelText="취소"
+        backdrop="rgba(0, 0, 0, 0.5)"
+      />
+    </>
   );
 }
