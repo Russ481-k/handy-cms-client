@@ -203,8 +203,8 @@ export function GridSection({
                                 borderColor: isDark ? "gray.700" : "gray.200",
                                 boxShadow: colors.shadow.md,
                                 p: 2,
-                                fontSize: "sm",
-                                maxW: "200px",
+                                fontSize: "xs",
+                                maxW: "240px",
                               },
                             }}
                           >

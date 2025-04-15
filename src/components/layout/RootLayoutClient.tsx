@@ -10,7 +10,7 @@ import { Bottombar } from "@/components/layout/Bottombar";
 import { Topbar } from "@/components/layout/Topbar";
 import { usePathname, useRouter } from "next/navigation";
 import { useColors } from "@/styles/theme";
-import { ColorModeToggle } from "@/components/ui/ColorModeToggle";
+import { ColorModeToggle } from "@/components/ColorModeToggle";
 import { useAuth } from "@/lib/AuthContext";
 
 function Layout({ children }: { children: React.ReactNode }) {

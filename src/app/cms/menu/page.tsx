@@ -40,6 +40,9 @@ export default function MenuManagementPage() {
   const [tempMenu, setTempMenu] = useState<Menu | null>(null);
   const [localMenus, setLocalMenus] = useState<Menu[]>([]);
   const [loadingMenuId, setLoadingMenuId] = useState<number | null>(null);
+  const [forceExpandMenuId, setForceExpandMenuId] = useState<number | null>(
+    null
+  );
   const colors = useColors();
   const { refreshMenus: refreshHeaderMenus } = useMenu();
   const bg = useColorModeValue(colors.bg, colors.darkBg);
@@ -158,7 +161,49 @@ export default function MenuManagementPage() {
     try {
       setIsDeleting(true);
       setLoadingMenuId(menuId);
-      await deleteMutation.mutateAsync(menuId);
+
+      // 삭제할 메뉴의 부모 메뉴 찾기
+      const parentMenu = findParentMenu(localMenus, menuId);
+      console.log("Deleting menu:", menuId);
+      console.log("Found parent menu:", parentMenu);
+
+      // 임시 메뉴인 경우 서버 요청 없이 클라이언트에서만 처리
+      if (tempMenu && tempMenu.id === menuId) {
+        console.log("Deleting temporary menu");
+        setLocalMenus((prevMenus) => {
+          if (parentMenu?.id === -1) {
+            // 최상위 메뉴인 경우
+            return prevMenus.filter((menu) => menu.id !== menuId);
+          } else {
+            // 하위 메뉴인 경우
+            return updateMenuTree(prevMenus, parentMenu?.id || -1, (menu) => ({
+              ...menu,
+              children:
+                menu.children?.filter((child) => child.id !== menuId) || [],
+            }));
+          }
+        });
+        setTempMenu(null);
+      } else {
+        // 서버에서 메뉴 삭제
+        console.log("Deleting menu from server");
+        await deleteMutation.mutateAsync(menuId);
+      }
+
+      // 부모 메뉴 선택
+      if (parentMenu) {
+        console.log("Selecting parent menu:", parentMenu);
+        setSelectedMenu(parentMenu);
+        setParentMenuId(parentMenu.parentId || null);
+        setSelectedMenuId(parentMenu.id);
+        // 부모 메뉴가 폴더인 경우에만 forceExpandMenuId 설정
+        if (parentMenu.type === "FOLDER") {
+          console.log("Setting forceExpandMenuId to:", parentMenu.id);
+          setForceExpandMenuId(parentMenu.id);
+        }
+      }
+
+      console.log("Delete process completed");
     } finally {
       setIsDeleting(false);
       setLoadingMenuId(null);
@@ -244,31 +289,32 @@ export default function MenuManagementPage() {
       if (parentMenu.id === -1) {
         return [...prevMenus, newTempMenu];
       }
-      return updateMenuTree(prevMenus, parentMenu.id, newTempMenu);
+      return updateMenuTree(prevMenus, parentMenu.id, (menu) => ({
+        ...menu,
+        children: [...(menu.children || []), newTempMenu],
+      }));
     });
 
     setTempMenu(newTempMenu);
     setSelectedMenu(newTempMenu);
     setParentMenuId(parentMenu.id === -1 ? null : parentMenu.id);
     setSelectedMenuId(newTempMenu.id);
+    setForceExpandMenuId(parentMenu.id);
   };
 
   const updateMenuTree = (
     menus: Menu[],
     targetId: number,
-    newMenu: Menu
+    updateCallback: (menu: Menu) => Menu
   ): Menu[] => {
     return menus.map((menu) => {
       if (menu.id === targetId) {
-        return {
-          ...menu,
-          children: [...(menu.children || []), newMenu],
-        };
+        return updateCallback(menu);
       }
       if (menu.children && menu.children.length > 0) {
         return {
           ...menu,
-          children: updateMenuTree(menu.children, targetId, newMenu),
+          children: updateMenuTree(menu.children, targetId, updateCallback),
         };
       }
       return menu;
@@ -326,6 +372,36 @@ export default function MenuManagementPage() {
 
   const handleCancelCancel = () => {
     setIsCancelDialogOpen(false);
+  };
+
+  const findParentMenu = (menus: Menu[], targetId: number): Menu | null => {
+    // 전체 메뉴인 경우
+    if (targetId === -1) {
+      return {
+        id: -1,
+        name: "전체",
+        type: "FOLDER",
+        visible: true,
+        sortOrder: 0,
+        children: menus,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        displayPosition: "HEADER",
+      };
+    }
+
+    for (const menu of menus) {
+      if (menu.id === targetId) {
+        return menu;
+      }
+      if (menu.children && menu.children.length > 0) {
+        const found = findParentMenu(menu.children, targetId);
+        if (found) {
+          return found;
+        }
+      }
+    }
+    return null;
   };
 
   // 메뉴 관리 페이지 레이아웃 정의
@@ -414,6 +490,7 @@ export default function MenuManagementPage() {
                 isLoading={isLoading}
                 selectedMenuId={selectedMenu?.id}
                 loadingMenuId={loadingMenuId}
+                forceExpandMenuId={forceExpandMenuId}
               />
             </DndProvider>
           </Box>
@@ -426,15 +503,36 @@ export default function MenuManagementPage() {
               onSubmit={handleSubmit}
               parentId={parentMenuId}
               onAddMenu={() => {
-                if (selectedMenu?.id === -1) {
+                if (selectedMenu?.type === "FOLDER") {
                   handleAddMenu(selectedMenu);
+                } else if (selectedMenu?.parentId) {
+                  // 현재 메뉴의 부모 메뉴를 찾아서 하위 메뉴로 추가
+                  const parentMenu = findParentMenu(
+                    localMenus,
+                    selectedMenu.parentId
+                  );
+                  if (parentMenu) {
+                    handleAddMenu(parentMenu);
+                  }
                 } else {
-                  handleAddMenu(localMenus[0]);
+                  // 부모 메뉴가 없는 경우 전체 메뉴(-1)의 하위 메뉴로 추가
+                  handleAddMenu({
+                    id: -1,
+                    name: "전체",
+                    type: "FOLDER",
+                    visible: true,
+                    sortOrder: 0,
+                    children: localMenus,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    displayPosition: "HEADER",
+                  });
                 }
               }}
               existingMenus={localMenus}
               isTempMenu={!!tempMenu}
               tempMenu={tempMenu}
+              isDeleting={isDeleting}
             />
           </Box>
 

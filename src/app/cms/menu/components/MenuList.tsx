@@ -35,6 +35,7 @@ interface MenuListProps {
   isLoading: boolean;
   selectedMenuId?: number;
   loadingMenuId?: number | null;
+  forceExpandMenuId?: number | null;
 }
 
 export function MenuList({
@@ -47,6 +48,7 @@ export function MenuList({
   isLoading,
   selectedMenuId,
   loadingMenuId,
+  forceExpandMenuId,
 }: MenuListProps) {
   const [expandedMenus, setExpandedMenus] = useState<Set<number>>(
     new Set([-1])
@@ -269,6 +271,29 @@ export function MenuList({
       }
     }
   }, [selectedMenuId]);
+
+  // forceExpandMenuId가 변경될 때 해당 메뉴를 강제로 펼치고 포커스
+  useEffect(() => {
+    if (forceExpandMenuId) {
+      console.log("Force expanding menu:", forceExpandMenuId);
+      setExpandedMenus((prev) => {
+        const next = new Set(prev);
+        next.add(forceExpandMenuId);
+        return next;
+      });
+
+      // 약간의 지연을 두어 DOM이 업데이트된 후에 포커스
+      setTimeout(() => {
+        const element = menuListRef.current?.querySelector(
+          `[data-menu-id="${forceExpandMenuId}"]`
+        );
+        console.log("Scrolling to element:", element);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 100);
+    }
+  }, [forceExpandMenuId]);
 
   const renderMenuItem = (menu: Menu, level: number, index: number) => {
     const hasChildren = menu.children && menu.children.length > 0;

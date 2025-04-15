@@ -20,9 +20,10 @@ import * as z from "zod";
 import { Menu } from "../page";
 import { getAuthHeader } from "@/lib/auth";
 import { toaster } from "@/components/ui/toaster";
-import { CheckIcon, DeleteIcon, PlusIcon, Loader2 } from "lucide-react";
+import { CheckIcon, DeleteIcon, PlusIcon } from "lucide-react";
 import { SubmitHandler } from "react-hook-form";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { CustomSelect } from "@/components/CustomSelect";
 
 interface MenuEditorProps {
   menu: Menu | null;
@@ -34,6 +35,7 @@ interface MenuEditorProps {
   existingMenus: Menu[];
   isTempMenu?: boolean;
   tempMenu?: Menu | null;
+  isDeleting?: boolean;
 }
 
 // 메뉴 스키마 정의
@@ -116,6 +118,7 @@ export function MenuEditor({
   existingMenus,
   isTempMenu,
   tempMenu,
+  isDeleting,
 }: MenuEditorProps) {
   const [boards, setBoards] = useState<Array<{ id: number; name: string }>>([]);
   const [contents, setContents] = useState<Array<{ id: number; name: string }>>(
@@ -123,7 +126,7 @@ export function MenuEditor({
   );
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [localIsDeleting, setLocalIsDeleting] = useState(false);
 
   const {
     control,
@@ -209,10 +212,12 @@ export function MenuEditor({
   const selectStyle = {
     width: "100%",
     padding: "0.5rem",
+    paddingRight: "2rem",
     borderWidth: "1px",
     borderRadius: "0.375rem",
     borderColor: "inherit",
     backgroundColor: "transparent",
+    fontSize: "14px",
   };
 
   useEffect(() => {
@@ -269,11 +274,11 @@ export function MenuEditor({
     if (!menu || !onDelete) return;
     setIsDeleteDialogOpen(false);
     try {
-      setIsDeleting(true);
+      setLocalIsDeleting(true);
       await onDelete(menu.id);
       onClose();
     } finally {
-      setIsDeleting(false);
+      setLocalIsDeleting(false);
     }
   };
 
@@ -358,6 +363,7 @@ export function MenuEditor({
                 render={({ field }) => (
                   <select
                     {...field}
+                    className="custom-select"
                     style={{
                       ...selectStyle,
                       borderColor: errors.type
@@ -389,30 +395,16 @@ export function MenuEditor({
                   name="targetId"
                   control={control}
                   render={({ field }) => (
-                    <select
-                      {...field}
-                      style={{
-                        ...selectStyle,
-                        borderColor: errors.targetId
-                          ? "var(--chakra-colors-red-500)"
-                          : "inherit",
-                      }}
-                      disabled={menu?.id === -1}
-                    >
-                      <option value="">게시판 선택</option>
-                      {boards.map((board) => (
-                        <option key={board.id} value={board.id}>
-                          {board.name}
-                        </option>
-                      ))}
-                    </select>
+                    <CustomSelect
+                      field={field}
+                      errors={errors}
+                      menu={menu}
+                      options={boards}
+                      selectStyle={selectStyle}
+                      placeholder="게시판 선택"
+                    />
                   )}
                 />
-                {errors.targetId && (
-                  <Text color={errorColor} fontSize="sm" mt={1}>
-                    {errors.targetId.message}
-                  </Text>
-                )}
               </Box>
             )}
 
@@ -430,30 +422,16 @@ export function MenuEditor({
                   name="targetId"
                   control={control}
                   render={({ field }) => (
-                    <select
-                      {...field}
-                      style={{
-                        ...selectStyle,
-                        borderColor: errors.targetId
-                          ? "var(--chakra-colors-red-500)"
-                          : "inherit",
-                      }}
-                      disabled={menu?.id === -1}
-                    >
-                      <option value="">컨텐츠 선택</option>
-                      {contents.map((content) => (
-                        <option key={content.id} value={content.id}>
-                          {content.name}
-                        </option>
-                      ))}
-                    </select>
+                    <CustomSelect
+                      field={field}
+                      errors={errors}
+                      menu={menu}
+                      options={contents}
+                      selectStyle={selectStyle}
+                      placeholder="컨텐츠 선택"
+                    />
                   )}
                 />
-                {errors.targetId && (
-                  <Text color={errorColor} fontSize="sm" mt={1}>
-                    {errors.targetId.message}
-                  </Text>
-                )}
               </Box>
             )}
 
@@ -541,10 +519,19 @@ export function MenuEditor({
                   }}
                   _active={{ transform: "translateY(0)" }}
                   transition="all 0.2s ease"
-                  disabled={menu?.id === -1 || isDeleting || isSubmitting}
+                  disabled={
+                    menu?.id === -1 ||
+                    isDeleting ||
+                    localIsDeleting ||
+                    isSubmitting
+                  }
                 >
                   <Box display="flex" alignItems="center" gap={2} w={4}>
-                    {isDeleting ? <Spinner size="sm" /> : <DeleteIcon />}
+                    {isDeleting || localIsDeleting ? (
+                      <Spinner size="sm" />
+                    ) : (
+                      <DeleteIcon />
+                    )}
                   </Box>
                   <Text>삭제</Text>
                 </Button>
@@ -566,7 +553,12 @@ export function MenuEditor({
                   bg={buttonBg}
                   color="white"
                   _hover={{ bg: colors.primary.hover }}
-                  disabled={menu?.id === -1 || isDeleting || isSubmitting}
+                  disabled={
+                    menu?.id === -1 ||
+                    isDeleting ||
+                    localIsDeleting ||
+                    isSubmitting
+                  }
                 >
                   <Box display="flex" alignItems="center" gap={2} w={4}>
                     {isSubmitting ? <Spinner size="sm" /> : <CheckIcon />}
