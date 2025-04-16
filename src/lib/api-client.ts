@@ -138,12 +138,14 @@ export const api = {
   private: {
     // 인증 관련
     login: (credentials: LoginCredentials) =>
-      createApiRequest<AuthResponse>(
-        publicApi,
+      createApiRequest<AuthResponse, LoginCredentials>(
+        privateApi,
         "/auth/login",
         "POST",
         credentials
       )(),
+    verifyToken: () =>
+      createApiRequest<User>(privateApi, "/auth/verify", "GET")(),
 
     // CMS 컨텐츠 관리
     getCmsContents: () =>

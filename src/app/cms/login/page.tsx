@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Box,
   Container,
@@ -11,6 +11,7 @@ import {
   Text,
   Checkbox,
   Spinner,
+  Center,
 } from "@chakra-ui/react";
 import { LuEye, LuEyeOff, LuCheck } from "react-icons/lu";
 import { useAuth } from "@/lib/AuthContext";
@@ -53,6 +54,14 @@ function LoginForm() {
     }
   }, [isAuthenticated, router]);
 
+  useEffect(() => {
+    const rememberedId = localStorage.getItem("rememberedId");
+    if (rememberedId) {
+      setUsername(rememberedId);
+      setRememberMe(true);
+    }
+  }, []);
+
   const validateForm = () => {
     const newErrors: { username?: string; password?: string } = {};
 
@@ -71,59 +80,36 @@ function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      return;
+    }
 
-    try {
-      const response = await login(username, password);
-      if (response.success && response.user) {
-        setUser({
-          uuid: response.user.uuid,
-          username: response.user.username,
-          name: response.user.name,
-          email: response.user.email,
-          role: response.user.role,
-          avatar: response.user.avatar,
-        });
+    const result = await login(username, password);
 
-        if (rememberMe) {
-          localStorage.setItem("rememberedId", username);
-        } else {
-          localStorage.removeItem("rememberedId");
-        }
-
-        toaster.success({
-          title: "로그인 성공",
-          description: "환영합니다!",
-        });
+    if (result.success && result.user) {
+      setUser(result.user);
+      toaster.create({
+        title: "로그인 성공",
+        type: "success",
+      });
+      if (rememberMe) {
+        localStorage.setItem("rememberedId", username);
       } else {
-        toaster.error({
-          title: "로그인 실패",
-          description:
-            response.message || "아이디 또는 비밀번호가 올바르지 않습니다.",
-        });
+        localStorage.removeItem("rememberedId");
       }
-    } catch (error) {
-      toaster.error({
-        title: "오류 발생",
-        description: "로그인 중 오류가 발생했습니다." + error,
+    } else {
+      toaster.create({
+        title: result.message || "로그인에 실패했습니다.",
+        type: "error",
       });
     }
   };
 
   if (isLoading) {
     return (
-      <Box
-        display="flex"
-        flexDirection="column"
-        justifyContent="center"
-        alignItems="center"
-        height="100vh"
-        bg={colors.bg}
-        position="relative"
-        overflow="hidden"
-      >
+      <Center h="100vh" bg={pageBg}>
         <Spinner color={colors.primary.default} size="xl" />
-      </Box>
+      </Center>
     );
   }
 
@@ -326,9 +312,5 @@ function LoginForm() {
 }
 
 export default function LoginPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <LoginForm />
-    </Suspense>
-  );
+  return <LoginForm />;
 }

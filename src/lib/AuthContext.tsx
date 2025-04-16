@@ -1,15 +1,11 @@
 "use client";
 
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-} from "react";
+import React, { createContext, useContext, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { api } from "@/lib/api-client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { authApi, authKeys } from "@/lib/api/auth";
 import { User } from "@/types/api";
+import { setAuthToken, removeAuthToken, setUser, getUser } from "@/lib/auth";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -28,105 +24,95 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
   const pathname = usePathname();
+  const queryClient = useQueryClient();
 
-  const checkAuth = useCallback(async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const storedUser = localStorage.getItem("user");
+  // 현재 인증 상태 확인
+  const { data: user, isLoading: isVerifying } = useQuery({
+    queryKey: authKeys.current(),
+    queryFn: authApi.verifyToken,
+    enabled: !!getUser(), // localStorage에 사용자 정보가 있을 때만 실행
+    retry: false,
+    staleTime: 5 * 60 * 1000, // 5분
+  });
 
-      if (!token || !storedUser) {
-        setIsAuthenticated(false);
-        setUser(null);
-        if (pathname !== "/cms/login" && pathname.startsWith("/cms")) {
-          router.replace("/cms/login");
-        }
-        return;
-      }
-
-      // 토큰이 있으면 인증 상태로 설정
-      setIsAuthenticated(true);
-      setUser(JSON.parse(storedUser));
-
-      // 로그인 페이지나 CMS 루트에서 대시보드로 리다이렉트
-      if (pathname === "/cms/login" || pathname === "/cms") {
-        router.replace("/cms/menu");
-      }
-    } catch (error) {
-      console.error("Auth check error:", error);
-      setIsAuthenticated(false);
-      setUser(null);
-      if (pathname !== "/cms/login" && pathname.startsWith("/cms")) {
-        router.replace("/cms/login");
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  }, [router, pathname]);
-
-  useEffect(() => {
-    checkAuth();
-  }, [pathname, checkAuth]);
+  // 로그인 뮤테이션
+  const loginMutation = useMutation({
+    mutationFn: ({
+      username,
+      password,
+    }: {
+      username: string;
+      password: string;
+    }) => authApi.login({ username, password }),
+    onSuccess: (data) => {
+      setAuthToken(data.token);
+      setUser(data.user);
+      queryClient.setQueryData(authKeys.current(), data.user);
+    },
+  });
 
   const login = async (username: string, password: string) => {
     try {
-      setIsLoading(true); // 로그인 시작 시 로딩 상태로 설정
-      const response = await api.private.login({ username, password });
-
-      if (!response.data) {
-        setIsLoading(false); // 실패 시 로딩 상태 해제
-        return {
-          success: false,
-          message: response.message || "로그인에 실패했습니다.",
-        };
-      }
-
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
-      setIsAuthenticated(true);
-      setUser(response.data.user);
-
-      // 로딩 상태는 유지하여 리다이렉트 전까지 사이드바가 보이지 않도록 함
+      const result = await loginMutation.mutateAsync({ username, password });
       return {
         success: true,
-        user: response.data.user,
+        user: result.user,
       };
     } catch (error) {
-      setIsLoading(false); // 에러 시 로딩 상태 해제
       console.error("Login error:", error);
       return {
         success: false,
-        message: "로그인 중 오류가 발생했습니다.",
+        message: "로그인에 실패했습니다.",
       };
     }
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setIsAuthenticated(false);
-    setUser(null);
+    removeAuthToken();
+    queryClient.removeQueries({ queryKey: authKeys.all });
     router.replace("/cms/login");
   };
 
+  // 인증이 필요한 페이지 접근 제어
+  useEffect(() => {
+    if (
+      !isVerifying &&
+      !user &&
+      pathname.startsWith("/cms") &&
+      pathname !== "/cms/login"
+    ) {
+      router.replace("/cms/login");
+    }
+  }, [isVerifying, user, pathname, router]);
+
+  // 로딩 상태 계산
+  const isLoading =
+    isVerifying ||
+    loginMutation.isPending ||
+    (!!user && pathname === "/cms/login");
+
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, isLoading, user, login, logout }}
+      value={{
+        isAuthenticated: !!user,
+        isLoading,
+        user: user || null,
+        login,
+        logout,
+      }}
     >
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
 }
