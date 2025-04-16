@@ -16,10 +16,10 @@ import { useColorModeValue } from "@/components/ui/color-mode";
 import { DndProvider, useDrag } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { DropZone } from "@/components/ui/drop-zone";
-import { MenuItem } from "../types";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { menuApi, menuKeys } from "@/lib/api/menu";
+import { MenuSkeleton } from "./MenuSkeleton";
 
 interface MenuListProps {
   menus: Menu[];
@@ -31,7 +31,6 @@ interface MenuListProps {
     targetId: number,
     position: "before" | "after" | "inside"
   ) => void;
-  onSelectMenu: (menuId: number | null) => void;
   isLoading: boolean;
   selectedMenuId?: number;
   loadingMenuId?: number | null;
@@ -44,7 +43,6 @@ export function MenuList({
   onEditMenu,
   onDeleteMenu,
   onMoveMenu,
-  onSelectMenu,
   isLoading,
   selectedMenuId,
   loadingMenuId,
@@ -74,12 +72,6 @@ export function MenuList({
 
   const queryClient = useQueryClient();
 
-  const { data: menuData, isLoading: queryLoading } = useQuery({
-    queryKey: menuKeys.lists(),
-    queryFn: menuApi.getMenus,
-    initialData: menus,
-  });
-
   const updateOrderMutation = useMutation({
     mutationFn: menuApi.updateMenuOrder,
     onSuccess: () => {
@@ -93,32 +85,6 @@ export function MenuList({
       queryClient.invalidateQueries({ queryKey: menuKeys.lists() });
     },
   });
-
-  const handleDeleteMenu = async (menuId: number) => {
-    try {
-      await deleteMutation.mutateAsync(menuId);
-      if (selectedMenuId === menuId) {
-        onSelectMenu(null);
-      }
-    } catch (error) {
-      console.error("Error deleting menu:", error);
-    }
-  };
-
-  const handleUpdateMenuOrder = async (
-    orders: Array<{
-      id: number;
-      targetId: number | null;
-      position: "before" | "after" | "inside";
-    }>
-  ) => {
-    try {
-      await updateOrderMutation.mutateAsync(orders);
-    } catch (error) {
-      console.error("Error updating menu order:", error);
-    }
-  };
-
   const toggleMenu = (menuId: number) => {
     if (menuId === -1) return;
 
@@ -216,20 +182,14 @@ export function MenuList({
       return;
     }
 
-    // 부모 메뉴의 전체 트리 구조를 찾기
-    const fullParentMenu = findParentMenu(menus, parentMenu.id);
-    console.log("Found full parent menu:", fullParentMenu);
-
-    if (!fullParentMenu) return;
-
     // 부모 메뉴가 접혀있으면 펼치기
-    if (!expandedMenus.has(fullParentMenu.id)) {
-      console.log("Expanding parent menu:", fullParentMenu.id);
-      toggleMenu(fullParentMenu.id);
+    if (!expandedMenus.has(parentMenu.id)) {
+      console.log("Expanding parent menu:", parentMenu.id);
+      toggleMenu(parentMenu.id);
     }
 
     // 부모 컴포넌트의 handleAddMenu 함수 호출
-    onAddMenu(fullParentMenu);
+    onAddMenu(parentMenu);
   };
 
   const handleMoveMenu = (
@@ -352,12 +312,8 @@ export function MenuList({
     );
   };
 
-  if (queryLoading) {
-    return (
-      <Flex justify="center" align="center" h="200px">
-        <Spinner />
-      </Flex>
-    );
+  if (isLoading) {
+    return <MenuSkeleton />;
   }
 
   // 전체 메뉴를 최상위 루트로 추가

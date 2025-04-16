@@ -2,7 +2,7 @@
 
 import { Box, Container, VStack } from "@chakra-ui/react";
 import { Menu } from "@/app/cms/menu/page";
-import { useEffect } from "react";
+import { memo } from "react";
 import { CompanySection } from "@/components/sections/CompanySection";
 import { ApplicationSection } from "@/components/sections/ApplicationSection";
 import { EducationSection } from "@/components/sections/EducationSection";
@@ -15,11 +15,7 @@ interface MainProps {
   isPreview?: boolean;
 }
 
-export const Main = ({ menus, isPreview = false }: MainProps) => {
-  useEffect(() => {
-    console.log("Raw menu data:", menus);
-  }, [menus]);
-
+export const Main = memo(({ menus, isPreview = false }: MainProps) => {
   return (
     <Layout currentPage="홈" isPreview={isPreview} menus={menus}>
       <Box as="main" flex="1" w="full">
@@ -56,4 +52,4 @@ export const Main = ({ menus, isPreview = false }: MainProps) => {
       </Box>
     </Layout>
   );
-};
+});

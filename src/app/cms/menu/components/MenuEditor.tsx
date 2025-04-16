@@ -24,6 +24,7 @@ import { CheckIcon, DeleteIcon, PlusIcon } from "lucide-react";
 import { SubmitHandler } from "react-hook-form";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { CustomSelect } from "@/components/CustomSelect";
+import { useQuery } from "@tanstack/react-query";
 
 interface MenuEditorProps {
   menu: Menu | null;
@@ -120,10 +121,6 @@ export function MenuEditor({
   tempMenu,
   isDeleting,
 }: MenuEditorProps) {
-  const [boards, setBoards] = useState<Array<{ id: number; name: string }>>([]);
-  const [contents, setContents] = useState<Array<{ id: number; name: string }>>(
-    []
-  );
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localIsDeleting, setLocalIsDeleting] = useState(false);
@@ -220,50 +217,40 @@ export function MenuEditor({
     fontSize: "14px",
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [boardsResponse, contentsResponse] = await Promise.all([
-          fetch("/api/board", {
-            headers: getAuthHeader(),
-          }),
-          fetch("/api/content", {
-            headers: getAuthHeader(),
-          }),
-        ]);
+  // React Query를 사용하여 데이터 페칭
+  const { data: boardsData } = useQuery({
+    queryKey: ["boards"],
+    queryFn: async () => {
+      const response = await fetch("/api/board", {
+        headers: getAuthHeader(),
+      });
+      if (!response.ok) throw new Error("Failed to fetch boards");
+      const data = await response.json();
+      return data.map((board: BoardResponse) => ({
+        id: board.id,
+        name: board.name,
+      }));
+    },
+    staleTime: 5 * 60 * 1000, // 5분 동안 캐시 유지
+    enabled: menuType === "BOARD", // BOARD 타입일 때만 데이터 가져오기
+  });
 
-        if (!boardsResponse.ok || !contentsResponse.ok) {
-          throw new Error("Failed to fetch data");
-        }
-
-        const boardsData = (await boardsResponse.json()) as BoardResponse[];
-        const contentsData =
-          (await contentsResponse.json()) as ContentResponse[];
-
-        // 필요한 데이터만 매핑
-        const mappedBoards = boardsData.map((board) => ({
-          id: board.id,
-          name: board.name,
-        }));
-
-        const mappedContents = contentsData.map((content) => ({
-          id: content.id,
-          name: content.name,
-        }));
-
-        setBoards(mappedBoards);
-        setContents(mappedContents);
-      } catch (error) {
-        console.error("Failed to fetch data:", error);
-        toaster.create({
-          title: "데이터를 불러오는데 실패했습니다.",
-          type: "error",
-        });
-      }
-    };
-
-    fetchData();
-  }, []);
+  const { data: contentsData } = useQuery({
+    queryKey: ["contents"],
+    queryFn: async () => {
+      const response = await fetch("/api/content", {
+        headers: getAuthHeader(),
+      });
+      if (!response.ok) throw new Error("Failed to fetch contents");
+      const data = await response.json();
+      return data.map((content: ContentResponse) => ({
+        id: content.id,
+        name: content.name,
+      }));
+    },
+    staleTime: 5 * 60 * 1000, // 5분 동안 캐시 유지
+    enabled: menuType === "CONTENT", // CONTENT 타입일 때만 데이터 가져오기
+  });
 
   const handleDelete = async () => {
     if (!menu || !onDelete) return;
@@ -399,7 +386,7 @@ export function MenuEditor({
                       field={field}
                       errors={errors}
                       menu={menu}
-                      options={boards}
+                      options={boardsData || []}
                       selectStyle={selectStyle}
                       placeholder="게시판 선택"
                     />
@@ -426,7 +413,7 @@ export function MenuEditor({
                       field={field}
                       errors={errors}
                       menu={menu}
-                      options={contents}
+                      options={contentsData || []}
                       selectStyle={selectStyle}
                       placeholder="컨텐츠 선택"
                     />

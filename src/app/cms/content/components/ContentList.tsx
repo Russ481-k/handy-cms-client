@@ -79,29 +79,6 @@ export function ContentList({
     }
   };
 
-  // useEffect(() => {
-  //   console.log("ContentList mounted, fetching menus...");
-  //   fetchMenus().then(() => {
-  //     // Assuming the data is stored in the state
-  //     // This is a placeholder and should be replaced with actual state management
-  //   });
-  // }, [fetchMenus]);
-
-  // useEffect(() => {
-  //   const handleRefresh = () => {
-  //     console.log("ContentList refresh event received");
-  //     fetchMenus().then((data) => {
-  //       // Assuming the data is stored in the state
-  //       // This is a placeholder and should be replaced with actual state management
-  //     });
-  //   };
-
-  //   window.addEventListener("refreshContentList", handleRefresh);
-  //   return () => {
-  //     window.removeEventListener("refreshContentList", handleRefresh);
-  //   };
-  // }, []);
-
   if (isLoading) {
     return (
       <Flex justify="center" align="center" h="full">
@@ -141,10 +118,10 @@ export function ContentList({
       {menus.map((menu) => (
         <ListItem
           key={menu.id}
+          id={menu.id}
           name={menu.name}
           icon={<LuFileText />}
           isSelected={menu.id === selectedContentId}
-          onEdit={() => onEditContent(menu)}
           onDelete={() => onDeleteContent(menu.id)}
           renderBadges={() => !menu.visible && "비활성"}
           onClick={() => onEditContent(menu)}

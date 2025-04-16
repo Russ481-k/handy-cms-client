@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CMSLayoutClient } from "./CMSLayoutClient";
+import { RecoilRoot } from "recoil";
 
 export const metadata: Metadata = {
   title: "CMS",

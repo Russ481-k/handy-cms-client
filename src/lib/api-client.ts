@@ -7,7 +7,6 @@ import {
   User,
   LoginCredentials,
   AuthResponse,
-  MenuData,
   ContentData,
   BoardData,
   UserData,
@@ -25,7 +24,7 @@ export const publicApi = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true, // CORS 요청에 credentials 포함
+  withCredentials: true,
 });
 
 // 인증이 필요한 API 요청을 위한 클라이언트
@@ -34,22 +33,8 @@ export const privateApi = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  withCredentials: true, // CORS 요청에 credentials 포함
+  withCredentials: true,
 });
-
-// 인증이 필요한 API 요청에 토큰을 자동으로 추가하는 인터셉터
-privateApi.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
 
 // API 응답 에러 처리 인터셉터
 [publicApi, privateApi].forEach((api) => {
@@ -57,13 +42,21 @@ privateApi.interceptors.request.use(
     (response) => response,
     (error) => {
       if (error.response?.status === 401) {
-        // 인증 에러 처리
         localStorage.removeItem("token");
         window.location.href = "/cms/login";
       }
       return Promise.reject(error);
     }
   );
+});
+
+// 인증 토큰 인터셉터
+privateApi.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 // API 응답 타입 정의
@@ -128,6 +121,15 @@ export const api = {
 
     get: async <T>(url: string) => {
       const response = await publicApi.get<T>(url);
+      return response;
+    },
+
+    login: (credentials: LoginCredentials) =>
+      publicApi.post<AuthResponse>("/auth/login", credentials),
+    verifyToken: () => publicApi.get<User>("/auth/verify"),
+
+    post: async <T>(url: string, data?: any) => {
+      const response = await publicApi.post<T>(url, data);
       return response;
     },
   },

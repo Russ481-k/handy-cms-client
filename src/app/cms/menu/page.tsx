@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { Box, Flex, Heading, Badge } from "@chakra-ui/react";
 import { MenuList } from "./components/MenuList";
 import { MenuEditor } from "./components/MenuEditor";
@@ -14,7 +14,7 @@ import { Main } from "@/components/layout/view/Main";
 
 import { useMenu } from "@/lib/hooks/useMenu";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { menuApi, menuKeys, UpdateMenuOrderRequest } from "@/lib/api/menu";
 
 export interface Menu {
@@ -33,33 +33,30 @@ export interface Menu {
 }
 
 export default function MenuManagementPage() {
+  const renderCount = React.useRef(0);
+  renderCount.current += 1;
+  console.log(`MenuManagementPage render count: ${renderCount.current}`);
+
   const queryClient = useQueryClient();
   const [selectedMenu, setSelectedMenu] = useState<Menu | null>(null);
   const [parentMenuId, setParentMenuId] = useState<number | null>(null);
-  const [isMoving, setIsMoving] = useState(false);
   const [tempMenu, setTempMenu] = useState<Menu | null>(null);
-  const [localMenus, setLocalMenus] = useState<Menu[]>([]);
   const [loadingMenuId, setLoadingMenuId] = useState<number | null>(null);
   const [forceExpandMenuId, setForceExpandMenuId] = useState<number | null>(
     null
   );
+  const [localMenus, setLocalMenus] = useState<Menu[]>([]);
   const colors = useColors();
-  const { refreshMenus: refreshHeaderMenus } = useMenu();
+  const { menus = [], isLoading, refreshMenus: refreshHeaderMenus } = useMenu();
   const bg = useColorModeValue(colors.bg, colors.darkBg);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
-  const [selectedMenuId, setSelectedMenuId] = useState<number | undefined>(
-    undefined
-  );
-  const [menuToDelete, setMenuToDelete] = useState<Menu | null>(null);
+
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // 메뉴 목록을 가져오는 쿼리
-  const { data: menus = [], isLoading } = useQuery({
-    queryKey: menuKeys.lists(),
-    queryFn: menuApi.getMenus,
-  });
+  console.log("Menus data:", menus);
+  console.log("Is loading:", isLoading);
 
-  // 서버 데이터가 변경되면 로컬 상태도 업데이트
+  // menus가 변경될 때 localMenus 업데이트
   useEffect(() => {
     setLocalMenus(menus);
   }, [menus]);
@@ -118,9 +115,19 @@ export default function MenuManagementPage() {
     onSuccess: (savedMenu) => {
       queryClient.invalidateQueries({ queryKey: menuKeys.lists() });
       refreshHeaderMenus();
-      setTempMenu(null);
-      setSelectedMenu(savedMenu);
-      setParentMenuId(savedMenu.parentId || null);
+
+      // 임시 메뉴가 저장된 경우
+      if (tempMenu) {
+        // 저장된 메뉴를 선택된 메뉴로 설정
+        setSelectedMenu(savedMenu);
+        setParentMenuId(savedMenu.parentId || null);
+        setTempMenu(null);
+      } else {
+        // 기존 메뉴 수정의 경우
+        setSelectedMenu(savedMenu);
+        setParentMenuId(savedMenu.parentId || null);
+      }
+
       toaster.create({
         title: tempMenu ? "메뉴가 생성되었습니다." : "메뉴가 수정되었습니다.",
         type: "success",
@@ -143,7 +150,6 @@ export default function MenuManagementPage() {
     position: "before" | "after" | "inside"
   ) => {
     try {
-      setIsMoving(true);
       setLoadingMenuId(draggedId);
       const request: UpdateMenuOrderRequest = {
         id: draggedId,
@@ -152,7 +158,6 @@ export default function MenuManagementPage() {
       };
       await updateOrderMutation.mutateAsync([request]);
     } finally {
-      setIsMoving(false);
       setLoadingMenuId(null);
     }
   };
@@ -163,47 +168,25 @@ export default function MenuManagementPage() {
       setLoadingMenuId(menuId);
 
       // 삭제할 메뉴의 부모 메뉴 찾기
-      const parentMenu = findParentMenu(localMenus, menuId);
-      console.log("Deleting menu:", menuId);
-      console.log("Found parent menu:", parentMenu);
+      const parentMenu = findParentMenu(menus, menuId);
 
       // 임시 메뉴인 경우 서버 요청 없이 클라이언트에서만 처리
       if (tempMenu && tempMenu.id === menuId) {
-        console.log("Deleting temporary menu");
-        setLocalMenus((prevMenus) => {
-          if (parentMenu?.id === -1) {
-            // 최상위 메뉴인 경우
-            return prevMenus.filter((menu) => menu.id !== menuId);
-          } else {
-            // 하위 메뉴인 경우
-            return updateMenuTree(prevMenus, parentMenu?.id || -1, (menu) => ({
-              ...menu,
-              children:
-                menu.children?.filter((child) => child.id !== menuId) || [],
-            }));
-          }
-        });
         setTempMenu(null);
       } else {
         // 서버에서 메뉴 삭제
-        console.log("Deleting menu from server");
         await deleteMutation.mutateAsync(menuId);
       }
 
       // 부모 메뉴 선택
       if (parentMenu) {
-        console.log("Selecting parent menu:", parentMenu);
         setSelectedMenu(parentMenu);
         setParentMenuId(parentMenu.parentId || null);
-        setSelectedMenuId(parentMenu.id);
         // 부모 메뉴가 폴더인 경우에만 forceExpandMenuId 설정
         if (parentMenu.type === "FOLDER") {
-          console.log("Setting forceExpandMenuId to:", parentMenu.id);
           setForceExpandMenuId(parentMenu.id);
         }
       }
-
-      console.log("Delete process completed");
     } finally {
       setIsDeleting(false);
       setLoadingMenuId(null);
@@ -219,15 +202,9 @@ export default function MenuManagementPage() {
         setLoadingMenuId(menuId);
       }
       await saveMenuMutation.mutateAsync({
-        id: tempMenu ? undefined : selectedMenu?.id,
+        id: menuId,
         menuData,
       });
-      // 메뉴 생성/수정 후 선택된 메뉴 ID 업데이트
-      if (tempMenu) {
-        setSelectedMenuId(undefined);
-      } else {
-        setSelectedMenuId(selectedMenu?.id);
-      }
     } catch (error) {
       console.error("Error saving menu:", error);
     } finally {
@@ -237,43 +214,39 @@ export default function MenuManagementPage() {
 
   // 메뉴 목록에 새 메뉴 추가하는 함수
   const addMenuToList = (newMenu: Menu, targetMenu: Menu | null = null) => {
-    setLocalMenus((prevMenus) => {
-      if (!targetMenu) {
-        // 최상위 레벨에 추가
-        return [...prevMenus, newMenu];
-      }
+    if (!targetMenu) {
+      return [...menus, newMenu];
+    }
 
-      // 메뉴 트리를 업데이트하는 재귀 함수
-      const updateMenuTree = (menuList: Menu[]): Menu[] => {
-        return menuList.map((menu) => {
-          if (menu.id === targetMenu.id) {
-            // 대상 메뉴를 찾았을 때
-            const updatedChildren = [...(menu.children || [])];
-            updatedChildren.push(newMenu);
-            return {
-              ...menu,
-              children: updatedChildren,
-            };
-          }
-          if (menu.children && menu.children.length > 0) {
-            // 자식 메뉴가 있으면 재귀적으로 탐색
-            return {
-              ...menu,
-              children: updateMenuTree(menu.children),
-            };
-          }
-          return menu;
-        });
-      };
+    const updateMenuTree = (menuList: Menu[]): Menu[] => {
+      return menuList.map((menu) => {
+        if (menu.id === targetMenu.id) {
+          const updatedChildren = [...(menu.children || [])];
+          updatedChildren.push(newMenu);
+          return {
+            ...menu,
+            children: updatedChildren,
+          };
+        }
+        if (menu.children && menu.children.length > 0) {
+          return {
+            ...menu,
+            children: updateMenuTree(menu.children),
+          };
+        }
+        return menu;
+      });
+    };
 
-      return updateMenuTree(prevMenus);
-    });
+    return updateMenuTree(menus);
   };
 
   // 새 메뉴 추가 핸들러
   const handleAddMenu = (parentMenu: Menu) => {
+    console.log("Creating new menu under parent:", parentMenu.name);
+
     const newTempMenu: Menu = {
-      id: Date.now(), // 임시 ID
+      id: Date.now(),
       name: "새 메뉴",
       type: "LINK",
       parentId: parentMenu.id === -1 ? undefined : parentMenu.id,
@@ -285,20 +258,20 @@ export default function MenuManagementPage() {
       displayPosition: "HEADER",
     };
 
-    setLocalMenus((prevMenus) => {
-      if (parentMenu.id === -1) {
-        return [...prevMenus, newTempMenu];
-      }
-      return updateMenuTree(prevMenus, parentMenu.id, (menu) => ({
-        ...menu,
-        children: [...(menu.children || []), newTempMenu],
-      }));
-    });
+    // 메뉴 트리에 임시 메뉴 추가
+    const updatedMenus = addMenuToList(
+      newTempMenu,
+      parentMenu.id === -1 ? null : parentMenu
+    );
+
+    // 로컬 상태 업데이트
+    setLocalMenus(updatedMenus);
+    // React Query 캐시 업데이트
+    queryClient.setQueryData(menuKeys.lists(), updatedMenus);
 
     setTempMenu(newTempMenu);
     setSelectedMenu(newTempMenu);
     setParentMenuId(parentMenu.id === -1 ? null : parentMenu.id);
-    setSelectedMenuId(newTempMenu.id);
     setForceExpandMenuId(parentMenu.id);
   };
 
@@ -326,22 +299,9 @@ export default function MenuManagementPage() {
       // 임시 메뉴 수정 중인 경우 경고 모달 표시
       if (window.confirm("새 메뉴 추가가 취소됩니다. 취소하시겠습니까?")) {
         // 임시 메뉴를 메뉴 목록에서 제거
-        setLocalMenus((prevMenus) => {
-          const updateMenuTree = (menus: Menu[]): Menu[] => {
-            return menus
-              .filter((m) => m.id !== tempMenu.id)
-              .map((menu) => {
-                if (menu.children && menu.children.length > 0) {
-                  return {
-                    ...menu,
-                    children: updateMenuTree(menu.children),
-                  };
-                }
-                return menu;
-              });
-          };
-          return updateMenuTree(prevMenus);
-        });
+        const updatedMenus = menus.filter((m) => m.id !== tempMenu.id);
+        queryClient.setQueryData(menuKeys.lists(), updatedMenus);
+
         setTempMenu(null);
         setSelectedMenu(menu);
         setParentMenuId(menu.parentId || null);
@@ -355,8 +315,11 @@ export default function MenuManagementPage() {
   const handleCloseEditor = () => {
     if (tempMenu) {
       // 임시 메뉴인 경우 삭제
+      const updatedMenus = menus.filter((m) => m.id !== tempMenu.id);
+      queryClient.setQueryData(menuKeys.lists(), updatedMenus);
+
       setTempMenu(null);
-      setSelectedMenu(localMenus[0] || null);
+      setSelectedMenu(menus[0] || null);
     } else {
       // 기존 메뉴 편집 중 취소
       setSelectedMenu(null);
@@ -444,12 +407,19 @@ export default function MenuManagementPage() {
     },
   ];
 
-  // 초기 메뉴 선택
+  // 메뉴 목록이 업데이트될 때 선택된 메뉴를 동기화
   useEffect(() => {
-    if (localMenus.length > 0 && !selectedMenu && !tempMenu) {
-      setSelectedMenu(localMenus[0]);
+    if (menus.length > 0) {
+      // 임시 메뉴가 없는 경우에만 초기 메뉴 선택
+      if (!tempMenu && !selectedMenu) {
+        setSelectedMenu(menus[0]);
+      }
+      // 임시 메뉴가 있는 경우, 해당 메뉴를 계속 선택 상태로 유지
+      else if (tempMenu) {
+        setSelectedMenu(tempMenu);
+      }
     }
-  }, [localMenus, selectedMenu, tempMenu]);
+  }, [menus, tempMenu, selectedMenu]);
 
   return (
     <Box bg={bg} minH="100vh" w="full" position="relative">
@@ -486,7 +456,6 @@ export default function MenuManagementPage() {
                 onEditMenu={handleEditMenu}
                 onDeleteMenu={handleDeleteMenu}
                 onMoveMenu={handleMoveMenu}
-                onSelectMenu={(id) => setSelectedMenuId(id ?? undefined)}
                 isLoading={isLoading}
                 selectedMenuId={selectedMenu?.id}
                 loadingMenuId={loadingMenuId}
@@ -508,7 +477,7 @@ export default function MenuManagementPage() {
                 } else if (selectedMenu?.parentId) {
                   // 현재 메뉴의 부모 메뉴를 찾아서 하위 메뉴로 추가
                   const parentMenu = findParentMenu(
-                    localMenus,
+                    menus,
                     selectedMenu.parentId
                   );
                   if (parentMenu) {
@@ -522,14 +491,14 @@ export default function MenuManagementPage() {
                     type: "FOLDER",
                     visible: true,
                     sortOrder: 0,
-                    children: localMenus,
+                    children: menus,
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
                     displayPosition: "HEADER",
                   });
                 }
               }}
-              existingMenus={localMenus}
+              existingMenus={menus}
               isTempMenu={!!tempMenu}
               tempMenu={tempMenu}
               isDeleting={isDeleting}
@@ -537,7 +506,7 @@ export default function MenuManagementPage() {
           </Box>
 
           <Box>
-            <Main menus={localMenus} isPreview={true} />
+            <Main menus={menus} isPreview={true} />
           </Box>
         </GridSection>
       </Box>

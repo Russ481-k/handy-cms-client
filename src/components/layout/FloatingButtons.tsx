@@ -3,7 +3,7 @@
 import { Box, IconButton } from "@chakra-ui/react";
 import { LuArrowUp } from "react-icons/lu";
 import { useColors } from "@/styles/theme";
-import { ColorModeToggle } from "../ui/ColorModeToggle";
+import { ColorModeToggle } from "@/components/ColorModeToggle";
 import { useEffect, useState } from "react";
 
 export const FloatingButtons = () => {

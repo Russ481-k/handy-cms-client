@@ -10,6 +10,7 @@ import {
   Input,
   Text,
   Checkbox,
+  Spinner,
 } from "@chakra-ui/react";
 import { LuEye, LuEyeOff, LuCheck } from "react-icons/lu";
 import { useAuth } from "@/lib/AuthContext";
@@ -24,19 +25,17 @@ import { toaster } from "@/components/ui/toaster";
 import { Logo } from "@/components/ui/logo";
 
 function LoginForm() {
+  const { isAuthenticated, isLoading, login } = useAuth();
+  const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberId, setRememberId] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<{
     username?: string;
     password?: string;
   }>({});
 
-  const { login } = useAuth();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const from = searchParams?.get("from") || "/cms/menu";
   const colors = useColors();
   const setUser = useSetRecoilState(userState);
 
@@ -45,14 +44,14 @@ function LoginForm() {
   const inputText = useColorModeValue("gray.800", "whiteAlpha.900");
   const inputPlaceholder = useColorModeValue("gray.400", "whiteAlpha.400");
   const inputHover = useColorModeValue("blackAlpha.100", "whiteAlpha.100");
+  const pageBg = useColorModeValue("gray.50", "gray.900");
+  const headingColor = useColorModeValue("gray.900", "white");
 
   useEffect(() => {
-    const savedUsername = localStorage.getItem("rememberedId");
-    if (savedUsername) {
-      setUsername(savedUsername);
-      setRememberId(true);
+    if (isAuthenticated) {
+      router.push("/cms");
     }
-  }, []);
+  }, [isAuthenticated, router]);
 
   const validateForm = () => {
     const newErrors: { username?: string; password?: string } = {};
@@ -77,7 +76,6 @@ function LoginForm() {
     try {
       const response = await login(username, password);
       if (response.success && response.user) {
-        // 사용자 정보를 Recoil 상태에 저장
         setUser({
           uuid: response.user.uuid,
           username: response.user.username,
@@ -87,7 +85,7 @@ function LoginForm() {
           avatar: response.user.avatar,
         });
 
-        if (rememberId) {
+        if (rememberMe) {
           localStorage.setItem("rememberedId", username);
         } else {
           localStorage.removeItem("rememberedId");
@@ -97,9 +95,6 @@ function LoginForm() {
           title: "로그인 성공",
           description: "환영합니다!",
         });
-
-        // 로딩 상태를 유지한 채로 리다이렉트
-        router.push(from);
       } else {
         toaster.error({
           title: "로그인 실패",
@@ -115,13 +110,30 @@ function LoginForm() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <Box
+        display="flex"
+        flexDirection="column"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+        bg={colors.bg}
+        position="relative"
+        overflow="hidden"
+      >
+        <Spinner color={colors.primary.default} size="xl" />
+      </Box>
+    );
+  }
+
   return (
     <Flex
       minH="100vh"
       direction="column"
       align="center"
       justify="center"
-      bg={useColorModeValue("gray.50", "gray.900")}
+      bg={pageBg}
       p={4}
     >
       <Container maxW="lg" px={{ base: "4", sm: "8" }}>
@@ -137,7 +149,7 @@ function LoginForm() {
               size="lg"
               fontWeight="bold"
               letterSpacing="tight"
-              color={useColorModeValue("gray.900", "white")}
+              color={headingColor}
             >
               Welcome Back
             </Heading>
@@ -251,8 +263,8 @@ function LoginForm() {
                   </Field>
                 </Flex>
                 <Checkbox.Root
-                  checked={rememberId}
-                  onCheckedChange={(e) => setRememberId(!!e.checked)}
+                  checked={rememberMe}
+                  onCheckedChange={(e) => setRememberMe(!!e.checked)}
                   colorPalette="blue"
                   size="md"
                 >

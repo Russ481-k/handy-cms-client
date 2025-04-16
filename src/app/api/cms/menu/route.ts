@@ -122,7 +122,6 @@ export async function GET(request: Request) {
 
       rootMenus.sort((a, b) => a.sortOrder - b.sortOrder);
 
-      console.log("Final response:", rootMenus);
       return NextResponse.json(rootMenus);
     } finally {
       connection.release();
