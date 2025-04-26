@@ -8,7 +8,7 @@ import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Bottombar } from "@/components/layout/Bottombar";
 import { Topbar } from "@/components/layout/Topbar";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useColors } from "@/styles/theme";
 import { ColorModeToggle } from "@/components/ColorModeToggle";
 import { useAuth } from "@/lib/AuthContext";
@@ -18,9 +18,8 @@ function Layout({ children }: { children: React.ReactNode }) {
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
   const colors = useColors();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated } = useAuth();
   const pathname = usePathname();
-  const router = useRouter();
 
   // 홈페이지 스타일에 맞는 색상 적용
   const mainBg = useColorModeValue(colors.bg, colors.darkBg);
@@ -35,49 +34,8 @@ function Layout({ children }: { children: React.ReactNode }) {
     setIsSidebarOpen(!!isLargerThanLg);
   }, [isLargerThanLg]);
 
-  useEffect(() => {
-    if (!isLoading) {
-      if (isCMSPath) {
-        if (isAuthenticated) {
-          if (isLoginPage || pathname === "/cms") {
-            router.replace("/cms/menu");
-          }
-        } else {
-          if (!isLoginPage) {
-            router.replace("/cms/login");
-          }
-        }
-      }
-    }
-  }, [isAuthenticated, isLoading, pathname, router, isCMSPath, isLoginPage]);
-
-  // 로딩 중이거나 인증되지 않은 CMS 페이지인 경우 네비게이션 숨김
-  if (isLoading || (isCMSPath && !isAuthenticated)) {
-    return (
-      <Box
-        bg={mainBg}
-        margin={0}
-        padding={0}
-        h="100vh"
-        w="100vw"
-        overflow="hidden"
-      >
-        <Global styles={[getScrollbarStyle(isDark)]} />
-        <Box
-          color={textColor}
-          bg={mainBg}
-          w="100%"
-          h="100vh"
-          position="relative"
-          margin={0}
-          padding={0}
-          overflow="hidden"
-        >
-          {children}
-        </Box>
-      </Box>
-    );
-  }
+  const shouldShowCMSLayout =
+    isCMSPath && !isRootPath && isAuthenticated && !isLoginPage;
 
   return (
     <Box
@@ -97,7 +55,7 @@ function Layout({ children }: { children: React.ReactNode }) {
         h="100vh"
         position="relative"
       >
-        {isCMSPath && !isLoading && !isRootPath && isAuthenticated && (
+        {shouldShowCMSLayout && (
           <>
             <Topbar isSidebarOpen={isSidebarOpen} />
             <Sidebar
@@ -117,7 +75,7 @@ function Layout({ children }: { children: React.ReactNode }) {
           transition="all 0.2s ease-in-out"
           position="relative"
           ml={
-            !isRootPath && isAuthenticated && !isLoginPage
+            shouldShowCMSLayout
               ? { base: 0, md: isSidebarOpen ? "36" : "16" }
               : 0
           }
@@ -125,7 +83,7 @@ function Layout({ children }: { children: React.ReactNode }) {
           {children}
         </Box>
         {/* CMS 화면에서만 컬러 모드 토글 버튼 표시 */}
-        {isCMSPath && isAuthenticated && (
+        {shouldShowCMSLayout && (
           <Flex
             position="fixed"
             bottom="4"

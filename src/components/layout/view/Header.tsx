@@ -42,8 +42,6 @@ export const Header = memo(function Header({
   const isMobile = useBreakpointValue({ base: true, md: false });
   const [lastScrollY, setLastScrollY] = useState(0);
 
-  const { rootMenus } = useMemo(() => createMenuTree(menus), [menus]);
-
   // 스크롤 이벤트 핸들러
   useEffect(() => {
     const handleScroll = () => {
@@ -118,6 +116,7 @@ export const Header = memo(function Header({
                     src="/images/logo/logo.png"
                     alt="logo"
                     fill
+                    sizes="200px"
                     style={{ objectFit: "contain" }}
                     priority
                   />
@@ -136,7 +135,7 @@ export const Header = memo(function Header({
                 width="fit-content"
                 mx="auto"
               >
-                {rootMenus.map((menu) => (
+                {menus?.map((menu) => (
                   <MemoizedMenuItem
                     key={menu.id}
                     menu={menu}

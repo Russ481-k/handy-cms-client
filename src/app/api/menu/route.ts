@@ -35,7 +35,7 @@ export async function GET() {
         type: menu.type,
         url: menu.url || undefined,
         targetId: menu.target_id || undefined,
-        displayPosition: menu.display_position,
+        displayPosition: menu.display_position as "HEADER" | "FOOTER",
         visible: menu.visible === 1,
         sortOrder: menu.sort_order,
         parentId: menu.parent_id || undefined,

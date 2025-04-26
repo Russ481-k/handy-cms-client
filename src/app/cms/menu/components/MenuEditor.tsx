@@ -18,7 +18,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Menu } from "../page";
-import { getAuthHeader } from "@/lib/auth";
+import { getToken } from "@/lib/auth-utils";
 import { toaster } from "@/components/ui/toaster";
 import { CheckIcon, DeleteIcon, PlusIcon } from "lucide-react";
 import { SubmitHandler } from "react-hook-form";
@@ -118,7 +118,6 @@ export function MenuEditor({
   onAddMenu,
   existingMenus,
   isTempMenu,
-  tempMenu,
   isDeleting,
 }: MenuEditorProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -222,7 +221,9 @@ export function MenuEditor({
     queryKey: ["boards"],
     queryFn: async () => {
       const response = await fetch("/api/board", {
-        headers: getAuthHeader(),
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+        },
       });
       if (!response.ok) throw new Error("Failed to fetch boards");
       const data = await response.json();
@@ -239,7 +240,9 @@ export function MenuEditor({
     queryKey: ["contents"],
     queryFn: async () => {
       const response = await fetch("/api/content", {
-        headers: getAuthHeader(),
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+        },
       });
       if (!response.ok) throw new Error("Failed to fetch contents");
       const data = await response.json();

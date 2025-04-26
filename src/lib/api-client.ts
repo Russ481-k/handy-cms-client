@@ -1,4 +1,5 @@
-import axios from "axios";
+import axios, { AxiosInstance } from "axios";
+import { getToken, removeToken } from "./auth-utils";
 import {
   Menu,
   Content,
@@ -10,54 +11,87 @@ import {
   ContentData,
   BoardData,
   UserData,
+  MenuData,
+  VerifyTokenResponse,
 } from "@/types/api";
 
-// 현재 호스트를 기반으로 BASE_URL 설정
+// Java 백엔드 서버 주소 설정
 const BASE_URL =
-  typeof window !== "undefined"
-    ? `${window.location.protocol}//${window.location.host}/api`
-    : process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
 
-// 인증이 필요하지 않은 API 요청을 위한 클라이언트
-export const publicApi = axios.create({
-  baseURL: BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-  withCredentials: true,
-});
+// API 클라이언트 생성 함수
+const createApiClient = (isPrivate: boolean): AxiosInstance => {
+  const client = axios.create({
+    baseURL: BASE_URL,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    withCredentials: false, // Always set to false for both public and private APIs
+  });
 
-// 인증이 필요한 API 요청을 위한 클라이언트
-export const privateApi = axios.create({
-  baseURL: BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-  withCredentials: true,
-});
-
-// API 응답 에러 처리 인터셉터
-[publicApi, privateApi].forEach((api) => {
-  api.interceptors.response.use(
+  // 공통 에러 처리
+  client.interceptors.response.use(
     (response) => response,
     (error) => {
       if (error.response?.status === 401) {
-        localStorage.removeItem("token");
-        window.location.href = "/cms/login";
+        removeToken();
       }
       return Promise.reject(error);
     }
   );
-});
 
-// 인증 토큰 인터셉터
-privateApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  // private API에만 토큰 인터셉터 추가
+  if (isPrivate) {
+    client.interceptors.request.use(
+      (config) => {
+        const token = getToken();
+
+        if (token) {
+          const trimmedToken = token.trim();
+          config.headers.Authorization = `Bearer ${trimmedToken}`;
+        }
+        return config;
+      },
+      (error) => {
+        console.error("[Private API Request Error]:", error);
+        return Promise.reject(error);
+      }
+    );
+
+    client.interceptors.response.use(
+      (response) => {
+        return response;
+      },
+      (error) => {
+        console.error(
+          "[Private API Response Error] Status:",
+          error.response?.status
+        );
+        console.error(
+          "[Private API Response Error] Headers:",
+          error.response?.headers
+        );
+        console.error(
+          "[Private API Response Error] Data:",
+          error.response?.data
+        );
+
+        if (error.response?.status === 401) {
+          removeToken();
+          // 로그인 페이지로 리다이렉트하지 않고 에러만 반환
+          return Promise.reject(error);
+        }
+        return Promise.reject(error);
+      }
+    );
   }
-  return config;
-});
+
+  return client;
+};
+
+// API 클라이언트 인스턴스 생성
+export const publicApi = createApiClient(false);
+export const privateApi = createApiClient(true);
 
 // API 응답 타입 정의
 export interface ApiResponse<T> {
@@ -71,133 +105,146 @@ export type ApiRequestFunction<T> = () => Promise<ApiResponse<T>>;
 
 // API 요청 함수 생성 헬퍼
 export const createApiRequest = <T, D = unknown>(
-  api: typeof publicApi | typeof privateApi,
+  client: AxiosInstance,
   endpoint: string,
   method: "GET" | "POST" | "PUT" | "DELETE" = "GET",
   data?: D
 ): ApiRequestFunction<T> => {
   return async () => {
     try {
-      const response = await api.request({
+      const response = await client.request({
         url: endpoint,
         method,
         data,
       });
+
+      // Java API 서버의 응답 구조에 맞게 수정
+      if (response.data && typeof response.data === "object") {
+        const apiResponse = {
+          data: response.data,
+          message: response.data.message || "",
+          status: response.status,
+        };
+        return apiResponse;
+      }
+
+      console.warn("Unexpected response structure:", response.data);
       return {
         data: response.data as T,
-        message: response.data.message,
+        message: "",
         status: response.status,
       };
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        throw new Error(error.message);
+    } catch (error) {
+      console.error("API Error:", error);
+      if (axios.isAxiosError(error)) {
+        throw {
+          data: error.response?.data,
+          message: error.response?.data?.message || error.message,
+          status: error.response?.status || 500,
+        };
       }
-      throw new Error("An unexpected error occurred");
+      throw error;
     }
   };
 };
 
-// API 요청 함수 예시
+// API 메서드 생성 함수
+const createApiMethods = (client: AxiosInstance) => ({
+  get: <T>(endpoint: string) => createApiRequest<T>(client, endpoint, "GET")(),
+  post: <T, D = unknown>(endpoint: string, data?: D) =>
+    createApiRequest<T, D>(client, endpoint, "POST", data)(),
+  put: <T, D = unknown>(endpoint: string, data?: D) =>
+    createApiRequest<T, D>(client, endpoint, "PUT", data)(),
+  delete: <T>(endpoint: string) =>
+    createApiRequest<T>(client, endpoint, "DELETE")(),
+});
+
+// API 요청 함수 모음
 export const api = {
   // 인증이 필요하지 않은 API 요청 (메인 페이지용)
   public: {
-    // 메뉴 관련
-    getMenus: () => createApiRequest<Menu[]>(publicApi, "/menu")(),
-    getMenu: (id: string) => createApiRequest<Menu>(publicApi, `/menu/${id}`)(),
-
-    // 컨텐츠 관련
-    getContents: () => createApiRequest<Content[]>(publicApi, "/content")(),
-    getContent: (id: string) =>
-      createApiRequest<Content>(publicApi, `/content/${id}`)(),
-
-    // 게시판 관련
-    getBoards: () => createApiRequest<Board[]>(publicApi, "/board")(),
-    getBoard: (id: string) =>
-      createApiRequest<Board>(publicApi, `/board/${id}`)(),
-    getBoardPosts: (boardId: string) =>
-      createApiRequest<Post[]>(publicApi, `/board/${boardId}/posts`)(),
-    getPost: (boardId: string, postId: string) =>
-      createApiRequest<Post>(publicApi, `/board/${boardId}/posts/${postId}`)(),
-
-    get: async <T>(url: string) => {
-      const response = await publicApi.get<T>(url);
-      return response;
+    ...createApiMethods(publicApi),
+    menu: {
+      getMenus: () => createApiRequest<Menu[]>(publicApi, "/cms/menu/public")(),
     },
-
-    login: (credentials: LoginCredentials) =>
-      publicApi.post<AuthResponse>("/auth/login", credentials),
-    verifyToken: () => publicApi.get<User>("/auth/verify"),
-
-    post: async <T>(url: string, data?: any) => {
-      const response = await publicApi.post<T>(url, data);
-      return response;
+    // 인증 관련 API
+    auth: {
+      login: (credentials: LoginCredentials) =>
+        createApiRequest<AuthResponse, LoginCredentials>(
+          publicApi,
+          "/auth/login",
+          "POST",
+          credentials
+        )(),
+      logout: () => createApiRequest<void>(publicApi, "/auth/logout", "POST")(),
     },
   },
 
   // 인증이 필요한 API 요청 (CMS 관리용)
   private: {
-    // 인증 관련
-    login: (credentials: LoginCredentials) =>
-      createApiRequest<AuthResponse, LoginCredentials>(
-        privateApi,
-        "/auth/login",
-        "POST",
-        credentials
-      )(),
-    verifyToken: () =>
-      createApiRequest<User>(privateApi, "/auth/verify", "GET")(),
+    ...createApiMethods(privateApi),
+
+    // 인증 관련 API
+    auth: {
+      verifyToken: () =>
+        createApiRequest<VerifyTokenResponse>(
+          privateApi,
+          "/auth/verify",
+          "GET"
+        )(),
+      logout: () =>
+        createApiRequest<void>(privateApi, "/auth/logout", "POST")(),
+    },
+    // CMS 메뉴 관리
+    menu: {
+      getMenus: () => createApiRequest<Menu[]>(privateApi, "/cms/menu")(),
+      getMenu: (id: string) =>
+        createApiRequest<Menu>(privateApi, `/cms/menu/${id}`)(),
+      createMenu: (data: MenuData) =>
+        createApiRequest<Menu>(privateApi, "/cms/menu", "POST", data)(),
+      updateMenu: (id: string, data: MenuData) =>
+        createApiRequest<Menu>(privateApi, `/cms/menu/${id}`, "PUT", data)(),
+      deleteMenu: (id: string) =>
+        createApiRequest<void>(privateApi, `/cms/menu/${id}`, "DELETE")(),
+    },
 
     // CMS 컨텐츠 관리
-    getCmsContents: () =>
-      createApiRequest<Content[]>(privateApi, "/cms/content")(),
-    createCmsContent: (data: ContentData) =>
-      createApiRequest<Content>(privateApi, "/cms/content", "POST", data)(),
-    updateCmsContent: (id: string, data: ContentData) =>
-      createApiRequest<Content>(
-        privateApi,
-        `/cms/content/${id}`,
-        "PUT",
-        data
-      )(),
-    deleteCmsContent: (id: string) =>
-      createApiRequest<void>(privateApi, `/cms/content/${id}`, "DELETE")(),
+    content: {
+      getContents: () =>
+        createApiRequest<Content[]>(privateApi, "/cms/content")(),
+      createContent: (data: ContentData) =>
+        createApiRequest<Content>(privateApi, "/cms/content", "POST", data)(),
+      updateContent: (id: string, data: ContentData) =>
+        createApiRequest<Content>(
+          privateApi,
+          `/cms/content/${id}`,
+          "PUT",
+          data
+        )(),
+      deleteContent: (id: string) =>
+        createApiRequest<void>(privateApi, `/cms/content/${id}`, "DELETE")(),
+    },
 
     // CMS 게시판 관리
-    getCmsBoards: () => createApiRequest<Board[]>(privateApi, "/cms/board")(),
-    createCmsBoard: (data: BoardData) =>
-      createApiRequest<Board>(privateApi, "/cms/board", "POST", data)(),
-    updateCmsBoard: (id: string, data: BoardData) =>
-      createApiRequest<Board>(privateApi, `/cms/board/${id}`, "PUT", data)(),
-    deleteCmsBoard: (id: string) =>
-      createApiRequest<void>(privateApi, `/cms/board/${id}`, "DELETE")(),
+    board: {
+      getBoards: () => createApiRequest<Board[]>(privateApi, "/cms/board")(),
+      createBoard: (data: BoardData) =>
+        createApiRequest<Board>(privateApi, "/cms/board", "POST", data)(),
+      updateBoard: (id: string, data: BoardData) =>
+        createApiRequest<Board>(privateApi, `/cms/board/${id}`, "PUT", data)(),
+      deleteBoard: (id: string) =>
+        createApiRequest<void>(privateApi, `/cms/board/${id}`, "DELETE")(),
+    },
 
     // CMS 사용자 관리
-    getCmsUsers: () => createApiRequest<User[]>(privateApi, "/cms/users")(),
-    getCmsUser: (id: string) =>
-      createApiRequest<User>(privateApi, `/cms/users/${id}`)(),
-    updateCmsUser: (id: string, data: UserData) =>
-      createApiRequest<User>(privateApi, `/cms/users/${id}`, "PUT", data)(),
-    deleteCmsUser: (id: string) =>
-      createApiRequest<void>(privateApi, `/cms/users/${id}`, "DELETE")(),
-
-    get: async <T>(url: string) => {
-      const response = await privateApi.get<T>(url);
-      return response;
-    },
-
-    post: async <T>(url: string, data?: any) => {
-      const response = await privateApi.post<T>(url, data);
-      return response;
-    },
-
-    put: async <T>(url: string, data?: any) => {
-      const response = await privateApi.put<T>(url, data);
-      return response;
-    },
-
-    delete: async <T>(url: string) => {
-      const response = await privateApi.delete<T>(url);
-      return response;
+    user: {
+      getUsers: () => createApiRequest<User[]>(privateApi, "/cms/users")(),
+      getUser: (id: string) =>
+        createApiRequest<User>(privateApi, `/cms/users/${id}`)(),
+      updateUser: (id: string, data: UserData) =>
+        createApiRequest<User>(privateApi, `/cms/users/${id}`, "PUT", data)(),
+      deleteUser: (id: string) =>
+        createApiRequest<void>(privateApi, `/cms/users/${id}`, "DELETE")(),
     },
   },
 };

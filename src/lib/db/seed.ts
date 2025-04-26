@@ -1,4 +1,4 @@
-import bcrypt from "bcryptjs";
+import * as bcrypt from "bcryptjs";
 
 // 비밀번호 해시 함수
 function hashPassword(password: string): string {
@@ -8,8 +8,8 @@ function hashPassword(password: string): string {
 export const createInitialAdmin = async () => {
   const hashedPassword = hashPassword("0000");
   return `
-    INSERT INTO users (uuid, username, name, password, email, role) 
-    VALUES (UUID(), 'admin', 'Administrator', '${hashedPassword}', 'admin@example.com', 'admin')
+    INSERT INTO users (uuid, username, name, password, email, role, status) 
+    VALUES (UUID(), 'admin', 'Administrator', '${hashedPassword}', 'admin@example.com', 'admin', 'active')
   `;
 };
 
@@ -46,8 +46,8 @@ export function createInitialMenus() {
           display_position: "HEADER",
           is_visible: true,
           sort_order: 3,
-        }
-      ]
+        },
+      ],
     },
     {
       name: "창업기업 모집",
@@ -88,8 +88,8 @@ export function createInitialMenus() {
           display_position: "HEADER",
           is_visible: true,
           sort_order: 4,
-        }
-      ]
+        },
+      ],
     },
     {
       name: "창업기업 소개",
@@ -146,8 +146,8 @@ export function createInitialMenus() {
               display_position: "HEADER",
               is_visible: true,
               sort_order: 4,
-            }
-          ]
+            },
+          ],
         },
         {
           name: "참고자료실",
@@ -156,8 +156,8 @@ export function createInitialMenus() {
           display_position: "HEADER",
           is_visible: true,
           sort_order: 3,
-        }
-      ]
+        },
+      ],
     },
     {
       name: "커뮤니티",
@@ -174,9 +174,9 @@ export function createInitialMenus() {
           display_position: "HEADER",
           is_visible: true,
           sort_order: 1,
-        }
-      ]
-    }
+        },
+      ],
+    },
   ];
 
   return { menuStructure };

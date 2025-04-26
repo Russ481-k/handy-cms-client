@@ -57,7 +57,7 @@ export function ListItem({
     colors.primary.default
   );
 
-  const [{ isDragging: dragIsDragging }, drag] = useDrag({
+  const [{}, drag] = useDrag({
     type: "LIST_ITEM",
     item: { id, index, level },
     collect: (monitor) => ({

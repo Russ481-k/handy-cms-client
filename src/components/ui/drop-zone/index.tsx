@@ -1,6 +1,6 @@
 import { useRef, useCallback, useEffect } from "react";
-import { Box, Flex } from "@chakra-ui/react";
-import { useDrop } from "react-dnd";
+import { Box } from "@chakra-ui/react";
+import { useDrop, DropTargetMonitor } from "react-dnd";
 import { useColors } from "@/styles/theme";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { DragItem } from "@/app/cms/menu/types";
@@ -16,12 +16,7 @@ interface DropZoneProps {
   isFolder?: boolean;
 }
 
-export function DropZone({
-  onDrop,
-  targetId,
-  level,
-  isFolder = false,
-}: DropZoneProps) {
+export function DropZone({ onDrop, targetId }: DropZoneProps) {
   const ref = useRef<HTMLDivElement>(null);
   const dropTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const colors = useColors();
@@ -35,7 +30,7 @@ export function DropZone({
   );
 
   const handleDrop = useCallback(
-    (item: DragItem, monitor: any) => {
+    (item: DragItem, monitor: DropTargetMonitor) => {
       if (item.id === targetId) return;
 
       const dragOffset = monitor.getClientOffset();
@@ -71,7 +66,7 @@ export function DropZone({
     [onDrop, targetId]
   );
 
-  const [{ isOver, canDrop }, drop] = useDrop<
+  const [{ isOver }, drop] = useDrop<
     DragItem,
     void,
     { isOver: boolean; canDrop: boolean }

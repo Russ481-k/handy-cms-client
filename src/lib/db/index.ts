@@ -1,12 +1,11 @@
-import mysql from "mysql2/promise";
-import bcrypt from "bcryptjs";
+import * as mysql from "mysql2/promise";
 import {
   createUsersTable,
   createMenusTable,
   createEquipmentTable,
   createMonitoringTable,
 } from "./schema";
-import { createInitialMenus } from "./seed";
+import { createInitialMenus, createInitialAdmin } from "./seed";
 
 interface MySQLResult {
   insertId: number;
@@ -14,13 +13,16 @@ interface MySQLResult {
 
 // MySQL 연결 설정
 const dbPool = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
+  host: process.env.DB_HOST || "172.30.1.11",
+  user: process.env.DB_USER || "handy",
+  password: process.env.DB_PASSWORD || "gosel@1224",
   database: process.env.DB_NAME || "cms_new",
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
+  port: 3306,
+  timezone: "+09:00",
+  charset: "utf8mb4",
 });
 
 // 에러 핸들링 함수
@@ -57,13 +59,9 @@ export async function initializeDatabase() {
       console.log("[DB] Monitoring table created");
 
       // 초기 관리자 계정 생성
-      const hashedPassword = await bcrypt.hash("0000", 10);
-      await connection.query(
-        `INSERT INTO users (uuid, username, name, password, email, role) 
-         VALUES (UUID(), 'admin', 'Administrator', ?, 'admin@example.com', 'admin')`,
-        [hashedPassword]
-      );
-      console.log("[DB] Initial admin account created");
+      const adminQuery = await createInitialAdmin();
+      await connection.query(adminQuery);
+      console.log("Initial admin account created with credentials:");
 
       // 초기 메뉴 생성
       const { menuStructure } = createInitialMenus();
@@ -129,13 +127,9 @@ export async function initializeDatabase() {
 
       if ((adminUsers as unknown[]).length === 0) {
         console.log("[DB] Admin account not found. Creating admin account...");
-        const hashedPassword = await bcrypt.hash("0000", 10);
-        await connection.query(
-          `INSERT INTO users (uuid, username, name, password, email, role) 
-           VALUES (UUID(), 'admin', 'Administrator', ?, 'admin@example.com', 'admin')`,
-          [hashedPassword]
-        );
-        console.log("[DB] Admin account created");
+        const adminQuery = await createInitialAdmin();
+        await connection.query(adminQuery);
+        console.log("Initial admin account created with credentials:");
       } else {
         console.log("[DB] Admin account already exists");
       }
@@ -153,9 +147,14 @@ export async function initializeDatabase() {
 }
 
 // 데이터베이스 초기화 실행
-initializeDatabase().catch((error) => {
-  console.error("[DB] Database initialization failed:", error);
-});
+initializeDatabase()
+  .catch((error) => {
+    console.error("[DB] Database initialization failed:", error);
+  })
+  .finally(async () => {
+    await dbPool.end();
+    process.exit(0);
+  });
 
 // 메인 풀에도 에러 핸들러 추가
 dbPool

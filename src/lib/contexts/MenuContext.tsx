@@ -2,6 +2,8 @@ import React, { createContext, useContext } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Menu } from "@/app/cms/menu/page";
 import { menuApi, menuKeys } from "@/lib/api/menu";
+import { api } from "@/lib/api-client";
+import { useAuth } from "@/lib/AuthContext";
 
 interface MenuContextType {
   menus: Menu[];
@@ -12,13 +14,18 @@ interface MenuContextType {
 const MenuContext = createContext<MenuContextType | undefined>(undefined);
 
 export function MenuProvider({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAuth();
+
   const {
     data: menus = [],
     isLoading,
     error,
   } = useQuery({
     queryKey: menuKeys.all,
-    queryFn: menuApi.getMenus,
+    queryFn: () =>
+      isAuthenticated
+        ? menuApi.getMenus()
+        : api.public.menu.getMenus().then((response) => response.data),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });

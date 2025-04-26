@@ -53,3 +53,7 @@ export const Main = memo(({ menus, isPreview = false }: MainProps) => {
     </Layout>
   );
 });
+
+Main.displayName = "Main";
+
+export default Main;

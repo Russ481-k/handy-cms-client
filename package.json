@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "NODE_ENV=production node server.js",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:init": "tsc src/lib/db/index.ts && node src/lib/db/index.js",
+    "db:reset": "tsc src/lib/db/index.ts && node src/lib/db/index.js --reset"
   },
   "dependencies": {
     "@ag-grid-community/client-side-row-model": "^32.3.3",
@@ -58,6 +60,7 @@
     "@types/react-dom": "^19.0.2",
     "eslint": "^9",
     "eslint-config-next": "15.2.4",
+    "ts-node": "^10.9.2",
     "typescript": "^5.7.2"
   }
 }

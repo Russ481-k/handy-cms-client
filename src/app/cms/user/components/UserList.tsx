@@ -60,10 +60,10 @@ export function UserList({
       {users.map((user) => (
         <ListItem
           key={user.id}
+          id={parseInt(user.id)}
           name={user.username}
           icon={getUserIcon(user.role)}
           isSelected={user.id === selectedUserId}
-          onEdit={() => onEditUser(user)}
           onDelete={() => onDeleteUser(user.id)}
           renderBadges={() => user.status === "INACTIVE" && "비활성"}
           renderDetails={() => (

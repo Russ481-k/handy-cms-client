@@ -8,7 +8,7 @@ import { BoardEditor } from "./components/BoardEditor";
 import { GridSection } from "@/components/ui/grid-section";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
-import { getAuthHeader } from "@/lib/auth";
+import { getAuthHeader } from "@/lib/auth-utils";
 import { toaster } from "@/components/ui/toaster";
 import { TreeItem } from "@/components/ui/tree-list";
 import { BoardPreview } from "./components/BoardPreview";
@@ -48,7 +48,7 @@ export default function BoardManagementPage() {
     try {
       setIsLoading(true);
       const response = await fetch("/api/cms/menu?type=BOARD", {
-        headers: getAuthHeader(),
+        headers: getAuthHeader() || {},
       });
       if (!response.ok) {
         throw new Error("Failed to fetch boards");
@@ -122,7 +122,7 @@ export default function BoardManagementPage() {
     try {
       const response = await fetch(`/api/cms/menu/${boardId}`, {
         method: "DELETE",
-        headers: getAuthHeader(),
+        headers: getAuthHeader() || {},
       });
 
       if (!response.ok) {
@@ -148,7 +148,7 @@ export default function BoardManagementPage() {
   const fetchMenus = async () => {
     try {
       const response = await fetch("/api/cms/menu", {
-        headers: getAuthHeader(),
+        headers: getAuthHeader() || {},
       });
       if (!response.ok) {
         throw new Error("Failed to fetch menus");

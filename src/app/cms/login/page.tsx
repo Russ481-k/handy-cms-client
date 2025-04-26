@@ -20,10 +20,10 @@ import { InputGroup } from "@/components/ui/input-group";
 import { useColors } from "@/styles/theme";
 import { Button } from "@/components/ui/button";
 import { useColorModeValue } from "@/components/ui/color-mode";
-import { useSetRecoilState } from "recoil";
-import { userState } from "@/lib/recoil/atoms/user";
 import { toaster } from "@/components/ui/toaster";
 import { Logo } from "@/components/ui/logo";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api-client";
 
 function LoginForm() {
   const { isAuthenticated, isLoading, login } = useAuth();
@@ -38,8 +38,6 @@ function LoginForm() {
   }>({});
 
   const colors = useColors();
-  const setUser = useSetRecoilState(userState);
-
   const inputBg = useColorModeValue("white", "whiteAlpha.50");
   const inputBorder = useColorModeValue("gray.200", "whiteAlpha.200");
   const inputText = useColorModeValue("gray.800", "whiteAlpha.900");
@@ -49,8 +47,8 @@ function LoginForm() {
   const headingColor = useColorModeValue("gray.900", "white");
 
   useEffect(() => {
-    if (isAuthenticated) {
-      router.push("/cms");
+    if (isAuthenticated === true) {
+      router.push("/cms/menu");
     }
   }, [isAuthenticated, router]);
 
@@ -84,22 +82,22 @@ function LoginForm() {
       return;
     }
 
-    const result = await login(username, password);
+    try {
+      await login({ username, password });
 
-    if (result.success && result.user) {
-      setUser(result.user);
-      toaster.create({
-        title: "로그인 성공",
-        type: "success",
-      });
       if (rememberMe) {
         localStorage.setItem("rememberedId", username);
       } else {
         localStorage.removeItem("rememberedId");
       }
-    } else {
+
       toaster.create({
-        title: result.message || "로그인에 실패했습니다.",
+        title: "로그인 성공",
+        type: "success",
+      });
+    } catch (error) {
+      toaster.create({
+        title: "로그인에 실패했습니다.",
         type: "error",
       });
     }

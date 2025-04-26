@@ -1,5 +1,8 @@
 DROP DATABASE IF EXISTS cms_new;
-CREATE DATABASE cms_new CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE cms_new
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci
+    DEFAULT ENCRYPTION='N';
 USE cms_new;
 -- Users 테이블
 CREATE TABLE IF NOT EXISTS users (
@@ -18,15 +21,18 @@ CREATE TABLE IF NOT EXISTS users (
     updated_ip VARCHAR(45),
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (created_by) REFERENCES users(uuid),
-    FOREIGN KEY (updated_by) REFERENCES users(uuid)
-);
+    FOREIGN KEY (updated_by) REFERENCES users(uuid),
+    INDEX idx_username (username),
+    INDEX idx_email (email),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Menus 테이블
 CREATE TABLE IF NOT EXISTS menus (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) UNIQUE NOT NULL,
+    name VARCHAR(100) NOT NULL,
     type ENUM('LINK', 'FOLDER', 'BOARD', 'CONTENT') NOT NULL,
-    url VARCHAR(255) UNIQUE,
+    url VARCHAR(255),
     target_id INT,
     display_position VARCHAR(50) NOT NULL,
     visible BOOLEAN DEFAULT true,
@@ -40,8 +46,13 @@ CREATE TABLE IF NOT EXISTS menus (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (parent_id) REFERENCES menus(id) ON DELETE SET NULL,
     FOREIGN KEY (created_by) REFERENCES users(uuid),
-    FOREIGN KEY (updated_by) REFERENCES users(uuid)
-);
+    FOREIGN KEY (updated_by) REFERENCES users(uuid),
+    UNIQUE KEY uk_menu_name (name),
+    UNIQUE KEY uk_menu_url (url),
+    INDEX idx_parent_id (parent_id),
+    INDEX idx_display_position (display_position),
+    INDEX idx_sort_order (sort_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 초기 메뉴 데이터 (대메뉴)
 INSERT INTO menus (id, name, type, url, display_position, visible, sort_order) VALUES
@@ -102,8 +113,10 @@ CREATE TABLE IF NOT EXISTS equipment (
     updated_ip VARCHAR(45),
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (created_by) REFERENCES users(uuid),
-    FOREIGN KEY (updated_by) REFERENCES users(uuid)
-);
+    FOREIGN KEY (updated_by) REFERENCES users(uuid),
+    INDEX idx_status (status),
+    INDEX idx_last_check (last_check)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Monitoring 테이블
 CREATE TABLE IF NOT EXISTS monitoring (
@@ -119,6 +132,9 @@ CREATE TABLE IF NOT EXISTS monitoring (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (equipment_id) REFERENCES equipment(id) ON DELETE CASCADE,
     FOREIGN KEY (created_by) REFERENCES users(uuid),
-    FOREIGN KEY (updated_by) REFERENCES users(uuid)
-);
+    FOREIGN KEY (updated_by) REFERENCES users(uuid),
+    INDEX idx_equipment_id (equipment_id),
+    INDEX idx_status (status),
+    INDEX idx_last_update (last_update)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

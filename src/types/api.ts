@@ -71,8 +71,16 @@ export interface LoginCredentials {
 }
 
 export interface AuthResponse {
-  token: string;
-  user: User;
+  success: boolean;
+  message: string;
+  data: {
+    accessToken: string;
+    tokenType: string;
+    user: User;
+    refreshToken: string;
+  };
+  errorCode: string | null;
+  stackTrace: string | null;
 }
 
 export interface MenuData {
@@ -107,7 +115,23 @@ export interface BoardData {
 
 export interface UserData {
   username: string;
+  password: string;
+  name: string;
   email: string;
   role: string;
-  status: string;
+  organizationId: string;
+  groupId: string;
+}
+
+export interface VerifyTokenResponse {
+  success: boolean;
+  message: string | null;
+  data: {
+    valid: boolean;
+    userId: string;
+    username: string;
+    role: string;
+  };
+  errorCode: string | null;
+  stackTrace: string | null;
 }

@@ -25,9 +25,7 @@ import {
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
 import { MenuItemProps, DragItem } from "../types";
-import { getAuthHeader } from "@/lib/auth";
 import { toaster } from "@/components/ui/toaster";
-import { Menu } from "../page";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { menuApi, menuKeys } from "@/lib/api/menu";
 
@@ -43,7 +41,6 @@ export const MenuItem = ({
   selectedMenuId,
   refreshMenus,
 }: MenuItemProps) => {
-  const ref = useRef<HTMLDivElement>(null);
   const colors = useColors();
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(menu.name);
@@ -89,7 +86,7 @@ export const MenuItem = ({
     canDrag: () => menu.id !== -1,
   });
 
-  const [{ isOver, dropPosition }, drop] = useDrop<
+  const [{ isOver }, drop] = useDrop<
     DragItem,
     void,
     { isOver: boolean; dropPosition: DragItem | null }
@@ -103,19 +100,6 @@ export const MenuItem = ({
       // 전체 메뉴(id: -1)에 대한 드래그앤드롭 방지
       if (item.id === -1 || menu.id === -1) return;
       if (item.id === menu.id) return;
-
-      const draggedLevel = item.level;
-      const targetLevel = level;
-
-      // Calculate the new level based on drag position
-      let newLevel = targetLevel;
-      if (draggedLevel < targetLevel) {
-        // Moving deeper into the tree
-        newLevel = targetLevel + 1;
-      } else if (draggedLevel > targetLevel) {
-        // Moving up in the tree
-        newLevel = targetLevel;
-      }
 
       // Determine the position based on the drag position
       let position: "before" | "after" | "inside" = "after";
@@ -133,18 +117,6 @@ export const MenuItem = ({
       onMoveMenu(item.id, menu.id, position);
     },
   });
-
-  const isChildOf = (
-    parentId: number,
-    childId: number,
-    menuItem: Menu
-  ): boolean => {
-    if (!menuItem.children || menuItem.children.length === 0) return false;
-    return menuItem.children.some(
-      (child: Menu) =>
-        child.id === childId || isChildOf(parentId, childId, child)
-    );
-  };
 
   const dragDropRef = useRef<HTMLDivElement>(null);
   if (menu.id !== -1) {

@@ -17,8 +17,6 @@ import { DndProvider, useDrag } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { DropZone } from "@/components/ui/drop-zone";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { menuApi, menuKeys } from "@/lib/api/menu";
 import { MenuSkeleton } from "./MenuSkeleton";
 
 interface MenuListProps {
@@ -70,21 +68,6 @@ export function MenuList({
     }),
   });
 
-  const queryClient = useQueryClient();
-
-  const updateOrderMutation = useMutation({
-    mutationFn: menuApi.updateMenuOrder,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: menuKeys.lists() });
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: menuApi.deleteMenu,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: menuKeys.lists() });
-    },
-  });
   const toggleMenu = (menuId: number) => {
     if (menuId === -1) return;
 
@@ -140,36 +123,6 @@ export function MenuList({
           </Box>
         );
     }
-  };
-
-  const findParentMenu = (menus: Menu[], targetId: number): Menu | null => {
-    // 전체 메뉴인 경우
-    if (targetId === -1) {
-      return {
-        id: -1,
-        name: "전체",
-        type: "FOLDER",
-        visible: true,
-        sortOrder: 0,
-        children: menus,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        displayPosition: "HEADER",
-      };
-    }
-
-    for (const menu of menus) {
-      if (menu.id === targetId) {
-        return menu;
-      }
-      if (menu.children && menu.children.length > 0) {
-        const found = findParentMenu(menu.children, targetId);
-        if (found) {
-          return found;
-        }
-      }
-    }
-    return null;
   };
 
   const handleAddMenu = (parentMenu: Menu) => {
@@ -351,7 +304,7 @@ export function MenuList({
           <DropZone
             targetId={rootMenu.id}
             level={0}
-            onDrop={(draggedId, targetId, position) => {
+            onDrop={(draggedId, targetId) => {
               onMoveMenu(draggedId, targetId, "before");
             }}
           />
@@ -359,7 +312,7 @@ export function MenuList({
           <DropZone
             targetId={rootMenu.id}
             level={0}
-            onDrop={(draggedId, targetId, position) => {
+            onDrop={(draggedId, targetId) => {
               onMoveMenu(draggedId, targetId, "after");
             }}
           />
