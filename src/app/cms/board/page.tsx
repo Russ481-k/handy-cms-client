@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Box, Flex, Heading, Badge } from "@chakra-ui/react";
 import { Button } from "@/components/ui/button";
 import { BoardList } from "./components/BoardList";
@@ -8,22 +8,19 @@ import { BoardEditor } from "./components/BoardEditor";
 import { GridSection } from "@/components/ui/grid-section";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
-import { getAuthHeader } from "@/lib/auth-utils";
 import { toaster } from "@/components/ui/toaster";
-import { TreeItem } from "@/components/ui/tree-list";
 import { BoardPreview } from "./components/BoardPreview";
-import { convertTreeItemToBoard } from "./types";
-import { Menu } from "../menu/page";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { boardApi, boardKeys } from "@/lib/api/board";
+import { Board } from "./types";
 
 export default function BoardManagementPage() {
-  const [selectedBoard, setSelectedBoard] = useState<TreeItem | null>(null);
-  const [boards, setBoards] = useState<TreeItem[]>([]);
-  const [menus, setMenus] = useState<Menu[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const colors = useColors();
-  const bg = useColorModeValue(colors.bg, colors.darkBg);
+  const [selectedBoard, setSelectedBoard] = useState<Board | null>(null);
+  const [tempBoard, setTempBoard] = useState<Board | null>(null);
+  const [loadingBoardId, setLoadingBoardId] = useState<number | null>(null);
 
-  // 테마 색상 적용
+  const bg = useColorModeValue(colors.bg, colors.darkBg);
   const headingColor = useColorModeValue(
     colors.text.primary,
     colors.text.primary
@@ -36,135 +33,128 @@ export default function BoardManagementPage() {
     colors.primary.hover,
     colors.primary.hover
   );
-
   const badgeBg = useColorModeValue(colors.primary.light, colors.primary.light);
   const badgeColor = useColorModeValue(
     colors.primary.default,
     colors.primary.default
   );
 
-  // 게시판 목록 새로고침 함수
-  const refreshBoards = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch("/api/cms/menu?type=BOARD", {
-        headers: getAuthHeader() || {},
-      });
-      if (!response.ok) {
-        throw new Error("Failed to fetch boards");
-      }
-      const data = await response.json();
-      console.log("API Response:", data);
-      setBoards(data);
-    } catch (error) {
-      console.error("Error fetching boards:", error);
-      toaster.error({
-        title: "게시판 목록을 불러오는데 실패했습니다.",
-        duration: 3000,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const queryClient = useQueryClient();
 
-  const handleAddBoard = () => {
-    setSelectedBoard(null);
-  };
+  const { data: apiResponse, isLoading: isBoardsLoading } = useQuery({
+    queryKey: boardKeys.all,
+    queryFn: boardApi.getBoards,
+  });
 
-  const handleEditBoard = (board: TreeItem) => {
-    setSelectedBoard(board);
-  };
+  const boards = Array.isArray(apiResponse)
+    ? apiResponse
+    : apiResponse?.data || [];
 
-  const handleCloseEditor = () => {
-    setSelectedBoard(null);
-  };
-
-  const handleSubmit = async (
-    boardData: Omit<TreeItem, "id" | "createdAt" | "updatedAt">
-  ) => {
-    try {
-      const url = selectedBoard
-        ? `/api/cms/menu/${selectedBoard.id}`
-        : "/api/cms/menu";
-      const method = selectedBoard ? "PUT" : "POST";
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          ...getAuthHeader(),
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(boardData),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save board");
-      }
-
-      await refreshBoards();
-      setSelectedBoard(null);
+  const saveBoardMutation = useMutation({
+    mutationFn: boardApi.saveBoard,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: boardKeys.all });
       toaster.create({
-        title: selectedBoard
-          ? "게시판이 수정되었습니다."
-          : "게시판이 생성되었습니다.",
+        title: tempBoard
+          ? "게시판이 생성되었습니다."
+          : "게시판이 수정되었습니다.",
         type: "success",
       });
-    } catch (error) {
-      console.error("Error saving board:", error);
+      setTempBoard(null);
+      setSelectedBoard(null);
+    },
+    onError: () => {
       toaster.create({
         title: "게시판 저장에 실패했습니다.",
         type: "error",
       });
-    }
-  };
+    },
+  });
 
-  const handleDeleteBoard = async (boardId: number) => {
-    try {
-      const response = await fetch(`/api/cms/menu/${boardId}`, {
-        method: "DELETE",
-        headers: getAuthHeader() || {},
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete board");
-      }
-
-      await refreshBoards();
-      setSelectedBoard(null);
+  const deleteBoardMutation = useMutation({
+    mutationFn: boardApi.deleteBoard,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: boardKeys.all });
       toaster.create({
         title: "게시판이 삭제되었습니다.",
         type: "success",
       });
-    } catch (error) {
-      console.error("Error deleting board:", error);
+      setSelectedBoard(null);
+    },
+    onError: () => {
       toaster.create({
         title: "게시판 삭제에 실패했습니다.",
         type: "error",
       });
-    }
+    },
+  });
+
+  const handleAddBoard = () => {
+    const newBoard: Board = {
+      id: Date.now(),
+      name: "새 게시판",
+      type: "FREE",
+      title: "새 게시판",
+      status: "ACTIVE",
+      visible: true,
+      sortOrder: 0,
+      displayPosition: "MAIN",
+      settings: {
+        allowComments: true,
+        allowFiles: true,
+        useCategory: false,
+        useTags: false,
+        listType: "list",
+        postsPerPage: 10,
+        showTitle: true,
+        showSearch: true,
+        showPagination: true,
+        showWriteButton: true,
+        layout: "list",
+      },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setTempBoard(newBoard);
+    setSelectedBoard(newBoard);
   };
 
-  // 메뉴 목록 불러오기
-  const fetchMenus = async () => {
+  const handleEditBoard = (board: Board) => {
+    setSelectedBoard(board);
+    setTempBoard(null);
+  };
+
+  const handleDeleteBoard = async (boardId: number) => {
     try {
-      const response = await fetch("/api/cms/menu", {
-        headers: getAuthHeader() || {},
-      });
-      if (!response.ok) {
-        throw new Error("Failed to fetch menus");
+      setLoadingBoardId(boardId);
+      if (tempBoard && tempBoard.id === boardId) {
+        setTempBoard(null);
+        setSelectedBoard(null);
+      } else {
+        await deleteBoardMutation.mutateAsync(boardId);
       }
-      const data = await response.json();
-      setMenus(data);
-    } catch (error) {
-      console.error("Error fetching menus:", error);
-      toaster.create({
-        title: "메뉴 목록을 불러오는데 실패했습니다.",
-        type: "error",
-      });
+    } finally {
+      setLoadingBoardId(null);
     }
   };
 
-  // 게시판 관리 페이지 레이아웃 정의
+  const handleSubmit = async (
+    boardData: Omit<Board, "id" | "createdAt" | "updatedAt">
+  ) => {
+    try {
+      const boardId = tempBoard ? undefined : selectedBoard?.id;
+      if (boardId !== undefined) {
+        setLoadingBoardId(boardId);
+      }
+      await saveBoardMutation.mutateAsync({
+        id: boardId,
+        boardData,
+      });
+    } finally {
+      setLoadingBoardId(null);
+    }
+  };
+
   const boardLayout = [
     {
       id: "header",
@@ -204,12 +194,6 @@ export default function BoardManagementPage() {
     },
   ];
 
-  // 초기 데이터 로딩
-  useEffect(() => {
-    refreshBoards();
-    fetchMenus();
-  }, []);
-
   return (
     <Box bg={bg} minH="100vh" w="full" position="relative">
       <Box w="full">
@@ -235,7 +219,10 @@ export default function BoardManagementPage() {
               onClick={handleAddBoard}
               bg={buttonBg}
               color="white"
-              _hover={{ bg: buttonHoverBg, transform: "translateY(-2px)" }}
+              _hover={{
+                bg: buttonHoverBg,
+                transform: "translateY(-2px)",
+              }}
               _active={{ transform: "translateY(0)" }}
               shadow={colors.shadow.sm}
               transition="all 0.3s ease"
@@ -247,29 +234,26 @@ export default function BoardManagementPage() {
 
           <Box>
             <BoardList
-              menus={boards}
+              boards={boards}
+              onAddBoard={handleAddBoard}
               onEditBoard={handleEditBoard}
               onDeleteBoard={handleDeleteBoard}
-              isLoading={isLoading}
+              isLoading={isBoardsLoading}
               selectedBoardId={selectedBoard?.id}
+              loadingBoardId={loadingBoardId}
             />
           </Box>
 
           <Box>
             <BoardEditor
               board={selectedBoard}
-              onClose={handleCloseEditor}
-              onDelete={handleDeleteBoard}
               onSubmit={handleSubmit}
+              isLoading={loadingBoardId !== null}
             />
           </Box>
+
           <Box>
-            <BoardPreview
-              board={
-                selectedBoard ? convertTreeItemToBoard(selectedBoard) : null
-              }
-              menus={menus}
-            />
+            <BoardPreview board={selectedBoard} />
           </Box>
         </GridSection>
       </Box>

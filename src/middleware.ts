@@ -52,13 +52,8 @@ export async function middleware(request: NextRequest) {
       });
       console.log("Middleware - Token verification response:", response.data);
 
-      // 토큰 인증 성공 시 메뉴 관리 페이지로 리다이렉트
-      if (pathname !== "/cms/menu") {
-        console.log("Middleware - Token verified, redirecting to menu page");
-        return NextResponse.redirect(new URL("/cms/menu", request.url));
-      }
-
-      console.log("Middleware - Token verified, already on menu page");
+      // 토큰 인증 성공 시 리다이렉트 없이 진행
+      console.log("Middleware - Token verified, proceeding to requested page");
       return NextResponse.next();
     } catch (error) {
       console.error("Middleware - Token verification failed:", error);

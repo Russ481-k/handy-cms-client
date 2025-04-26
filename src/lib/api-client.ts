@@ -45,7 +45,6 @@ const createApiClient = (isPrivate: boolean): AxiosInstance => {
     client.interceptors.request.use(
       (config) => {
         const token = getToken();
-
         if (token) {
           const trimmedToken = token.trim();
           config.headers.Authorization = `Bearer ${trimmedToken}`;
@@ -63,23 +62,10 @@ const createApiClient = (isPrivate: boolean): AxiosInstance => {
         return response;
       },
       (error) => {
-        console.error(
-          "[Private API Response Error] Status:",
-          error.response?.status
-        );
-        console.error(
-          "[Private API Response Error] Headers:",
-          error.response?.headers
-        );
-        console.error(
-          "[Private API Response Error] Data:",
-          error.response?.data
-        );
-
         if (error.response?.status === 401) {
           removeToken();
-          // 로그인 페이지로 리다이렉트하지 않고 에러만 반환
-          return Promise.reject(error);
+          // 로그인 페이지로 리다이렉트
+          window.location.href = "/cms/login";
         }
         return Promise.reject(error);
       }
