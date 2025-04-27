@@ -1,49 +1,68 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Box, Flex, Heading, Badge } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Heading,
+  Badge,
+  Input,
+  VStack,
+  HStack,
+} from "@chakra-ui/react";
 import { TemplateList } from "./components/TemplateList";
 import { TemplateEditor } from "./components/TemplateEditor";
 import { GridSection } from "@/components/ui/grid-section";
-import { useColors } from "@/styles/theme";
 import { toaster, Toaster } from "@/components/ui/toaster";
 import { Main } from "@/components/layout/view/Main";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import { templateApi, templateKeys } from "@/lib/api/template";
+import { templateApi } from "@/lib/api/template";
 import { api } from "@/lib/api-client";
+import { Template, TemplateListResponse } from "@/types/template";
+import { CustomSelect } from "@/components/CustomSelect";
+import { useForm, Controller } from "react-hook-form";
+import { useColorModeValue } from "@/components/ui/color-mode";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 
-export interface Template {
-  id: number;
-  name: string;
-  type: "PAGE" | "COMPONENT";
-  content: string;
-  description?: string;
-  createdAt: string;
-  updatedAt: string;
+interface SearchForm {
+  type: string;
+  status: string;
 }
 
 export default function TemplateManagementPage() {
-  const colors = useColors();
+  const bgColor = useColorModeValue("white", "gray.800");
+  const borderColor = useColorModeValue("gray.200", "gray.700");
+  const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(
     null
   );
-  const [tempTemplate, setTempTemplate] = useState<Template | null>(null);
-  const [loadingTemplateId, setLoadingTemplateId] = useState<number | null>(
-    null
-  );
+  const [loading, setLoading] = useState(false);
+  const [searchParams, setSearchParams] = useState({
+    page: 0,
+    size: 10,
+    keyword: "",
+    type: "",
+    status: "",
+  });
+
+  const {
+    control,
+    formState: { errors },
+  } = useForm<SearchForm>();
 
   const queryClient = useQueryClient();
 
-  const { data: templates, isLoading: isTemplatesLoading } = useQuery({
-    queryKey: templateKeys.all,
-    queryFn: templateApi.getTemplates,
+  const { data: templatesData, isLoading: isTemplatesLoading } = useQuery({
+    queryKey: ["templates"],
+    queryFn: () => templateApi.getTemplates(searchParams),
   });
 
   const saveTemplateMutation = useMutation({
-    mutationFn: templateApi.saveTemplate,
+    mutationFn: templateApi.createTemplate,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: templateKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["templates"] });
       toaster.create({
         title: "템플릿 저장 성공",
         type: "success",
@@ -54,7 +73,7 @@ export default function TemplateManagementPage() {
   const deleteTemplateMutation = useMutation({
     mutationFn: templateApi.deleteTemplate,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: templateKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["templates"] });
       toaster.create({
         title: "템플릿 삭제 성공",
         type: "success",
@@ -62,151 +81,227 @@ export default function TemplateManagementPage() {
     },
   });
 
-  const handleAddTemplate = useCallback(() => {
-    const newTemplate: Template = {
-      id: Date.now(),
-      name: "새 템플릿",
-      type: "PAGE",
-      content: "",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    setTempTemplate(newTemplate);
-    setSelectedTemplate(newTemplate);
-  }, []);
+  const handleCreateTemplate = async (
+    templateData: Omit<Template, "templateId" | "createdAt" | "updatedAt">
+  ) => {
+    try {
+      setLoading(true);
+      await templateApi.createTemplate(templateData);
+      toaster.create({
+        title: "템플릿 생성 성공",
+        type: "success",
+      });
+      fetchTemplates();
+    } catch (error) {
+      toaster.create({
+        title: "템플릿 생성 실패",
+        description: "템플릿 생성에 실패했습니다.",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const handleEditTemplate = useCallback((template: Template) => {
-    setSelectedTemplate(template);
-    setTempTemplate(null);
-  }, []);
+  const handleUpdateTemplate = async (
+    id: number,
+    templateData: Omit<Template, "templateId" | "createdAt" | "updatedAt">
+  ) => {
+    try {
+      setLoading(true);
+      await templateApi.updateTemplate(id, templateData);
+      toaster.create({
+        title: "템플릿 수정 성공",
+        type: "success",
+      });
+      fetchTemplates();
+    } catch (error) {
+      toaster.create({
+        title: "템플릿 수정 실패",
+        description: "템플릿 수정에 실패했습니다.",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const handleDeleteTemplate = useCallback(
-    async (templateId: number) => {
-      try {
-        setLoadingTemplateId(templateId);
-        if (tempTemplate && tempTemplate.id === templateId) {
-          setTempTemplate(null);
-        } else {
-          await deleteTemplateMutation.mutateAsync(templateId);
-        }
-      } finally {
-        setLoadingTemplateId(null);
-      }
-    },
-    [deleteTemplateMutation, tempTemplate]
-  );
+  const handleDeleteTemplate = async (id: number) => {
+    try {
+      setLoading(true);
+      await templateApi.deleteTemplate(id);
+      toaster.create({
+        title: "템플릿 삭제 성공",
+        type: "success",
+      });
+      fetchTemplates();
+    } catch (error) {
+      toaster.create({
+        title: "템플릿 삭제 실패",
+        description: "템플릿 삭제에 실패했습니다.",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const handleSubmit = useCallback(
-    async (templateData: Omit<Template, "id" | "createdAt" | "updatedAt">) => {
-      try {
-        const templateId = tempTemplate ? undefined : selectedTemplate?.id;
-        if (templateId !== undefined) {
-          setLoadingTemplateId(templateId);
-        }
-        await saveTemplateMutation.mutateAsync({
-          id: templateId,
-          templateData,
-        });
-      } catch (error) {
-        console.error("Error saving template:", error);
-      } finally {
-        setLoadingTemplateId(null);
-      }
-    },
-    [saveTemplateMutation, selectedTemplate, tempTemplate]
-  );
+  const handleTogglePublish = async (id: number, published: boolean) => {
+    try {
+      setLoading(true);
+      await templateApi.togglePublish(id, published);
+      toaster.create({
+        title: "템플릿 상태 변경 성공",
+        type: "success",
+      });
+      fetchTemplates();
+    } catch (error) {
+      toaster.create({
+        title: "템플릿 상태 변경 실패",
+        description: "템플릿 상태 변경에 실패했습니다.",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // 템플릿 관리 페이지 레이아웃 정의
-  const templateLayout = [
-    {
-      id: "header",
-      x: 0,
-      y: 0,
-      w: 12,
-      h: 1,
-      isStatic: true,
-      isHeader: true,
-    },
-    {
-      id: "templateList",
-      x: 0,
-      y: 1,
-      w: 3,
-      h: 5,
-      title: "템플릿 목록",
-      subtitle: "템플릿 목록을 관리합니다.",
-    },
-    {
-      id: "templateEditor",
-      x: 0,
-      y: 6,
-      w: 3,
-      h: 6,
-      title: "템플릿 편집",
-      subtitle: "템플릿의 상세 정보를 수정할 수 있습니다.",
-    },
-    {
-      id: "preview",
-      x: 3,
-      y: 1,
-      w: 9,
-      h: 11,
-      title: "미리보기",
-      subtitle: "템플릿의 실시간 미리보기입니다.",
-    },
-  ];
+  const fetchTemplates = async () => {
+    try {
+      setLoading(true);
+      const response = await templateApi.getTemplates(searchParams);
+      setTemplates(response.content);
+    } catch (error) {
+      toaster.create({
+        title: "템플릿 목록 조회 실패",
+        description: "템플릿 목록을 불러오는데 실패했습니다.",
+        type: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTemplates();
+  }, [searchParams]);
 
   return (
-    <Box bg={colors.bg} minH="100vh" w="full" position="relative">
-      <Box w="full">
-        <GridSection initialLayout={templateLayout}>
-          <Flex justify="space-between" align="center" h="36px">
-            <Flex align="center" gap={2} px={2}>
-              <Heading
-                size="lg"
-                color={colors.text.primary}
-                letterSpacing="tight"
-              >
-                템플릿 관리
-              </Heading>
-              <Badge
-                bg={colors.secondary.light}
-                color={colors.secondary.default}
-                px={2}
-                py={1}
-                borderRadius="md"
-                fontSize="xs"
-                fontWeight="bold"
-              >
-                관리자
-              </Badge>
-            </Flex>
+    <DndProvider backend={HTML5Backend}>
+      <Box>
+        <VStack gap={6} align="stretch" p={6}>
+          <Flex justify="space-between" align="center">
+            <Heading size="lg">템플릿 관리</Heading>
+            <Badge
+              colorScheme="blue"
+              fontSize="md"
+              px={3}
+              py={1}
+              borderRadius="full"
+            >
+              관리자
+            </Badge>
           </Flex>
 
-          <Box>
+          <HStack
+            gap={4}
+            p={4}
+            bg={bgColor}
+            borderRadius="lg"
+            borderWidth="1px"
+            borderColor={borderColor}
+          >
+            <Input
+              placeholder="템플릿 검색"
+              value={searchParams.keyword}
+              onChange={(e) =>
+                setSearchParams({ ...searchParams, keyword: e.target.value })
+              }
+              width="300px"
+            />
+            <Controller
+              name="type"
+              control={control}
+              render={({ field }) => (
+                <CustomSelect
+                  field={field}
+                  errors={errors}
+                  menu={null}
+                  options={[
+                    { id: 1, name: "페이지" },
+                    { id: 2, name: "컴포넌트" },
+                  ]}
+                  selectStyle={{ width: "200px" }}
+                  placeholder="유형 선택"
+                />
+              )}
+            />
+            <Controller
+              name="status"
+              control={control}
+              render={({ field }) => (
+                <CustomSelect
+                  field={field}
+                  errors={errors}
+                  menu={null}
+                  options={[
+                    { id: 1, name: "공개" },
+                    { id: 2, name: "비공개" },
+                  ]}
+                  selectStyle={{ width: "200px" }}
+                  placeholder="상태 선택"
+                />
+              )}
+            />
+          </HStack>
+
+          <Box
+            p={4}
+            bg={bgColor}
+            borderRadius="lg"
+            borderWidth="1px"
+            borderColor={borderColor}
+          >
             <TemplateList
-              templates={templates?.data || []}
-              onAddTemplate={handleAddTemplate}
-              onEditTemplate={handleEditTemplate}
-              onDeleteTemplate={handleDeleteTemplate}
-              isLoading={isTemplatesLoading}
-              selectedTemplateId={selectedTemplate?.id}
-              loadingTemplateId={loadingTemplateId}
+              templates={templates}
+              onAdd={handleCreateTemplate}
+              onEdit={handleUpdateTemplate}
+              onDelete={handleDeleteTemplate}
+              onTogglePublish={handleTogglePublish}
+              isLoading={loading}
             />
           </Box>
 
-          <Box>
-            <TemplateEditor
-              template={selectedTemplate}
-              onSubmit={handleSubmit}
-              isLoading={loadingTemplateId !== null}
-            />
-          </Box>
+          {selectedTemplate && (
+            <Box
+              p={4}
+              bg={bgColor}
+              borderRadius="lg"
+              borderWidth="1px"
+              borderColor={borderColor}
+            >
+              <TemplateEditor
+                template={selectedTemplate}
+                onSubmit={(data) =>
+                  handleUpdateTemplate(selectedTemplate.templateId, data)
+                }
+                isLoading={loading}
+              />
+            </Box>
+          )}
 
-          <Box>{/* 미리보기 컴포넌트 구현 */}</Box>
-        </GridSection>
+          <Box
+            p={4}
+            bg={bgColor}
+            borderRadius="lg"
+            borderWidth="1px"
+            borderColor={borderColor}
+          >
+            {/* 미리보기 컴포넌트 구현 */}
+          </Box>
+        </VStack>
+        <Toaster />
       </Box>
-      <Toaster />
-    </Box>
+    </DndProvider>
   );
 }

@@ -23,7 +23,7 @@ const pool = mysql.createPool({
 });
 
 // 연결 풀 이벤트 핸들러
-pool.on("connection", (connection) => {
+pool.on("connection", () => {
   console.log("New connection established");
 });
 

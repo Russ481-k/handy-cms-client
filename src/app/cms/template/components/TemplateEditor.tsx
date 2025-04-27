@@ -9,14 +9,15 @@ import {
   VStack,
   Text,
   Spinner,
+  Switch as ChakraSwitch,
 } from "@chakra-ui/react";
-import { Template } from "../page";
+import { Template } from "@/types/template";
 import { useColors } from "@/styles/theme";
 
 interface TemplateEditorProps {
   template: Template | null;
   onSubmit: (
-    templateData: Omit<Template, "id" | "createdAt" | "updatedAt">
+    templateData: Omit<Template, "templateId" | "createdAt" | "updatedAt">
   ) => void;
   isLoading: boolean;
 }
@@ -28,31 +29,31 @@ export function TemplateEditor({
 }: TemplateEditorProps) {
   const colors = useColors();
   const [name, setName] = useState("");
-  const [type, setType] = useState<"PAGE" | "COMPONENT">("PAGE");
-  const [content, setContent] = useState("");
-  const [description, setDescription] = useState("");
+  const [type, setType] = useState<string>("PAGE");
+  const [layout, setLayout] = useState<any[]>([]);
+  const [published, setPublished] = useState(false);
 
   useEffect(() => {
     if (template) {
-      setName(template.name);
-      setType(template.type);
-      setContent(template.content);
-      setDescription(template.description || "");
+      setName(template.templateName);
+      setType(template.templateType);
+      setLayout(template.layout);
+      setPublished(template.published);
     } else {
       setName("");
       setType("PAGE");
-      setContent("");
-      setDescription("");
+      setLayout([]);
+      setPublished(false);
     }
   }, [template]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({
-      name,
-      type,
-      content,
-      description,
+      templateName: name,
+      templateType: type,
+      layout,
+      published,
     });
   };
 
@@ -73,9 +74,7 @@ export function TemplateEditor({
     <form onSubmit={handleSubmit}>
       <VStack gap={4} align="stretch">
         <Box>
-          <Text fontSize="sm" fontWeight="medium" mb={2}>
-            이름
-          </Text>
+          <Text mb="2">이름</Text>
           <Input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -84,45 +83,50 @@ export function TemplateEditor({
         </Box>
 
         <Box>
-          <Text fontSize="sm" fontWeight="medium" mb={2}>
-            유형
-          </Text>
+          <Text mb="2">유형</Text>
           <select
             value={type}
-            onChange={(e) => setType(e.target.value as "PAGE" | "COMPONENT")}
-            style={{
-              width: "100%",
-              padding: "8px",
-              borderRadius: "6px",
-              border: "1px solid",
-              borderColor: "inherit",
-            }}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+              setType(e.target.value)
+            }
           >
             <option value="PAGE">페이지</option>
             <option value="COMPONENT">컴포넌트</option>
           </select>
         </Box>
 
-        <Box>
-          <Text fontSize="sm" fontWeight="medium" mb={2}>
-            설명
+        <Box display="flex" alignItems="center">
+          <Text mb="0" mr="2">
+            공개 상태
           </Text>
-          <Textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="템플릿 설명"
-          />
+          <ChakraSwitch.Root
+            defaultChecked={published}
+            onCheckedChange={(details: { checked: boolean }) =>
+              setPublished(details.checked)
+            }
+          >
+            <ChakraSwitch.Control>
+              <ChakraSwitch.Thumb />
+            </ChakraSwitch.Control>
+          </ChakraSwitch.Root>
         </Box>
 
         <Box>
           <Text fontSize="sm" fontWeight="medium" mb={2}>
-            내용
+            레이아웃
           </Text>
           <Textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="템플릿 내용"
+            value={JSON.stringify(layout, null, 2)}
+            onChange={(e) => {
+              try {
+                setLayout(JSON.parse(e.target.value));
+              } catch (error) {
+                // JSON 파싱 에러 무시
+              }
+            }}
+            placeholder="레이아웃 JSON"
             height="200px"
+            fontFamily="monospace"
           />
         </Box>
 

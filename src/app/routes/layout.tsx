@@ -19,7 +19,7 @@ export default function RoutesLayout({
   const colors = useColors();
 
   return (
-    <Layout>
+    <Layout menus={[]}>
       <Box
         as="main"
         bg={colors.bg}

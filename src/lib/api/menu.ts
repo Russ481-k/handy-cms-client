@@ -7,7 +7,7 @@ export function sortMenus(menus: Menu[]): Menu[] {
   const menuMap = new Map<number, Menu>();
 
   // First pass: create deep copies of menu objects
-  menus.forEach((menu) => {
+  menus?.forEach((menu) => {
     const menuCopy = {
       ...menu,
       children: [], // Initialize empty children array
@@ -19,7 +19,7 @@ export function sortMenus(menus: Menu[]): Menu[] {
   const rootMenus: Menu[] = [];
 
   // Second pass: build the tree structure
-  menus.forEach((menu) => {
+  menus?.forEach((menu) => {
     const menuCopy = menuMap.get(menu.id);
     if (!menuCopy) return;
 
@@ -45,7 +45,7 @@ export function sortMenus(menus: Menu[]): Menu[] {
   };
 
   rootMenus.sort((a, b) => a.sortOrder - b.sortOrder);
-  rootMenus.forEach(sortChildren);
+  rootMenus?.forEach(sortChildren);
 
   return rootMenus;
 }

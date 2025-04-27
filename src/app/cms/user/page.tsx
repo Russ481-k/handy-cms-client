@@ -8,7 +8,7 @@ import { UserEditor } from "./components/UserEditor";
 import { GridSection } from "@/components/ui/grid-section";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
-import { getAuthHeader } from "@/lib/auth";
+import { getAuthHeader } from "@/lib/auth-utils";
 import { toaster } from "@/components/ui/toaster";
 
 export interface User {

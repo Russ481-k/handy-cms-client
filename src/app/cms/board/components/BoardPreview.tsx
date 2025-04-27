@@ -290,7 +290,7 @@ export function BoardPreview({
 
   if (!board) {
     return (
-      <Layout>
+      <Layout menus={[]}>
         <Box p={6} textAlign="center" color="gray.500">
           게시판을 선택해주세요.
         </Box>
@@ -299,7 +299,7 @@ export function BoardPreview({
   }
 
   return (
-    <Layout currentPage="게시판" isPreview={true}>
+    <Layout currentPage="게시판" isPreview={true} menus={[]}>
       <Box
         width="100%"
         height="100%"

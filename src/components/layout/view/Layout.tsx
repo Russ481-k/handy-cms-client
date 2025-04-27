@@ -53,7 +53,6 @@ export default function Layout({
   menus,
 }: LayoutProps) {
   const colors = useColors();
-
   return (
     <Flex
       width="100%"

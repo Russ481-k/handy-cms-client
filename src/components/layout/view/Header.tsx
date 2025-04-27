@@ -13,12 +13,12 @@ import {
 } from "@chakra-ui/react";
 import { useColorMode } from "@/components/ui/color-mode";
 import Image from "next/image";
-import { useMemo, useRef, useState, useEffect, memo } from "react";
+import { useRef, useState, useEffect, memo, useMemo } from "react";
 import NextLink from "next/link";
 import { MenuItem } from "./MenuItem";
-import { createMenuTree } from "../../../app/cms/utils/menuTree";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { Menu } from "@/app/cms/menu/page";
+import { sortMenus } from "@/lib/api/menu";
 
 interface HeaderProps {
   currentPage: string;
@@ -31,7 +31,7 @@ const MemoizedMenuItem = memo(MenuItem);
 
 export const Header = memo(function Header({
   currentPage,
-  menus,
+  menus = [],
   isPreview,
 }: HeaderProps) {
   const { colorMode } = useColorMode();
@@ -135,9 +135,9 @@ export const Header = memo(function Header({
                 width="fit-content"
                 mx="auto"
               >
-                {menus?.map((menu) => (
+                {menus?.map((menu, index) => (
                   <MemoizedMenuItem
-                    key={menu.id}
+                    key={index + menu.id}
                     menu={menu}
                     isNavHovered={isNavHovered || isMenuOpen}
                     isDark={isDark}

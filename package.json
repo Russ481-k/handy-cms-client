@@ -5,13 +5,14 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "NODE_ENV=production node server.js",
+    "start": "cross-env NODE_ENV=production node server.js",
     "lint": "next lint",
     "db:init": "tsc src/lib/db/index.ts && node src/lib/db/index.js",
     "db:reset": "tsc src/lib/db/index.ts && node src/lib/db/index.js --reset"
   },
   "dependencies": {
     "@ag-grid-community/client-side-row-model": "^32.3.3",
+    "@chakra-ui/icons": "^2.2.4",
     "@chakra-ui/react": "^3.13.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
@@ -58,6 +59,7 @@
     "@types/node": "^20.17.9",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.2",
+    "cross-env": "^7.0.3",
     "eslint": "^9",
     "eslint-config-next": "15.2.4",
     "ts-node": "^10.9.2",

@@ -41,11 +41,12 @@ export const isAuthenticated = (): boolean => {
   return !!token;
 };
 
-export const getAuthHeader = (): { Authorization: string } | null => {
-  const token = getToken();
-  if (!token) return null;
-  return { Authorization: `Bearer ${token}` };
-};
+export function getAuthHeader(): Record<string, string> {
+  const token = localStorage.getItem("token");
+  return {
+    Authorization: token ? `Bearer ${token}` : "",
+  };
+}
 
 export const getAuthHeaderOrThrow = (): { Authorization: string } => {
   const token = getToken();

@@ -8,12 +8,12 @@ import { ContentEditor } from "./components/ContentEditor";
 import { GridSection } from "@/components/ui/grid-section";
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { useColors } from "@/styles/theme";
-import { getAuthHeader } from "@/lib/auth";
 import { toaster } from "@/components/ui/toaster";
 import { TreeItem } from "@/components/ui/tree-list";
 import { ContentPreview } from "./components/ContentPreview";
 import { convertTreeItemToContent } from "./types";
 import { Menu } from "../menu/page";
+import { getAuthHeader } from "@/lib/auth-utils";
 
 export default function ContentManagementPage() {
   const [selectedContent, setSelectedContent] = useState<TreeItem | null>(null);
@@ -77,7 +77,7 @@ export default function ContentManagementPage() {
         throw new Error("Failed to fetch menus");
       }
       const data = await response.json();
-      setMenus(data);
+      setMenus(data.data);
     } catch (error) {
       console.error("Error fetching menus:", error);
       toaster.create({

@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useColors } from "@/styles/theme";
 import { toaster } from "@/components/ui/toaster";
 import { useColorModeValue } from "@/components/ui/color-mode";
-import { getAuthHeader } from "@/lib/auth";
+import { getAuthHeader } from "@/lib/auth-utils";
 import { TreeItem } from "@/components/ui/tree-list";
 import { LuInbox, LuFileText } from "react-icons/lu";
 import { Menu } from "@/app/cms/menu/page";
@@ -115,7 +115,7 @@ export function ContentList({
 
   return (
     <Box>
-      {menus.map((menu) => (
+      {menus?.map((menu) => (
         <ListItem
           key={menu.id}
           id={menu.id}
