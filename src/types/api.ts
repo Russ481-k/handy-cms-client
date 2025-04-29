@@ -28,25 +28,52 @@ export interface Content {
 
 export interface Board {
   id: number;
-  name: string;
-  slug: string;
-  type: string;
-  useCategory: boolean;
-  allowComment: boolean;
-  useAttachment: boolean;
-  postsPerPage: number;
+  bbsName: string;
+  skinType: "BASIC" | "FAQ" | "QNA" | "PRESS" | "FORM";
+  manager: {
+    name: string;
+    email: string;
+  };
+  alarm: {
+    mail: boolean;
+    kakao: boolean;
+    internal: boolean;
+  };
+  topContent: string;
+  bottomContent: string;
+  auth: {
+    read: string;
+    write: string;
+    admin: string;
+  };
+  displayYn: boolean;
+  sortOrder: number;
+  extraSchema: {
+    attachmentLimit: number;
+    category: boolean;
+    formDownloadYn: boolean;
+    customFields: Array<{
+      code: string;
+      label: string;
+      type: string;
+      options: string[];
+    }>;
+  };
   createdAt: string;
   updatedAt: string;
 }
 
 export interface Post {
   id: number;
-  boardId: number;
+  bbsId: number;
   title: string;
-  content: string;
-  authorId: number;
-  categoryId?: number;
-  viewCount: number;
+  contentHtml: string;
+  writer: string;
+  publishStartDt: string;
+  attachments: number[];
+  categories: string[];
+  custom: Record<string, string>;
+  parentNttId?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -170,13 +197,37 @@ export interface ContentData {
 }
 
 export interface BoardData {
-  name: string;
-  slug: string;
-  type: string;
-  useCategory: boolean;
-  allowComment: boolean;
-  useAttachment: boolean;
-  postsPerPage: number;
+  bbsName: string;
+  skinType: "BASIC" | "FAQ" | "QNA" | "PRESS" | "FORM";
+  manager: {
+    name: string;
+    email: string;
+  };
+  alarm: {
+    mail: boolean;
+    kakao: boolean;
+    internal: boolean;
+  };
+  topContent: string;
+  bottomContent: string;
+  auth: {
+    read: string;
+    write: string;
+    admin: string;
+  };
+  displayYn: boolean;
+  sortOrder: number;
+  extraSchema: {
+    attachmentLimit: number;
+    category: boolean;
+    formDownloadYn: boolean;
+    customFields: Array<{
+      code: string;
+      label: string;
+      type: string;
+      options: string[];
+    }>;
+  };
 }
 
 export interface UserData {

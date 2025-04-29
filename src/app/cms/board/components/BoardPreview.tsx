@@ -13,7 +13,7 @@ import {
 } from "@chakra-ui/react";
 import { useColors } from "@/styles/theme";
 import { useColorMode } from "@/components/ui/color-mode";
-import { Board } from "../types";
+import { Board } from "@/types/api";
 import { Menu } from "../../menu/page";
 import { AgGridReact } from "ag-grid-react";
 import { useState, useMemo } from "react";
@@ -181,273 +181,127 @@ const DEFAULT_SETTINGS = {
   layout: "list" as const,
 };
 
-export function BoardPreview({
-  board,
-  settings = DEFAULT_SETTINGS,
-}: BoardPreviewProps) {
+export function BoardPreview({ board }: BoardPreviewProps) {
   const colors = useColors();
   const { colorMode } = useColorMode();
   const isDark = colorMode === "dark";
-  const [rowData] = useState<Post[]>(SAMPLE_POSTS);
-
-  // AG Grid 테마 설정
-  const gridTheme = useMemo(
-    () =>
-      themeQuartz
-        .withPart(isDark ? colorSchemeDark : colorSchemeLight)
-        .withParams({
-          // 기본 색상
-          backgroundColor: isDark ? colors.darkBg : colors.bg,
-          foregroundColor: colors.text.primary,
-          accentColor: colors.primary.default,
-
-          // 헤더 관련
-          headerBackgroundColor: isDark ? colors.cardBg : colors.bg,
-          headerTextColor: colors.text.primary,
-
-          // 행 관련
-          oddRowBackgroundColor: isDark ? colors.cardBg : colors.bg,
-          rowHoverColor: isDark ? colors.primary.alpha : colors.primary.light,
-          selectedRowBackgroundColor: isDark
-            ? colors.primary.dark
-            : colors.primary.light,
-
-          // 셀 관련
-          cellTextColor: colors.text.primary,
-          borderColor: colors.border,
-
-          // 기타 UI 요소
-          chromeBackgroundColor: isDark ? colors.cardBg : colors.bg,
-          inputBackgroundColor: isDark ? colors.cardBg : colors.bg,
-          inputTextColor: colors.text.primary,
-          inputBorder: colors.border,
-        }),
-    [isDark, colors]
-  );
-
-  console.log(gridTheme);
-  // AG Grid 컬럼 설정
-  const columnDefs = useMemo<ColDef<Post>[]>(
-    () => [
-      {
-        field: "title",
-        headerName: "제목",
-        flex: 2,
-        cellRenderer: (params: CellClassParams) => (
-          <Flex align="center" gap={2} height="100%">
-            <Icon as={LuFileText} color={colors.primary.default} />
-            <Text
-              _hover={{
-                color: colors.primary.default,
-                transform: "translateX(4px)",
-              }}
-              transition="all 0.2s"
-              cursor="pointer"
-              onClick={() => console.log("게시글 클릭:", params.data)}
-            >
-              {params.value}
-            </Text>
-          </Flex>
-        ),
-      },
-      {
-        field: "author",
-        headerName: "작성자",
-        flex: 1,
-        cellRenderer: (params: CellClassParams) => (
-          <Flex align="center" gap={2} height="100%">
-            <Icon as={LuUser} color={colors.text.secondary} />
-            <Text>{params.value}</Text>
-          </Flex>
-        ),
-      },
-      {
-        field: "date",
-        headerName: "작성일",
-        flex: 1,
-        cellRenderer: (params: CellClassParams) => (
-          <Flex align="center" gap={2} height="100%">
-            <Icon as={LuCalendar} color={colors.text.secondary} />
-            <Text>{params.value}</Text>
-          </Flex>
-        ),
-      },
-      {
-        field: "views",
-        headerName: "조회",
-        flex: 1,
-        type: "numericColumn",
-        cellRenderer: (params: CellClassParams) => (
-          <Flex align="center" gap={2} height="100%">
-            <Icon as={LuEye} color={colors.text.secondary} />
-            <Text>{params.value}</Text>
-          </Flex>
-        ),
-      },
-    ],
-    [colors]
-  );
 
   if (!board) {
     return (
-      <Layout menus={[]}>
-        <Box p={6} textAlign="center" color="gray.500">
-          게시판을 선택해주세요.
-        </Box>
-      </Layout>
+      <Box p={4} textAlign="center">
+        <Text color={colors.text.secondary}>게시판을 선택하세요</Text>
+      </Box>
     );
   }
 
   return (
-    <Layout currentPage="게시판" isPreview={true} menus={[]}>
-      <Box
-        width="100%"
-        height="100%"
-        bg={isDark ? "gray.900" : "white"}
-        position="relative"
-      >
-        {/* 타이틀 영역 */}
-        <Box
-          width="100%"
-          bg={isDark ? "gray.800" : "gray.50"}
-          py={8}
-          borderBottom="1px solid"
-          borderColor={isDark ? "gray.700" : "gray.100"}
-          position="relative"
-          overflow="hidden"
-        >
-          <Box
-            position="absolute"
-            top={0}
-            left={0}
-            right={0}
-            bottom={0}
-            bg={isDark ? "gray.700" : "gray.100"}
-            opacity={0.1}
-            zIndex={0}
-          />
-          <Box
-            px={6}
-            maxW="container.lg"
-            mx="auto"
-            position="relative"
-            zIndex={1}
-          >
-            <VStack align="flex-start" gap={3}>
-              <Flex align="center" gap={3}>
-                <Text fontSize={{ base: "xl", md: "2xl" }} fontWeight="bold">
-                  {board.title}
-                </Text>
-                <Badge
-                  colorScheme="blue"
-                  variant="subtle"
-                  fontSize="sm"
-                  px={2}
-                  py={1}
-                  borderRadius="full"
-                >
-                  게시판
-                </Badge>
-              </Flex>
-              {board.description && (
-                <Text fontSize="sm" color={colors.text.secondary}>
-                  {board.description}
-                </Text>
-              )}
-            </VStack>
-          </Box>
+    <Box p={4}>
+      <VStack align="stretch" gap={4}>
+        <Box>
+          <Text fontSize="lg" fontWeight="bold" color={colors.text.primary}>
+            {board.bbsName}
+          </Text>
+          <Text fontSize="sm" color={colors.text.secondary}>
+            스킨: {board.skinType}
+          </Text>
         </Box>
 
-        {/* 메인 컨텐츠 */}
-        <Box py={8}>
-          <Box maxW="container.lg" mx="auto" px={6}>
-            {/* 검색 영역 */}
-            {settings.showSearch && (
-              <Box
-                mb={6}
-                p={4}
-                bg={isDark ? "gray.800" : "gray.50"}
-                borderRadius="lg"
-                boxShadow="sm"
-                border="1px solid"
-                borderColor={isDark ? "gray.700" : "gray.200"}
-              >
-                <HStack gap={2}>
-                  <Input
-                    placeholder="검색어를 입력하세요"
-                    size="md"
-                    bg={isDark ? "gray.700" : "white"}
-                    borderColor={isDark ? "gray.600" : "gray.200"}
-                    _hover={{ borderColor: colors.primary.default }}
-                    _focus={{ borderColor: colors.primary.default }}
-                    borderRadius="full"
-                    px={4}
-                  />
-                  <Button
-                    size="md"
-                    colorScheme="blue"
-                    display="flex"
-                    alignItems="center"
-                    gap={2}
-                    borderRadius="full"
-                    px={6}
-                    _hover={{
-                      transform: "translateY(-1px)",
-                      boxShadow: "md",
-                    }}
-                    transition="all 0.2s"
-                  >
-                    <Icon as={LuSearch} />
-                    검색
-                  </Button>
-                </HStack>
-              </Box>
-            )}
+        <Box>
+          <Text fontSize="md" fontWeight="medium" color={colors.text.primary}>
+            관리자 정보
+          </Text>
+          <Text fontSize="sm" color={colors.text.secondary}>
+            이름: {board.manager.name}
+          </Text>
+          <Text fontSize="sm" color={colors.text.secondary}>
+            이메일: {board.manager.email}
+          </Text>
+        </Box>
 
-            {/* AG Grid 게시글 목록 */}
+        <Box>
+          <Text fontSize="md" fontWeight="medium" color={colors.text.primary}>
+            알림 설정
+          </Text>
+          <HStack gap={4}>
+            <Badge colorScheme={board.alarm.mail ? "green" : "gray"}>
+              이메일 {board.alarm.mail ? "ON" : "OFF"}
+            </Badge>
+            <Badge colorScheme={board.alarm.kakao ? "green" : "gray"}>
+              카카오톡 {board.alarm.kakao ? "ON" : "OFF"}
+            </Badge>
+            <Badge colorScheme={board.alarm.internal ? "green" : "gray"}>
+              내부 {board.alarm.internal ? "ON" : "OFF"}
+            </Badge>
+          </HStack>
+        </Box>
+
+        <Box>
+          <Text fontSize="md" fontWeight="medium" color={colors.text.primary}>
+            권한 설정
+          </Text>
+          <HStack gap={4}>
+            <Badge colorScheme="blue">읽기: {board.auth.read}</Badge>
+            <Badge colorScheme="blue">쓰기: {board.auth.write}</Badge>
+            <Badge colorScheme="blue">관리: {board.auth.admin}</Badge>
+          </HStack>
+        </Box>
+
+        <Box>
+          <Text fontSize="md" fontWeight="medium" color={colors.text.primary}>
+            추가 설정
+          </Text>
+          <VStack align="stretch" gap={2}>
+            <Text fontSize="sm" color={colors.text.secondary}>
+              첨부파일 제한: {board.extraSchema.attachmentLimit}개
+            </Text>
+            <Text fontSize="sm" color={colors.text.secondary}>
+              카테고리 사용: {board.extraSchema.category ? "예" : "아니오"}
+            </Text>
+            <Text fontSize="sm" color={colors.text.secondary}>
+              다운로드 기능:{" "}
+              {board.extraSchema.formDownloadYn ? "예" : "아니오"}
+            </Text>
+          </VStack>
+        </Box>
+
+        {board.topContent && (
+          <Box>
+            <Text fontSize="md" fontWeight="medium" color={colors.text.primary}>
+              상단 내용
+            </Text>
             <Box
-              h="full"
-              borderRadius="xl"
-              overflow="hidden"
-              boxShadow={colors.shadow.sm}
+              p={2}
+              bg={colors.bg}
+              borderRadius="md"
+              border="1px solid"
+              borderColor={colors.border}
             >
-              <AgGridReact
-                className="ag-theme-quartz"
-                theme={colorMode === "dark" ? themeDarkMode : themeLightMode}
-                {...defaultGridOptions}
-                columnDefs={columnDefs}
-                rowData={rowData}
-                animateRows
-                domLayout="autoHeight"
-              />
+              <Text fontSize="sm" color={colors.text.secondary}>
+                {board.topContent}
+              </Text>
             </Box>
-
-            {/* 하단 영역 (글쓰기 버튼) */}
-            <Flex justify="flex-end">
-              {settings.showWriteButton && (
-                <Button
-                  size="md"
-                  colorScheme="blue"
-                  display="flex"
-                  alignItems="center"
-                  gap={2}
-                  px={6}
-                  borderRadius="full"
-                  boxShadow="sm"
-                  _hover={{
-                    transform: "translateY(-1px)",
-                    boxShadow: "md",
-                  }}
-                  transition="all 0.2s"
-                >
-                  <Icon as={LuPlus} />
-                  글쓰기
-                </Button>
-              )}
-            </Flex>
           </Box>
-        </Box>
-      </Box>
-    </Layout>
+        )}
+
+        {board.bottomContent && (
+          <Box>
+            <Text fontSize="md" fontWeight="medium" color={colors.text.primary}>
+              하단 내용
+            </Text>
+            <Box
+              p={2}
+              bg={colors.bg}
+              borderRadius="md"
+              border="1px solid"
+              borderColor={colors.border}
+            >
+              <Text fontSize="sm" color={colors.text.secondary}>
+                {board.bottomContent}
+              </Text>
+            </Box>
+          </Box>
+        )}
+      </VStack>
+    </Box>
   );
 }

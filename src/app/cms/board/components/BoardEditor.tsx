@@ -11,7 +11,7 @@ import {
   Spinner,
   Flex,
 } from "@chakra-ui/react";
-import { Board } from "../types";
+import { Board, BoardData } from "@/types/api";
 import { useColors } from "@/styles/theme";
 import { CheckIcon } from "lucide-react";
 
@@ -24,64 +24,76 @@ interface BoardEditorProps {
 export function BoardEditor({ board, onSubmit, isLoading }: BoardEditorProps) {
   const colors = useColors();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState<
-    Omit<Board, "id" | "createdAt" | "updatedAt">
-  >({
-    name: "",
-    type: "FREE",
-    title: "",
-    status: "ACTIVE",
-    visible: true,
+  const [formData, setFormData] = useState<BoardData>({
+    bbsName: "",
+    skinType: "BASIC",
+    manager: {
+      name: "",
+      email: "",
+    },
+    alarm: {
+      mail: false,
+      kakao: false,
+      internal: false,
+    },
+    topContent: "",
+    bottomContent: "",
+    auth: {
+      read: "PUBLIC",
+      write: "STAFF",
+      admin: "ADMIN",
+    },
+    displayYn: true,
     sortOrder: 0,
-    displayPosition: "MAIN",
-    settings: {
-      allowComments: true,
-      allowFiles: true,
-      useCategory: false,
-      useTags: false,
-      listType: "list",
-      postsPerPage: 10,
-      showTitle: true,
-      showSearch: true,
-      showPagination: true,
-      showWriteButton: true,
-      layout: "list",
+    extraSchema: {
+      attachmentLimit: 0,
+      category: false,
+      formDownloadYn: false,
+      customFields: [],
     },
   });
 
   useEffect(() => {
     if (board) {
       setFormData({
-        name: board.name,
-        type: board.type,
-        title: board.title,
-        status: board.status,
-        visible: board.visible,
+        bbsName: board.bbsName,
+        skinType: board.skinType,
+        manager: board.manager,
+        alarm: board.alarm,
+        topContent: board.topContent,
+        bottomContent: board.bottomContent,
+        auth: board.auth,
+        displayYn: board.displayYn,
         sortOrder: board.sortOrder,
-        displayPosition: board.displayPosition,
-        settings: board.settings,
+        extraSchema: board.extraSchema,
       });
     } else {
       setFormData({
-        name: "",
-        type: "FREE",
-        title: "",
-        status: "ACTIVE",
-        visible: true,
+        bbsName: "",
+        skinType: "BASIC",
+        manager: {
+          name: "",
+          email: "",
+        },
+        alarm: {
+          mail: false,
+          kakao: false,
+          internal: false,
+        },
+        topContent: "",
+        bottomContent: "",
+        auth: {
+          read: "PUBLIC",
+          write: "STAFF",
+          admin: "ADMIN",
+        },
+        displayYn: true,
         sortOrder: 0,
-        displayPosition: "MAIN",
-        settings: {
-          allowComments: true,
-          allowFiles: true,
-          useCategory: false,
-          useTags: false,
-          listType: "list",
-          postsPerPage: 10,
-          showTitle: true,
-          showSearch: true,
-          showPagination: true,
-          showWriteButton: true,
-          layout: "list",
+        extraSchema: {
+          attachmentLimit: 0,
+          category: false,
+          formDownloadYn: false,
+          customFields: [],
         },
       });
     }
@@ -92,11 +104,52 @@ export function BoardEditor({ board, onSubmit, isLoading }: BoardEditorProps) {
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
   ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    const { name, value, type } = e.target;
+    if (type === "checkbox") {
+      const checked = (e.target as HTMLInputElement).checked;
+      if (name.startsWith("alarm.")) {
+        const alarmKey = name.split(".")[1];
+        setFormData((prev) => ({
+          ...prev,
+          alarm: {
+            ...prev.alarm,
+            [alarmKey]: checked,
+          },
+        }));
+      } else if (name.startsWith("extraSchema.")) {
+        const extraKey = name.split(".")[1];
+        setFormData((prev) => ({
+          ...prev,
+          extraSchema: {
+            ...prev.extraSchema,
+            [extraKey]: checked,
+          },
+        }));
+      }
+    } else if (name.startsWith("manager.")) {
+      const managerKey = name.split(".")[1];
+      setFormData((prev) => ({
+        ...prev,
+        manager: {
+          ...prev.manager,
+          [managerKey]: value,
+        },
+      }));
+    } else if (name.startsWith("auth.")) {
+      const authKey = name.split(".")[1];
+      setFormData((prev) => ({
+        ...prev,
+        auth: {
+          ...prev.auth,
+          [authKey]: value,
+        },
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -137,8 +190,8 @@ export function BoardEditor({ board, onSubmit, isLoading }: BoardEditorProps) {
             </Text>
           </Flex>
           <Input
-            name="name"
-            value={formData.name}
+            name="bbsName"
+            value={formData.bbsName}
             onChange={handleChange}
             placeholder="게시판 이름"
           />
@@ -154,8 +207,8 @@ export function BoardEditor({ board, onSubmit, isLoading }: BoardEditorProps) {
             </Text>
           </Flex>
           <select
-            name="type"
-            value={formData.type}
+            name="skinType"
+            value={formData.skinType}
             onChange={handleChange}
             style={{
               width: "100%",
@@ -165,23 +218,9 @@ export function BoardEditor({ board, onSubmit, isLoading }: BoardEditorProps) {
               borderColor: "inherit",
             }}
           >
-            <option value="NOTICE">공지사항</option>
-            <option value="QNA">Q&A</option>
-            <option value="FREE">자유게시판</option>
+            <option value="BASIC">기본형</option>
+            <option value="CUSTOM">커스텀형</option>
           </select>
-        </Box>
-
-        <Box>
-          <Text fontSize="sm" fontWeight="medium" mb={2}>
-            설명
-          </Text>
-          <Textarea
-            name="description"
-            value={formData.description || ""}
-            onChange={handleChange}
-            placeholder="게시판 설명"
-            height="200px"
-          />
         </Box>
 
         <Button

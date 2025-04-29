@@ -12,7 +12,7 @@ import { toaster } from "@/components/ui/toaster";
 import { BoardPreview } from "./components/BoardPreview";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { boardApi, boardKeys } from "@/lib/api/board";
-import { Board } from "./types";
+import { Board } from "@/types/api";
 
 export default function BoardManagementPage() {
   const colors = useColors();
@@ -92,25 +92,31 @@ export default function BoardManagementPage() {
   const handleAddBoard = () => {
     const newBoard: Board = {
       id: Date.now(),
-      name: "새 게시판",
-      type: "FREE",
-      title: "새 게시판",
-      status: "ACTIVE",
-      visible: true,
+      bbsName: "새 게시판",
+      skinType: "BASIC",
+      manager: {
+        name: "",
+        email: "",
+      },
+      alarm: {
+        mail: false,
+        kakao: false,
+        internal: false,
+      },
+      topContent: "",
+      bottomContent: "",
+      auth: {
+        read: "PUBLIC",
+        write: "STAFF",
+        admin: "ADMIN",
+      },
+      displayYn: true,
       sortOrder: 0,
-      displayPosition: "MAIN",
-      settings: {
-        allowComments: true,
-        allowFiles: true,
-        useCategory: false,
-        useTags: false,
-        listType: "list",
-        postsPerPage: 10,
-        showTitle: true,
-        showSearch: true,
-        showPagination: true,
-        showWriteButton: true,
-        layout: "list",
+      extraSchema: {
+        attachmentLimit: 0,
+        category: false,
+        formDownloadYn: false,
+        customFields: [],
       },
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

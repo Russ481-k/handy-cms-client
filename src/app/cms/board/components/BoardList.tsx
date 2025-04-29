@@ -3,7 +3,7 @@
 import React from "react";
 import { Box, VStack, Text, Button, Stack, Spinner } from "@chakra-ui/react";
 import { useColors } from "@/styles/theme";
-import { Board } from "../types";
+import { Board } from "@/types/api";
 
 interface BoardListProps {
   boards: Board[];
@@ -70,7 +70,7 @@ export function BoardList({
             onClick={() => onEditBoard(board)}
             justify="space-between"
           >
-            <Text color={textColor}>{board.name}</Text>
+            <Text color={textColor}>{board.bbsName}</Text>
             <Stack direction="row">
               <Button
                 size="sm"

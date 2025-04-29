@@ -1,5 +1,5 @@
 import { api } from "@/lib/api-client";
-import { Board } from "@/app/cms/board/types";
+import { Board, BoardData, Post } from "@/types/api";
 
 export const boardKeys = {
   all: ["board"] as const,
@@ -9,31 +9,85 @@ export const boardKeys = {
   detail: (id: number) => [...boardKeys.details(), id] as const,
 };
 
-export interface BoardData {
-  name: string;
-  description?: string;
-  type: Board["type"];
-  visible: boolean;
-  sortOrder: number;
-}
-
 export const boardApi = {
   getBoards: () => {
-    return api.private.get<Board[]>("/cms/board");
+    return api.private.get<Board[]>("/api/v1/bbs/master");
   },
 
   getBoard: (id: number) => {
-    return api.private.get<Board>(`/cms/board/${id}`);
+    return api.private.get<Board>(`/api/v1/bbs/master/${id}`);
   },
 
   saveBoard: ({ id, boardData }: { id?: number; boardData: BoardData }) => {
     if (id) {
-      return api.private.put<Board>(`/cms/board/${id}`, boardData);
+      return api.private.put<Board>(`/api/v1/bbs/master/${id}`, boardData);
     }
-    return api.private.post<Board>("/cms/board", boardData);
+    return api.private.post<Board>("/api/v1/bbs/master", boardData);
   },
 
   deleteBoard: (id: number) => {
-    return api.private.delete(`/cms/board/${id}`);
+    return api.private.delete(`/api/v1/bbs/master/${id}`);
+  },
+
+  // 게시글 관련 API
+  getPosts: (
+    bbsId: number,
+    params?: {
+      page?: number;
+      size?: number;
+      search?: string;
+      category?: string;
+      sort?: string;
+    }
+  ) => {
+    const queryString = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          queryString.append(key, value.toString());
+        }
+      });
+    }
+    return api.private.get<{
+      data: Post[];
+      pagination: { page: number; size: number; total: number };
+    }>(`/api/v1/bbs/${bbsId}?${queryString.toString()}`);
+  },
+
+  getPost: (bbsId: number, nttId: number) => {
+    return api.private.get<Post>(`/api/v1/bbs/${bbsId}/${nttId}`);
+  },
+
+  createPost: (postData: Omit<Post, "id" | "createdAt" | "updatedAt">) => {
+    return api.private.post<Post>("/api/v1/bbs", postData);
+  },
+
+  updatePost: (bbsId: number, nttId: number, postData: Partial<Post>) => {
+    return api.private.put<Post>(`/api/v1/bbs/${bbsId}/${nttId}`, postData);
+  },
+
+  deletePost: (bbsId: number, nttId: number) => {
+    return api.private.delete(`/api/v1/bbs/${bbsId}/${nttId}`);
+  },
+
+  // QNA 관련 API
+  createQuestion: (
+    bbsId: number,
+    questionData: { title: string; contentHtml: string; writer?: string }
+  ) => {
+    return api.private.post<Post>(
+      `/api/v1/bbs/${bbsId}/question`,
+      questionData
+    );
+  },
+
+  createReply: (replyData: {
+    parentNttId: number;
+    bbsId: number;
+    title: string;
+    contentHtml: string;
+    writer: string;
+  }) => {
+    return api.private.post<Post>("/api/v1/bbs/reply", replyData);
   },
 };
