@@ -228,7 +228,7 @@ export function MenuList({
             name={menu.name}
             icon={isLoading ? <Spinner size="sm" /> : getMenuIcon(menu)}
             isSelected={menu.id === selectedMenuId}
-            onAddMenu={() => handleAddMenu(menu)}
+            onAdd={() => handleAddMenu(menu)}
             onDelete={
               menu.id === -1 ? undefined : () => handleDeleteClick(menu)
             }

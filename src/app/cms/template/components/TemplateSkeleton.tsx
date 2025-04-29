@@ -1,13 +1,14 @@
-"use client";
-
 import { Box, Skeleton, VStack } from "@chakra-ui/react";
 
 export function TemplateSkeleton() {
   return (
-    <VStack gap={0} align="stretch">
-      {[...Array(5)].map((_, index) => (
-        <Box key={index} p={4} borderBottom="1px" borderColor="gray.200">
-          <Skeleton height="20px" width="60%" />
+    <VStack gap={2} align="stretch" w="100%">
+      <Box display="flex" alignItems="center" borderRadius="xl">
+        <Skeleton height="44px" flex={1} mx={2} />
+      </Box>
+      {[...Array(4)].map((_, index) => (
+        <Box key={index} display="flex" alignItems="center" borderRadius="xl">
+          <Skeleton height="44px" flex={1} ml={6} mr={2} />
         </Box>
       ))}
     </VStack>

@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from "axios";
-import { getToken, removeToken } from "./auth-utils";
+import { getToken, removeToken, getRefreshToken, setToken } from "./auth-utils";
 import {
   Menu,
   Content,
@@ -12,6 +12,10 @@ import {
   UserData,
   MenuData,
   VerifyTokenResponse,
+  TemplateData,
+  Template,
+  TemplateVersion,
+  TemplateListResponse,
 } from "@/types/api";
 
 // Java 백엔드 서버 주소 설정
@@ -25,16 +29,70 @@ const createApiClient = (isPrivate: boolean): AxiosInstance => {
     headers: {
       "Content-Type": "application/json",
     },
-    withCredentials: false, // Always set to false for both public and private APIs
+    withCredentials: true,
   });
 
   // 공통 에러 처리
   client.interceptors.response.use(
     (response) => response,
-    (error) => {
-      if (error.response?.status === 401) {
+    async (error) => {
+      const originalRequest = error.config;
+
+      // 토큰 갱신 요청 자체가 실패한 경우 무한 루프 방지
+      if (originalRequest.url === "/auth/refresh") {
         removeToken();
+        window.location.href = "/cms/login";
+        return Promise.reject(error);
       }
+
+      if (error.response?.status === 401 && !originalRequest._retry) {
+        originalRequest._retry = true;
+
+        try {
+          const refreshToken = getRefreshToken();
+          if (!refreshToken) {
+            throw new Error("No refresh token available");
+          }
+
+          // 토큰 갱신 요청은 별도의 axios 인스턴스를 사용
+          const refreshClient = axios.create({
+            baseURL: BASE_URL,
+            headers: {
+              "Content-Type": "application/json",
+            },
+            withCredentials: true,
+          });
+
+          const response = await refreshClient.post("/auth/refresh", {
+            refreshToken,
+          });
+
+          if (response.data?.success && response.data?.data?.accessToken) {
+            setToken(
+              response.data.data.accessToken,
+              response.data.data.refreshToken
+            );
+            originalRequest.headers.Authorization = `Bearer ${response.data.data.accessToken}`;
+            return client(originalRequest);
+          }
+        } catch (refreshError) {
+          console.error("Token refresh failed:", refreshError);
+          removeToken();
+          window.location.href = "/cms/login";
+          return Promise.reject(refreshError);
+        }
+      }
+
+      if (error.response && error.response.status === 401) {
+        // 401 에러 발생 시 로그
+        console.error(
+          `[API 401 Unauthorized] ${error.config.method?.toUpperCase()} ${
+            error.config.url
+          }`,
+          error.response.data
+        );
+      }
+
       return Promise.reject(error);
     }
   );
@@ -52,20 +110,6 @@ const createApiClient = (isPrivate: boolean): AxiosInstance => {
       },
       (error) => {
         console.error("[Private API Request Error]:", error);
-        return Promise.reject(error);
-      }
-    );
-
-    client.interceptors.response.use(
-      (response) => {
-        return response;
-      },
-      (error) => {
-        if (error.response?.status === 401) {
-          removeToken();
-          // 로그인 페이지로 리다이렉트
-          window.location.href = "/cms/login";
-        }
         return Promise.reject(error);
       }
     );
@@ -92,7 +136,7 @@ export type ApiRequestFunction<T> = () => Promise<ApiResponse<T>>;
 export const createApiRequest = <T, D = unknown>(
   client: AxiosInstance,
   endpoint: string,
-  method: "GET" | "POST" | "PUT" | "DELETE" = "GET",
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH" = "GET",
   data?: D
 ): ApiRequestFunction<T> => {
   return async () => {
@@ -192,7 +236,52 @@ export const api = {
       deleteMenu: (id: string) =>
         createApiRequest<void>(privateApi, `/cms/menu/${id}`, "DELETE")(),
     },
-
+    template: {
+      getTemplates: (type?: string) =>
+        createApiRequest<TemplateListResponse>(
+          privateApi,
+          type ? `/cms/template?type=${type}` : "/cms/template"
+        )(),
+      getTemplate: (id: string) =>
+        createApiRequest<Template>(privateApi, `/cms/template/${id}`)(),
+      createTemplate: (data: TemplateData) =>
+        createApiRequest<Template>(privateApi, "/cms/template", "POST", data)(),
+      updateTemplate: (id: string, data: TemplateData) =>
+        createApiRequest<Template>(
+          privateApi,
+          `/cms/template/${id}`,
+          "PUT",
+          data
+        )(),
+      deleteTemplate: (id: string) =>
+        createApiRequest<void>(privateApi, `/cms/template/${id}`, "DELETE")(),
+      togglePublish: (id: string, published: boolean) =>
+        createApiRequest<Template>(
+          privateApi,
+          `/cms/template/${id}/publish`,
+          "PATCH",
+          { published }
+        )(),
+      getVersions: (id: string) =>
+        createApiRequest<TemplateVersion[]>(
+          privateApi,
+          `/cms/template/${id}/versions`
+        )(),
+      rollbackVersion: (id: string, versionNo: number) =>
+        createApiRequest<Template>(
+          privateApi,
+          `/cms/template/${id}/rollback`,
+          "POST",
+          { versionNo }
+        )(),
+      preview: (data: TemplateData) =>
+        createApiRequest<Template>(
+          privateApi,
+          "/cms/template/preview",
+          "POST",
+          data
+        )(),
+    },
     // CMS 컨텐츠 관리
     content: {
       getContents: () =>

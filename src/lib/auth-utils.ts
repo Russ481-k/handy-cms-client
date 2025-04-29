@@ -1,39 +1,79 @@
 export const TOKEN_KEY = "auth_token";
+export const REFRESH_TOKEN_KEY = "refresh_token";
+export const TOKEN_EXPIRY_KEY = "token_expiry";
+export const USER_KEY = "auth_user";
 
 export const getToken = (): string | null => {
   if (typeof window === "undefined") return null;
-  const token =
-    localStorage.getItem(TOKEN_KEY) ||
-    document.cookie
-      .split("; ")
-      .find((row) => row.startsWith(`${TOKEN_KEY}=`))
-      ?.split("=")[1];
-  if (!token) {
-    console.warn("저장된 토큰이 없습니다");
+
+  // Check token expiry
+  const expiry = localStorage.getItem(TOKEN_EXPIRY_KEY);
+  if (expiry && new Date(expiry) < new Date()) {
+    console.warn("토큰이 만료되었습니다");
+    removeToken();
     return null;
   }
-  return token.trim();
+
+  return localStorage.getItem(TOKEN_KEY);
 };
 
-export const setToken = (token: string): void => {
+export const getRefreshToken = (): string | null => {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(REFRESH_TOKEN_KEY);
+};
+
+export const getUser = (): any => {
+  if (typeof window === "undefined") return null;
+  const userStr = localStorage.getItem(USER_KEY);
+  return userStr ? JSON.parse(userStr) : null;
+};
+
+export const setToken = (
+  token: string,
+  refreshToken?: string,
+  expiresIn?: number,
+  user?: any
+): void => {
   if (typeof window === "undefined") return;
   if (!token) {
     console.warn("빈 토큰을 저장하려고 시도했습니다");
     return;
   }
+
   const trimmedToken = token.trim();
+
+  // Store in localStorage
   localStorage.setItem(TOKEN_KEY, trimmedToken);
-  // 쿠키에 토큰 저장 (30일 유효)
-  document.cookie = `${TOKEN_KEY}=${trimmedToken}; path=/; max-age=${
-    30 * 24 * 60 * 60
-  }`;
+
+  // Set token expiry
+  const expiry = new Date();
+  const maxAge = expiresIn || 3600;
+  expiry.setSeconds(expiry.getSeconds() + maxAge);
+  localStorage.setItem(TOKEN_EXPIRY_KEY, expiry.toISOString());
+
+  // Store in cookie for SSR/middleware compatibility
+  document.cookie = `${TOKEN_KEY}=${trimmedToken}; path=/; max-age=${maxAge}; SameSite=Strict`;
+
+  if (refreshToken) {
+    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+  }
+
+  if (user) {
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  }
 };
 
 export const removeToken = (): void => {
   if (typeof window === "undefined") return;
+
+  // Remove from localStorage
   localStorage.removeItem(TOKEN_KEY);
-  // 쿠키에서 토큰 삭제
-  document.cookie = `${TOKEN_KEY}=; path=/; max-age=0`;
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+  localStorage.removeItem(TOKEN_EXPIRY_KEY);
+  localStorage.removeItem(USER_KEY);
+
+  // Remove from cookie
+  document.cookie = `${TOKEN_KEY}=; path=/; max-age=0;`;
 };
 
 export const isAuthenticated = (): boolean => {
@@ -41,12 +81,12 @@ export const isAuthenticated = (): boolean => {
   return !!token;
 };
 
-export function getAuthHeader(): Record<string, string> {
-  const token = localStorage.getItem("token");
+export const getAuthHeader = (): Record<string, string> => {
+  const token = getToken();
   return {
     Authorization: token ? `Bearer ${token}` : "",
   };
-}
+};
 
 export const getAuthHeaderOrThrow = (): { Authorization: string } => {
   const token = getToken();
@@ -54,4 +94,9 @@ export const getAuthHeaderOrThrow = (): { Authorization: string } => {
     throw new Error("No valid authentication token found");
   }
   return { Authorization: `Bearer ${token}` };
+};
+
+export const authKeys = {
+  current: () => ["auth", "current"] as const,
+  refresh: () => ["auth", "refresh"] as const,
 };

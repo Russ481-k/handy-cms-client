@@ -94,6 +94,78 @@ export interface MenuData {
   parentId?: number;
 }
 
+// Template related interfaces
+export interface TemplateBlock {
+  blockId: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  widget: {
+    type: string;
+    contentId?: number;
+    props?: Record<string, string>;
+  };
+}
+
+export interface TemplateVersion {
+  versionId: number;
+  templateId: number;
+  versionNo: number;
+  layout: TemplateBlock[];
+  updater: string;
+  updatedAt: string;
+}
+
+export interface Template {
+  id: number;
+  name: string;
+  type: "LINK" | "FOLDER" | "BOARD" | "CONTENT" | "MAIN" | "SUB";
+  url?: string;
+  targetId?: number;
+  displayPosition: "HEADER" | "FOOTER";
+  visible: boolean;
+  sortOrder: number;
+  parentId?: number;
+  children?: Template[] | null;
+  createdAt: string;
+  updatedAt: string;
+  // API specific fields
+  templateName?: string;
+  templateType?: string;
+  description?: string;
+  layout?: TemplateBlock[];
+  published?: boolean;
+  versions?: TemplateVersion[];
+}
+
+export interface TemplateData {
+  templateName: string;
+  templateType: string;
+  description?: string;
+  layout: TemplateBlock[];
+  published?: boolean;
+}
+
+export interface TemplateListParams {
+  page?: number;
+  size?: number;
+  sort?: string;
+  keyword?: string;
+  type?: string;
+  status?: string;
+}
+
+export interface TemplateListResponse {
+  data: {
+    content: Template[];
+    totalElements: number;
+    totalPages: number;
+    size: number;
+    number: number;
+  };
+}
+
 export interface ContentData {
   title: string;
   content: string;
@@ -134,4 +206,12 @@ export interface VerifyTokenResponse {
   };
   errorCode: string | null;
   stackTrace: string | null;
+}
+
+export interface TemplateSaveDto {
+  templateName: string;
+  templateType: string;
+  description?: string;
+  layout: TemplateBlock[];
+  published?: boolean;
 }

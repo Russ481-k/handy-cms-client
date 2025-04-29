@@ -1,5 +1,6 @@
 "use client";
 
+import { Template } from "@/types/api";
 import { Menu } from "@/types/menu";
 import {
   ControllerRenderProps,
@@ -15,9 +16,9 @@ interface Option {
 interface CustomSelectProps<T extends FieldValues> {
   field: ControllerRenderProps<T>;
   errors: FieldErrors<T>;
-  menu: Menu | null;
-  options: Option[];
-  selectStyle: React.CSSProperties;
+  template?: Template | null;
+  options: { id: number; name: string }[];
+  selectStyle?: React.CSSProperties;
   placeholder?: string;
   errorField?: keyof T;
 }
@@ -25,7 +26,7 @@ interface CustomSelectProps<T extends FieldValues> {
 export function CustomSelect<T extends FieldValues>({
   field,
   errors,
-  menu,
+  template,
   options,
   selectStyle,
   placeholder = "선택",
@@ -41,7 +42,7 @@ export function CustomSelect<T extends FieldValues>({
           ? "var(--chakra-colors-red-500)"
           : "inherit",
       }}
-      disabled={menu?.id === -1}
+      disabled={template?.id === -1}
     >
       <option value="">{placeholder}</option>
       {options.map((option) => (

@@ -15,98 +15,19 @@ a {
   outline: none;
 }
 
-@font-face {
-  font-family: "Pretendard";
-  src: url("/fonts/pretendard/Pretendard-Thin.otf") format("otf");
-  font-weight: 100;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Pretendard";
-  src: url("/fonts/pretendard/Pretendard-ExtraLight.otf") format("otf");
-  font-weight: 200;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Pretendard";
-  src: url("/fonts/pretendard/Pretendard-Light.otf") format("otf");
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Pretendard";
-  src: url("/fonts/pretendard/Pretendard-Regular.otf") format("otf");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Pretendard";
-  src: url("/fonts/pretendard/Pretendard-Medium.otf") format("otf");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Pretendard";
-  src: url("/fonts/pretendard/Pretendard-SemiBold.otf") format("otf");
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Pretendard";
-  src: url("/fonts/pretendard/Pretendard-Bold.otf") format("otf");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Pretendard";
-  src: url("/fonts/pretendard/Pretendard-ExtraBold.otf") format("otf");
-  font-weight: 800;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Pretendard";
-  src: url("/fonts/pretendard/Pretendard-Black.otf") format("otf");
-  font-weight: 900;
-  font-style: normal;
-  font-display: swap;
-}
+/* Font face declarations moved to a separate file */
+@import url("/styles/fonts.css");
 
 /* 전역 select 스타일 */
 select {
-  width: 100%;
-  padding: 0.5rem;
-  padding-right: 2.5rem;
-  border-width: 1px;
-  border-radius: 0.375rem;
-  border-color: var(--chakra-colors-gray-200);
-  background-color: transparent;
-  font-size: 14px;
+  appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
-  background-position: right 0.75rem center;
-  background-size: 1.25em;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  color: var(--chakra-colors-gray-700);
+  background-position: right 0.5rem center;
+  background-size: 1.5em;
+  padding-right: 2.5rem;
 }
 
 select:hover {
