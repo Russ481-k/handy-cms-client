@@ -96,15 +96,16 @@ export interface MenuData {
 
 // Template related interfaces
 export interface TemplateBlock {
-  blockId: string;
+  id: string;
+  name: string;
+  type: string;
   x: number;
   y: number;
-  w: number;
-  h: number;
-  widget: {
+  width: number;
+  height: number;
+  widget?: {
     type: string;
-    contentId?: number;
-    props?: Record<string, string>;
+    config?: Record<string, unknown>;
   };
 }
 
@@ -119,30 +120,23 @@ export interface TemplateVersion {
 
 export interface Template {
   id: number;
-  name: string;
-  type: "LINK" | "FOLDER" | "BOARD" | "CONTENT" | "MAIN" | "SUB";
-  url?: string;
-  targetId?: number;
+  templateName: string;
+  type: "MAIN" | "SUB";
+  description: string | null;
+  published: boolean;
+  versions?: TemplateVersion[];
+  layout?: TemplateBlock[];
   displayPosition: "HEADER" | "FOOTER";
   visible: boolean;
   sortOrder: number;
-  parentId?: number;
-  children?: Template[] | null;
   createdAt: string;
   updatedAt: string;
-  // API specific fields
-  templateName?: string;
-  templateType?: string;
-  description?: string;
-  layout?: TemplateBlock[];
-  published?: boolean;
-  versions?: TemplateVersion[];
 }
 
 export interface TemplateData {
   templateName: string;
   templateType: string;
-  description?: string;
+  description: string | null;
   layout: TemplateBlock[];
   published?: boolean;
 }
@@ -211,7 +205,7 @@ export interface VerifyTokenResponse {
 export interface TemplateSaveDto {
   templateName: string;
   templateType: string;
-  description?: string;
+  description: string | null;
   layout: TemplateBlock[];
   published?: boolean;
 }

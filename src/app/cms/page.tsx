@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthContext";
-import MenuManagementPage from "./menu/page";
 import { Spinner, Box } from "@chakra-ui/react";
 import { useColors } from "@/styles/theme";
 

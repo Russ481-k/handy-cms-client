@@ -17,112 +17,85 @@ import { LuCheck } from "react-icons/lu";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { getToken } from "@/lib/auth-utils";
 import { toaster } from "@/components/ui/toaster";
-import { CheckIcon, DeleteIcon, PlusIcon } from "lucide-react";
+import { CheckIcon, PlusIcon } from "lucide-react";
 import { SubmitHandler } from "react-hook-form";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { CustomSelect } from "@/components/CustomSelect";
-import { useQuery } from "@tanstack/react-query";
-import { Template } from "@/types/api";
+import { Template, TemplateVersion } from "@/types/api";
+import { FiTrash2 } from "react-icons/fi";
 
 interface TemplateEditorProps {
   template: Template | null;
   onClose: () => void;
   onDelete: (id: number) => void;
-  onSubmit: (data: Omit<Template, "id" | "createdAt" | "updatedAt">) => void;
-  parentId?: number | null;
+  onSubmit: (data: TemplateFormData) => void;
   onAddTemplate?: () => void;
   existingTemplates: Template[];
   isTempTemplate?: boolean;
-  tempTemplate?: Template | null;
-  isDeleting?: boolean;
 }
 
-// 메뉴 스키마 정의
+// 템플릿 스키마 정의
 const createTemplateSchema = (
   currentTemplate: Template | null,
   existingTemplates: Template[]
 ) =>
-  z
-    .object({
-      name: z.string().min(1, "메뉴 이름을 입력해주세요."),
-      type: z.enum(["LINK", "FOLDER", "BOARD", "CONTENT"]),
-      url: z.string().optional(),
-      targetId: z.number().optional(),
-      displayPosition: z.enum(["HEADER", "FOOTER"]),
-      visible: z.boolean(),
-      sortOrder: z.number(),
-      parentId: z.number().nullable(),
-    })
-    .refine(
-      (data) => {
-        // LINK 타입일 때는 url이 필수
-        if (data.type === "LINK") {
-          return data.url && data.url.trim().length > 0;
-        }
-        return true;
-      },
-      {
-        message: "링크 타입의 메뉴는 URL을 입력해야 합니다.",
-        path: ["url"],
-      }
-    )
-    .refine(
-      (data) => {
-        // LINK 타입일 때는 url이 중복되지 않아야 함
-        if (data.type === "LINK" && data.url) {
-          const isDuplicate = existingTemplates.some(
-            (template) =>
-              template.url === data.url && template.id !== currentTemplate?.id
-          );
-          return !isDuplicate;
-        }
-        return true;
-      },
-      {
-        message: "이미 사용 중인 URL입니다.",
-        path: ["url"],
-      }
-    );
+  z.object({
+    templateName: z.string().min(1, "템플릿 이름을 입력해주세요."),
+    type: z.enum(["MAIN", "SUB"]),
+    description: z.string().nullable(),
+    published: z.boolean(),
+    displayPosition: z.enum(["HEADER", "FOOTER"]),
+    visible: z.boolean(),
+    sortOrder: z.number(),
+    versions: z
+      .array(
+        z.object({
+          versionId: z.number(),
+          templateId: z.number(),
+          versionNo: z.number(),
+          layout: z.array(
+            z.object({
+              id: z.string(),
+              name: z.string(),
+              type: z.string(),
+              x: z.number(),
+              y: z.number(),
+              width: z.number(),
+              height: z.number(),
+              widget: z
+                .object({
+                  type: z.string(),
+                  config: z.record(z.unknown()).optional(),
+                })
+                .optional(),
+            })
+          ),
+          updater: z.string(),
+          updatedAt: z.string(),
+        })
+      )
+      .optional(),
+  });
 
-type TemplateFormData = z.infer<ReturnType<typeof createTemplateSchema>>;
-
-interface BoardResponse {
-  id: number;
-  name: string;
-  slug: string;
-  type: string;
-  useCategory: boolean;
-  allowComment: boolean;
-  useAttachment: boolean;
-  postsPerPage: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface ContentResponse {
-  id: number;
-  name: string;
-  title: string;
-  slug: string;
-  status: string;
-  authorId: number;
-  publishedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
+type TemplateFormData = {
+  templateName: string;
+  type: "MAIN" | "SUB";
+  description: string | null;
+  published: boolean;
+  versions?: TemplateVersion[];
+  displayPosition: "HEADER" | "FOOTER";
+  visible: boolean;
+  sortOrder: number;
+};
 
 export function TemplateEditor({
   template,
   onClose,
   onDelete,
   onSubmit,
-  parentId,
   onAddTemplate,
   existingTemplates,
   isTempTemplate,
-  isDeleting,
 }: TemplateEditorProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -134,18 +107,17 @@ export function TemplateEditor({
     watch,
     reset,
     formState: { errors },
-  } = useForm<TemplateFormData>({
+  } = useForm<z.infer<ReturnType<typeof createTemplateSchema>>>({
     resolver: zodResolver(createTemplateSchema(template, existingTemplates)),
     defaultValues: {
-      name: template?.name || "",
-      type: template?.type || "LINK",
-      url: template?.url || "",
-      targetId: template?.targetId || undefined,
-      displayPosition:
-        template?.displayPosition === "FOOTER" ? "FOOTER" : "HEADER",
+      templateName: template?.templateName || "",
+      type: template?.type || "MAIN",
+      description: template?.description || null,
+      published: template?.published ?? true,
+      versions: template?.versions || [],
+      displayPosition: template?.displayPosition || "HEADER",
       visible: template?.visible ?? true,
-      sortOrder: template?.sortOrder || 1,
-      parentId: template?.parentId || null,
+      sortOrder: template?.sortOrder || 0,
     },
   });
 
@@ -155,28 +127,28 @@ export function TemplateEditor({
   useEffect(() => {
     if (template) {
       reset({
-        name: template.name,
+        templateName: template.templateName,
         type: template.type,
-        url: template.url || "",
-        targetId: template.targetId || undefined,
-        displayPosition: template.displayPosition,
-        visible: template.visible,
-        sortOrder: template.sortOrder,
-        parentId: template.parentId || null,
+        description: template.description,
+        published: template.published,
+        versions: template.versions || [],
+        displayPosition: template.displayPosition || "HEADER",
+        visible: template.visible ?? true,
+        sortOrder: template.sortOrder || 0,
       });
     } else {
       reset({
-        name: "",
-        type: "LINK",
-        url: "",
-        targetId: undefined,
+        templateName: "",
+        type: "MAIN",
+        description: null,
+        published: true,
+        versions: [],
         displayPosition: "HEADER",
         visible: true,
-        sortOrder: 1,
-        parentId: parentId || null,
+        sortOrder: 0,
       });
     }
-  }, [template, reset, parentId]);
+  }, [template, reset]);
 
   // 새 메뉴가 생성되면 이름 입력 필드에 포커스
   useEffect(() => {
@@ -184,7 +156,7 @@ export function TemplateEditor({
       // 약간의 지연을 두어 DOM이 업데이트된 후에 포커스
       setTimeout(() => {
         const nameInput = document.querySelector(
-          'input[name="name"]'
+          'input[name="templateName"]'
         ) as HTMLInputElement;
         if (nameInput) {
           nameInput.focus();
@@ -221,45 +193,6 @@ export function TemplateEditor({
     fontSize: "14px",
   };
 
-  // React Query를 사용하여 데이터 페칭
-  const { data: boardsData } = useQuery({
-    queryKey: ["boards"],
-    queryFn: async () => {
-      const response = await fetch("/api/board", {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-        },
-      });
-      if (!response.ok) throw new Error("Failed to fetch boards");
-      const data = await response.json();
-      return data.map((board: BoardResponse) => ({
-        id: board.id,
-        name: board.name,
-      }));
-    },
-    staleTime: 5 * 60 * 1000, // 5분 동안 캐시 유지
-    enabled: templateType === "BOARD", // BOARD 타입일 때만 데이터 가져오기
-  });
-
-  const { data: contentsData } = useQuery({
-    queryKey: ["contents"],
-    queryFn: async () => {
-      const response = await fetch("/api/content", {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-        },
-      });
-      if (!response.ok) throw new Error("Failed to fetch contents");
-      const data = await response.json();
-      return data.map((content: ContentResponse) => ({
-        id: content.id,
-        name: content.name,
-      }));
-    },
-    staleTime: 5 * 60 * 1000, // 5분 동안 캐시 유지
-    enabled: templateType === "CONTENT", // CONTENT 타입일 때만 데이터 가져오기
-  });
-
   const handleDelete = async () => {
     if (!template || !onDelete) return;
     setIsDeleteDialogOpen(true);
@@ -284,20 +217,7 @@ export function TemplateEditor({
   const handleFormSubmit: SubmitHandler<TemplateFormData> = async (data) => {
     try {
       setIsSubmitting(true);
-      // LINK 타입일 때는 url이 필수
-      if (data.type === "LINK" && !data.url?.trim()) {
-        toaster.error({
-          title: "URL을 입력해주세요.",
-          duration: 3000,
-        });
-        return;
-      }
-
-      // 폼 데이터를 서버에 전송
-      await onSubmit({
-        ...data,
-        parentId: data.parentId || undefined,
-      });
+      await onSubmit(data);
     } catch (error) {
       console.error("Error submitting form:", error);
       toaster.error({
@@ -309,6 +229,8 @@ export function TemplateEditor({
     }
   };
 
+  const isDefaultTemplate = template?.id === 1; // 기본 메인 템플릿 ID가 1이라고 가정
+
   return (
     <>
       <Box>
@@ -317,28 +239,28 @@ export function TemplateEditor({
             <Box>
               <Flex mb={1}>
                 <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                  메뉴명
+                  템플릿 이름
                 </Text>
                 <Text fontSize="sm" color={errorColor} ml={1}>
                   *
                 </Text>
               </Flex>
               <Controller
-                name="name"
+                name="templateName"
                 control={control}
                 render={({ field }) => (
                   <Input
                     {...field}
-                    borderColor={errors.name ? errorColor : borderColor}
+                    borderColor={errors.templateName ? errorColor : borderColor}
                     color={textColor}
                     bg="transparent"
-                    disabled={template?.id === -1}
+                    disabled={isDefaultTemplate}
                   />
                 )}
               />
-              {errors.name && (
+              {errors.templateName && (
                 <Text color={errorColor} fontSize="sm" mt={1}>
-                  {errors.name.message}
+                  {errors.templateName.message}
                 </Text>
               )}
             </Box>
@@ -346,7 +268,7 @@ export function TemplateEditor({
             <Box>
               <Flex mb={1}>
                 <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                  메뉴 유형
+                  템플릿 유형
                 </Text>
                 <Text fontSize="sm" color={errorColor} ml={1}>
                   *
@@ -365,104 +287,40 @@ export function TemplateEditor({
                         ? "var(--chakra-colors-red-500)"
                         : "inherit",
                     }}
-                    disabled={template?.id === -1}
+                    disabled={isDefaultTemplate}
                   >
-                    <option value="LINK">링크</option>
-                    <option value="FOLDER">폴더</option>
-                    <option value="BOARD">게시판</option>
-                    <option value="CONTENT">컨텐츠</option>
+                    <option value="MAIN">메인 템플릿</option>
+                    <option value="SUB">서브 템플릿</option>
                   </select>
                 )}
               />
             </Box>
 
-            {templateType === "BOARD" && (
-              <Box>
-                <Flex mb={1}>
-                  <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                    게시판
-                  </Text>
-                  <Text fontSize="sm" color={errorColor} ml={1}>
-                    *
-                  </Text>
-                </Flex>
-                <Controller
-                  name="targetId"
-                  control={control}
-                  render={({ field }) => (
-                    <CustomSelect
-                      field={field as any}
-                      errors={errors}
-                      template={template}
-                      options={boardsData || []}
-                      selectStyle={selectStyle}
-                      placeholder="게시판 선택"
-                    />
-                  )}
-                />
-              </Box>
-            )}
-
-            {templateType === "CONTENT" && (
-              <Box>
-                <Flex mb={1}>
-                  <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                    컨텐츠
-                  </Text>
-                  <Text fontSize="sm" color={errorColor} ml={1}>
-                    *
-                  </Text>
-                </Flex>
-                <Controller
-                  name="targetId"
-                  control={control}
-                  render={({ field }) => (
-                    <CustomSelect
-                      field={field as any}
-                      errors={errors}
-                      template={template}
-                      options={contentsData || []}
-                      selectStyle={selectStyle}
-                      placeholder="컨텐츠 선택"
-                    />
-                  )}
-                />
-              </Box>
-            )}
-
-            {templateType === "LINK" && (
-              <Box>
-                <Flex mb={1}>
-                  <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                    URL
-                  </Text>
-                  <Text fontSize="sm" color={errorColor} ml={1}>
-                    *
-                  </Text>
-                </Flex>
-                <Controller
-                  name="url"
-                  control={control}
-                  render={({ field }) => (
-                    <Input
-                      {...field}
-                      borderColor={errors.url ? errorColor : borderColor}
-                      color={textColor}
-                      bg="transparent"
-                      disabled={template?.id === -1}
-                    />
-                  )}
-                />
-                {errors.url && (
-                  <Text color={errorColor} fontSize="sm" mt={1}>
-                    {errors.url.message}
-                  </Text>
+            <Box>
+              <Flex mb={1}>
+                <Text fontSize="sm" fontWeight="medium" color={textColor}>
+                  설명
+                </Text>
+              </Flex>
+              <Controller
+                name="description"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    value={field.value || ""}
+                    borderColor={errors.description ? errorColor : borderColor}
+                    color={textColor}
+                    bg="transparent"
+                    disabled={isDefaultTemplate}
+                  />
                 )}
-              </Box>
-            )}
+              />
+            </Box>
+
             <Flex alignItems="center">
               <Controller
-                name="visible"
+                name="published"
                 control={control}
                 render={({ field: { value, onChange } }) => (
                   <Checkbox.Root
@@ -470,7 +328,7 @@ export function TemplateEditor({
                     onCheckedChange={(e) => onChange(!!e.checked)}
                     colorPalette="blue"
                     size="sm"
-                    disabled={template?.id === -1}
+                    disabled={isDefaultTemplate}
                   >
                     <Checkbox.HiddenInput />
                     <Checkbox.Control
@@ -491,7 +349,7 @@ export function TemplateEditor({
                     </Checkbox.Control>
                     <Checkbox.Label>
                       <Text fontWeight="medium" color={textColor}>
-                        메뉴 노출
+                        공개
                       </Text>
                     </Checkbox.Label>
                   </Checkbox.Root>
@@ -500,35 +358,17 @@ export function TemplateEditor({
             </Flex>
 
             <Flex justify="space-between" gap={2} mt={4}>
-              {template && template.name !== "홈" ? (
+              {template && !isDefaultTemplate ? (
                 <Button
-                  borderColor={colors.accent.delete.default}
-                  color={colors.accent.delete.default}
+                  colorScheme="red"
+                  variant="ghost"
                   onClick={handleDelete}
-                  variant="outline"
-                  _hover={{
-                    bg: colors.accent.delete.bg,
-                    borderColor: colors.accent.delete.hover,
-                    color: colors.accent.delete.hover,
-                    transform: "translateY(-1px)",
-                  }}
-                  _active={{ transform: "translateY(0)" }}
-                  transition="all 0.2s ease"
-                  disabled={
-                    template?.id === -1 ||
-                    isDeleting ||
-                    localIsDeleting ||
-                    isSubmitting
-                  }
+                  disabled={isDefaultTemplate}
                 >
-                  <Box display="flex" alignItems="center" gap={2} w={4}>
-                    {isDeleting || localIsDeleting ? (
-                      <Spinner size="sm" />
-                    ) : (
-                      <DeleteIcon />
-                    )}
+                  <Box display="flex" alignItems="center" gap={2}>
+                    <FiTrash2 />
+                    <Text>삭제</Text>
                   </Box>
-                  <Text>삭제</Text>
                 </Button>
               ) : (
                 <Box />
@@ -540,7 +380,7 @@ export function TemplateEditor({
                     variant="outline"
                     colorScheme="blue"
                   >
-                    <PlusIcon /> 메뉴
+                    <PlusIcon /> 템플릿
                   </Button>
                 )}
                 <Button
@@ -548,14 +388,9 @@ export function TemplateEditor({
                   bg={buttonBg}
                   color="white"
                   _hover={{ bg: colors.primary.hover }}
-                  disabled={
-                    template?.id === -1 ||
-                    isDeleting ||
-                    localIsDeleting ||
-                    isSubmitting
-                  }
+                  disabled={isDefaultTemplate || isSubmitting}
                 >
-                  <Box display="flex" alignItems="center" gap={2} w={4}>
+                  <Box display="flex" alignItems="center" gap={2}>
                     {isSubmitting ? <Spinner size="sm" /> : <CheckIcon />}
                   </Box>
                   <Text>저장</Text>
