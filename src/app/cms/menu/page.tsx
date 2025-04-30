@@ -39,7 +39,7 @@ export default function MenuManagementPage() {
   >({
     queryKey: menuKeys.list(""),
     queryFn: async () => {
-      const response = await api.public.menu.getMenus();
+      const response = await api.private.menu.getMenus();
       return response;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes

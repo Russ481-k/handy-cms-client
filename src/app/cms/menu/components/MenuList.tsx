@@ -10,6 +10,7 @@ import {
   LuLink,
   LuLayoutList,
   LuFileText,
+  LuEyeOff,
 } from "react-icons/lu";
 import { useColors } from "@/styles/theme";
 import { useColorModeValue } from "@/components/ui/color-mode";
@@ -230,7 +231,13 @@ export function MenuList({
             onDelete={
               menu.id === -1 ? undefined : () => handleDeleteClick(menu)
             }
-            renderBadges={() => !menu.visible && "비활성"}
+            renderBadges={() =>
+              !menu.visible && (
+                <Flex align="center" justify="center" width={10} height={10}>
+                  <LuEyeOff size={12} color={colors.text.secondary} />
+                </Flex>
+              )
+            }
             onClick={() => {
               onEditMenu(menu);
               if (hasChildren) {
@@ -279,6 +286,9 @@ export function MenuList({
     updatedAt: new Date().toISOString(),
     displayPosition: "HEADER",
   };
+
+  console.log("MenuList - All Menus:", menus);
+  console.log("MenuList - Root Menu:", rootMenu);
 
   if (menus.length === 0) {
     return (

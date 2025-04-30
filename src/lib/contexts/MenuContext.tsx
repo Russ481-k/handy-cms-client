@@ -1,8 +1,8 @@
 import React, { createContext, useContext } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Menu } from "@/types/api";
-import { menuApi, menuKeys } from "@/lib/api/menu";
-import { api, ApiResponse } from "@/lib/api-client";
+import { menuApi } from "@/lib/api/menu";
+import { api } from "@/lib/api-client";
 import { useAuth } from "@/lib/AuthContext";
 import { MenuSquare } from "lucide-react";
 
@@ -22,22 +22,31 @@ export function MenuProvider({ children }: { children: React.ReactNode }) {
     isLoading,
     error,
   } = useQuery<Menu[]>({
-    queryKey: menuKeys.all,
+    queryKey: ["menus"],
     queryFn: async () => {
-      const response = isAuthenticated
-        ? await api.private.menu.getMenus()
-        : await api.public.menu.getMenus();
-      return (response as ApiResponse<Menu[]>).data;
+      // 비공개 API 응답
+      const privateResponse = await api.private.menu.getMenus();
+      console.log("MenuContext - Private API Response:", privateResponse);
+
+      // 공개 API 응답
+      const publicResponse = await api.public.menu.getMenus();
+      console.log("MenuContext - Public API Response:", publicResponse);
+
+      // menuApi 응답
+      const menuApiResponse = await menuApi.getMenus();
+      console.log("MenuContext - MenuApi Response:", menuApiResponse);
+
+      return menuApiResponse;
     },
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
   });
+
+  console.log("MenuContext - Processed Menus:", menus);
+  console.log("MenuContext - Is Authenticated:", isAuthenticated);
 
   return (
     <MenuContext.Provider
       value={{
-        // @ts-ignore
-        menus: menus.data,
+        menus,
         isLoading,
         error: error as Error | null,
       }}

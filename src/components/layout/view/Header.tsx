@@ -44,6 +44,9 @@ export const Header = memo(function Header({
   const pathname = usePathname();
   const isMainPage = pathname === "/";
 
+  // 비지블이 false인 메뉴 필터링
+  const visibleMenus = menus.filter((menu) => menu.visible !== false);
+
   // 스크롤 이벤트 핸들러
   useEffect(() => {
     const handleScroll = () => {
@@ -150,7 +153,7 @@ export const Header = memo(function Header({
                   width="fit-content"
                   mx="auto"
                 >
-                  {menus?.map((menu, index) => (
+                  {visibleMenus?.map((menu, index) => (
                     <MemoizedMenuItem
                       key={index + menu.id}
                       menu={menu}

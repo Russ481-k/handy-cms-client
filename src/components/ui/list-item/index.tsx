@@ -58,7 +58,7 @@ export function ListItem({
       borderRadius="md"
       p={2}
       opacity={isDragging ? 0.5 : 1}
-      cursor="move"
+      cursor="grab"
     >
       <Flex align="center" gap={2}>
         {icon}
