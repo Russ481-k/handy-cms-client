@@ -8,7 +8,7 @@ import { useColorModeValue } from "@/components/ui/color-mode";
 import { getAuthHeader } from "@/lib/auth-utils";
 import { TreeItem } from "@/components/ui/tree-list";
 import { LuInbox, LuFileText } from "react-icons/lu";
-import { Menu } from "@/app/cms/menu/page";
+import { Menu } from "@/types/api";
 import { ListItem } from "@/components/ui/list-item";
 
 export interface ContentListProps {
@@ -43,7 +43,7 @@ export function ContentList({
       displayPosition: menu.displayPosition,
       visible: menu.visible,
       sortOrder: menu.sortOrder,
-      parentId: menu.parentId,
+      parentId: menu.parentId ?? undefined,
       createdAt: menu.createdAt,
       updatedAt: menu.updatedAt,
       children: menu.children?.map(transformMenuToTreeItem),

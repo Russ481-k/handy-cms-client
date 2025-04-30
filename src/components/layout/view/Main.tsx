@@ -1,7 +1,7 @@
 "use client";
 
 import { Box, Container, VStack } from "@chakra-ui/react";
-import { Menu } from "@/app/cms/menu/page";
+import { Menu } from "@/types/api";
 import { memo } from "react";
 import { CompanySection } from "@/components/sections/CompanySection";
 import { ApplicationSection } from "@/components/sections/ApplicationSection";

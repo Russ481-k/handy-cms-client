@@ -17,7 +17,7 @@ import { useRef, useState, useEffect, memo } from "react";
 import NextLink from "next/link";
 import { MenuItem } from "./MenuItem";
 import { GiHamburgerMenu } from "react-icons/gi";
-import { Menu } from "@/app/cms/menu/page";
+import { Menu } from "@/types/api";
 import { usePathname } from "next/navigation";
 
 interface HeaderProps {

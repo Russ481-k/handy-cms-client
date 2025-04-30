@@ -1,7 +1,6 @@
 "use client";
 
 import { Template } from "@/types/api";
-import { Menu } from "@/types/menu";
 import {
   ControllerRenderProps,
   FieldValues,

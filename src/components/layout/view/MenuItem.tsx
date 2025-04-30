@@ -2,7 +2,7 @@
 
 import { Box, Link, VStack } from "@chakra-ui/react";
 import NextLink from "next/link";
-import { Menu } from "../../../app/cms/menu/page";
+import { Menu } from "@/types/api";
 
 interface MenuItemProps {
   menu: Menu;

@@ -1,4 +1,4 @@
-import { Menu } from "@/types/menu";
+import { Menu } from "@/types/api";
 import { ApiResponse, api } from "@/lib/api-client";
 
 // 메뉴를 sortOrder 기준으로 정렬하는 헬퍼 함수

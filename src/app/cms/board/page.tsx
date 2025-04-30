@@ -200,6 +200,8 @@ export default function BoardManagementPage() {
     },
   ];
 
+  console.log(apiResponse);
+
   return (
     <Box bg={bg} minH="100vh" w="full" position="relative">
       <Box w="full">

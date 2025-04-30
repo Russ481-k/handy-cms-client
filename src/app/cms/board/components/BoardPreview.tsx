@@ -14,7 +14,7 @@ import {
 import { useColors } from "@/styles/theme";
 import { useColorMode } from "@/components/ui/color-mode";
 import { Board } from "@/types/api";
-import { Menu } from "../../menu/page";
+import { Menu } from "@/types/api";
 import { AgGridReact } from "ag-grid-react";
 import { useState, useMemo } from "react";
 import {

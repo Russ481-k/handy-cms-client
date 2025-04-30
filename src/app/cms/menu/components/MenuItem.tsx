@@ -28,6 +28,7 @@ import { MenuItemProps, DragItem } from "../types";
 import { toaster } from "@/components/ui/toaster";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { menuApi, menuKeys } from "@/lib/api/menu";
+import { Menu } from "@/types/api";
 
 export const MenuItem = ({
   menu,
@@ -509,7 +510,7 @@ export const MenuItem = ({
               marginLeft: `${level * 0.5}rem`,
             }}
           >
-            {menu.children.map((child, index) => (
+            {menu.children.map((child: Menu, index: number) => (
               <MenuItem
                 key={child.id}
                 menu={child}

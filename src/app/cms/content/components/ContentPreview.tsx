@@ -16,7 +16,7 @@ import {
 import { useColors } from "@/styles/theme";
 import { useColorMode } from "@/components/ui/color-mode";
 import { Content, VisionSection } from "../types";
-import { Menu } from "../../menu/page";
+import { Menu } from "@/types/api";
 import Layout from "@/components/layout/view/Layout";
 import { LuCalendar, LuEye } from "react-icons/lu";
 import { LexicalRenderer } from "./LexicalRenderer";

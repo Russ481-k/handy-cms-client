@@ -12,8 +12,9 @@ import { toaster } from "@/components/ui/toaster";
 import { TreeItem } from "@/components/ui/tree-list";
 import { ContentPreview } from "./components/ContentPreview";
 import { convertTreeItemToContent } from "./types";
-import { Menu } from "../menu/page";
+
 import { getAuthHeader } from "@/lib/auth-utils";
+import { Menu } from "@/types/api";
 
 export default function ContentManagementPage() {
   const [selectedContent, setSelectedContent] = useState<TreeItem | null>(null);

@@ -17,21 +17,7 @@ import { menuApi, menuKeys, UpdateMenuOrderRequest } from "@/lib/api/menu";
 import { api } from "@/lib/api-client";
 import { ApiResponse } from "@/lib/api-client";
 import { sortMenus } from "@/lib/api/menu";
-
-export interface Menu {
-  id: number;
-  name: string;
-  type: "LINK" | "FOLDER" | "BOARD" | "CONTENT";
-  url?: string;
-  targetId?: number;
-  displayPosition: "HEADER" | "FOOTER";
-  visible: boolean;
-  sortOrder: number;
-  parentId?: number;
-  children?: Menu[] | null;
-  createdAt: string;
-  updatedAt: string;
-}
+import { Menu } from "@/types/api";
 
 export default function MenuManagementPage() {
   const renderCount = React.useRef(0);

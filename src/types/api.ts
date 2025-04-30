@@ -8,7 +8,7 @@ export interface Menu {
   displayPosition: "HEADER" | "FOOTER";
   visible: boolean;
   sortOrder: number;
-  parentId?: number;
+  parentId?: number | null;
   children?: Menu[] | null;
   createdAt: string;
   updatedAt: string;

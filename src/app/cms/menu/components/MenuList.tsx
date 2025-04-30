@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Box, Flex, Text, Spinner, VStack } from "@chakra-ui/react";
-import { Menu } from "../page";
+import { Menu } from "@/types/api";
 import { ListItem } from "@/components/ui/list-item";
 import {
   LuFolder,
@@ -13,7 +13,7 @@ import {
 } from "react-icons/lu";
 import { useColors } from "@/styles/theme";
 import { useColorModeValue } from "@/components/ui/color-mode";
-import { DndProvider, useDrag } from "react-dnd";
+import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { DropZone } from "@/components/ui/drop-zone";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -60,13 +60,6 @@ export function MenuList({
     colors.primary.default,
     colors.primary.default
   );
-
-  const [{ isDragging }, drag] = useDrag({
-    type: "LIST_ITEM",
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-    }),
-  });
 
   const toggleMenu = (menuId: number) => {
     if (menuId === -1) return;
@@ -130,8 +123,11 @@ export function MenuList({
 
     // 전체 메뉴인 경우 (id가 -1)
     if (parentMenu.id === -1) {
-      // 전체 메뉴를 부모로 사용
-      onAddMenu(parentMenu);
+      // 전체 메뉴를 부모로 사용하고 parentId를 undefined로 설정
+      onAddMenu({
+        ...parentMenu,
+        parentId: undefined,
+      });
       return;
     }
 
@@ -228,7 +224,9 @@ export function MenuList({
             name={menu.name}
             icon={isLoading ? <Spinner size="sm" /> : getMenuIcon(menu)}
             isSelected={menu.id === selectedMenuId}
-            onAdd={() => handleAddMenu(menu)}
+            onAdd={
+              menu.type === "FOLDER" ? () => handleAddMenu(menu) : undefined
+            }
             onDelete={
               menu.id === -1 ? undefined : () => handleDeleteClick(menu)
             }
@@ -241,7 +239,7 @@ export function MenuList({
             }}
             index={index}
             level={level}
-            isDragging={isDragging}
+            isDragging={false}
             type={menu.type}
           />
         </Box>
@@ -256,7 +254,7 @@ export function MenuList({
               transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
             }}
           >
-            {menu.children?.map((child, childIndex) =>
+            {menu.children?.map((child: Menu, childIndex: number) =>
               renderMenuItem(child, level + 1, childIndex)
             )}
           </Box>
@@ -292,14 +290,7 @@ export function MenuList({
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <Box
-        ref={(node: HTMLDivElement | null) => {
-          if (node) {
-            drag(node);
-            menuListRef.current = node;
-          }
-        }}
-      >
+      <Box ref={menuListRef}>
         <VStack gap={0} align="stretch">
           <DropZone
             targetId={rootMenu.id}

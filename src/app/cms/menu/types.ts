@@ -1,4 +1,4 @@
-import { Menu } from "@/app/cms/menu/page";
+import { Menu } from "@/types/api";
 
 export interface DragItem {
   id: number;

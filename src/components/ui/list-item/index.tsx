@@ -3,6 +3,7 @@ import { Box, Flex, Text, IconButton } from "@chakra-ui/react";
 import { FiPlus, FiTrash2 } from "react-icons/fi";
 import { useColors } from "@/styles/theme";
 import { useColorModeValue } from "@/components/ui/color-mode";
+import { useDrag } from "react-dnd";
 
 export interface ListItemProps {
   id: number;
@@ -17,6 +18,7 @@ export interface ListItemProps {
   index?: number;
   level?: number;
   type?: "LINK" | "FOLDER" | "BOARD" | "CONTENT" | "MAIN" | "SUB";
+  isDragging?: boolean;
 }
 
 export function ListItem({
@@ -38,14 +40,25 @@ export function ListItem({
   const selectedBg = useColorModeValue("gray.100", "gray.700");
   const hoverBg = useColorModeValue("gray.100", "gray.700");
 
+  const [{ isDragging }, drag] = useDrag({
+    type: "LIST_ITEM",
+    item: { id, index, level },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
   return (
     <Box
+      ref={drag}
       onClick={onClick}
       bg={isSelected ? selectedBg : "transparent"}
       _hover={{ bg: hoverBg }}
       transition="all 0.2s"
       borderRadius="md"
       p={2}
+      opacity={isDragging ? 0.5 : 1}
+      cursor="move"
     >
       <Flex align="center" gap={2}>
         {icon}

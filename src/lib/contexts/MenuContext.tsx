@@ -1,6 +1,6 @@
 import React, { createContext, useContext } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Menu } from "@/app/cms/menu/page";
+import { Menu } from "@/types/api";
 import { menuApi, menuKeys } from "@/lib/api/menu";
 import { api, ApiResponse } from "@/lib/api-client";
 import { useAuth } from "@/lib/AuthContext";

@@ -17,7 +17,7 @@ import { LuCheck } from "react-icons/lu";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Menu } from "../page";
+import { Menu } from "@/types/api";
 import { getToken } from "@/lib/auth-utils";
 import { toaster } from "@/components/ui/toaster";
 import { CheckIcon, DeleteIcon, PlusIcon } from "lucide-react";
@@ -388,7 +388,6 @@ export function MenuEditor({
                     <CustomSelect
                       field={field}
                       errors={errors}
-                      menu={menu}
                       options={boardsData || []}
                       selectStyle={selectStyle}
                       placeholder="게시판 선택"
@@ -415,7 +414,6 @@ export function MenuEditor({
                     <CustomSelect
                       field={field}
                       errors={errors}
-                      menu={menu}
                       options={contentsData || []}
                       selectStyle={selectStyle}
                       placeholder="컨텐츠 선택"
@@ -425,36 +423,38 @@ export function MenuEditor({
               </Box>
             )}
 
-            {menuType === "LINK" && (
-              <Box>
-                <Flex mb={1}>
-                  <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                    URL
-                  </Text>
+            <Box>
+              <Flex mb={1}>
+                <Text fontSize="sm" fontWeight="medium" color={textColor}>
+                  URL
+                </Text>
+                {menuType === "LINK" && (
                   <Text fontSize="sm" color={errorColor} ml={1}>
                     *
                   </Text>
-                </Flex>
-                <Controller
-                  name="url"
-                  control={control}
-                  render={({ field }) => (
-                    <Input
-                      {...field}
-                      borderColor={errors.url ? errorColor : borderColor}
-                      color={textColor}
-                      bg="transparent"
-                      disabled={menu?.id === -1}
-                    />
-                  )}
-                />
-                {errors.url && (
-                  <Text color={errorColor} fontSize="sm" mt={1}>
-                    {errors.url.message}
-                  </Text>
                 )}
-              </Box>
-            )}
+              </Flex>
+              <Controller
+                name="url"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    placeholder="URL을 입력하세요"
+                    borderColor={errors.url ? errorColor : borderColor}
+                    color={textColor}
+                    bg="transparent"
+                    disabled={menu?.id === -1}
+                  />
+                )}
+              />
+              {errors.url && (
+                <Text color={errorColor} fontSize="sm" mt={1}>
+                  {errors.url.message}
+                </Text>
+              )}
+            </Box>
+
             <Flex alignItems="center">
               <Controller
                 name="visible"
