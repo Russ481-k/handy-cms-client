@@ -11,22 +11,22 @@ export const boardKeys = {
 
 export const boardApi = {
   getBoards: () => {
-    return api.private.get<Board[]>("/api/v1/bbs/master");
+    return api.private.get<Board[]>("/cms/bbs/master");
   },
 
   getBoard: (id: number) => {
-    return api.private.get<Board>(`/api/v1/bbs/master/${id}`);
+    return api.private.get<Board>(`/cms/bbs/master/${id}`);
   },
 
   saveBoard: ({ id, boardData }: { id?: number; boardData: BoardData }) => {
     if (id) {
-      return api.private.put<Board>(`/api/v1/bbs/master/${id}`, boardData);
+      return api.private.put<Board>(`/cms/bbs/master/${id}`, boardData);
     }
-    return api.private.post<Board>("/api/v1/bbs/master", boardData);
+    return api.private.post<Board>("/cms/bbs/master", boardData);
   },
 
   deleteBoard: (id: number) => {
-    return api.private.delete(`/api/v1/bbs/master/${id}`);
+    return api.private.delete(`/cms/bbs/master/${id}`);
   },
 
   // 게시글 관련 API
@@ -51,23 +51,23 @@ export const boardApi = {
     return api.private.get<{
       data: Post[];
       pagination: { page: number; size: number; total: number };
-    }>(`/api/v1/bbs/${bbsId}?${queryString.toString()}`);
+    }>(`/cms/bbs/${bbsId}?${queryString.toString()}`);
   },
 
   getPost: (bbsId: number, nttId: number) => {
-    return api.private.get<Post>(`/api/v1/bbs/${bbsId}/${nttId}`);
+    return api.private.get<Post>(`/cms/bbs/${bbsId}/${nttId}`);
   },
 
   createPost: (postData: Omit<Post, "id" | "createdAt" | "updatedAt">) => {
-    return api.private.post<Post>("/api/v1/bbs", postData);
+    return api.private.post<Post>("/bbs", postData);
   },
 
   updatePost: (bbsId: number, nttId: number, postData: Partial<Post>) => {
-    return api.private.put<Post>(`/api/v1/bbs/${bbsId}/${nttId}`, postData);
+    return api.private.put<Post>(`/cms/bbs/${bbsId}/${nttId}`, postData);
   },
 
   deletePost: (bbsId: number, nttId: number) => {
-    return api.private.delete(`/api/v1/bbs/${bbsId}/${nttId}`);
+    return api.private.delete(`/cms/bbs/${bbsId}/${nttId}`);
   },
 
   // QNA 관련 API
@@ -75,10 +75,7 @@ export const boardApi = {
     bbsId: number,
     questionData: { title: string; contentHtml: string; writer?: string }
   ) => {
-    return api.private.post<Post>(
-      `/api/v1/bbs/${bbsId}/question`,
-      questionData
-    );
+    return api.private.post<Post>(`/cms/bbs/${bbsId}/question`, questionData);
   },
 
   createReply: (replyData: {
@@ -88,6 +85,6 @@ export const boardApi = {
     contentHtml: string;
     writer: string;
   }) => {
-    return api.private.post<Post>("/api/v1/bbs/reply", replyData);
+    return api.private.post<Post>("/cms/bbs/reply", replyData);
   },
 };
