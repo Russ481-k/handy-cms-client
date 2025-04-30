@@ -118,88 +118,27 @@ export function HeroSection({ slideContents }: HeroSectionProps) {
   };
 
   return (
-    <Box px={0} py={24} bg={colors.bg}>
-      <Container maxW="100%">
+    <Box bg={colors.bg}>
+      <Container p={0} maxW="100%">
         <Box
           position="relative"
-          height={{ base: "400px", md: "500px", lg: "680px" }}
+          height={{ base: "400px", md: "500px", lg: "118vh" }}
           overflow="hidden"
-          borderRadius={{ base: "20px", md: "26px" }}
         >
-          {/* Controller Background */}
           {slideContents.length > 1 && (
-            <Box
-              position="absolute"
-              bottom={0}
-              right={0}
-              width={{ base: "100%", md: "400px" }}
-              height={{ base: "60px", md: "80px" }}
-              bg="white"
-              borderTopLeftRadius={{ base: "0", md: "24px" }}
-              zIndex={3}
-              display="flex"
-              alignItems="center"
-              px={{ base: 4, md: 8 }}
-            >
-              {/* Progress Bar */}
-              <Box
-                flex={1}
-                height="2px"
-                bg="gray.100"
-                borderRadius="full"
-                overflow="hidden"
-                position="relative"
-              >
-                <Box
-                  position="absolute"
-                  left={0}
-                  top={0}
-                  height="100%"
-                  width={`${((currentPage + 1) / slideContents.length) * 100}%`}
-                  bg="blue.500"
-                  transition="width 0.3s ease"
-                />
-              </Box>
-
-              {/* Navigation */}
-              <Flex align="center" gap={6} ml={8}>
-                <Flex align="center" gap={3}>
-                  <Text color="gray.900" fontSize="xl" fontWeight="bold">
-                    {String(currentPage + 1).padStart(2, "0")}
-                  </Text>
-                  <Box w="1px" h="20px" bg="gray.200" />
-                  <Text color="gray.400" fontSize="xl">
-                    {String(slideContents.length).padStart(2, "0")}
-                  </Text>
-                </Flex>
-                <Flex gap={2}>
-                  <IconButton
-                    aria-label="Previous slide"
-                    variant="ghost"
-                    size="lg"
-                    color="gray.400"
-                    borderRadius="full"
-                    onClick={() => paginate(-1)}
-                    _hover={{ color: "gray.900", bg: "gray.50" }}
-                    transition="all 0.2s"
-                  >
-                    <Box as={LuChevronLeft} boxSize={6} />
-                  </IconButton>
-                  <IconButton
-                    aria-label="Next slide"
-                    variant="ghost"
-                    size="lg"
-                    color="gray.400"
-                    borderRadius="full"
-                    onClick={() => paginate(1)}
-                    _hover={{ color: "gray.900", bg: "gray.50" }}
-                    transition="all 0.2s"
-                  >
-                    <Box as={LuChevronRight} boxSize={6} />
-                  </IconButton>
-                </Flex>
-              </Flex>
-            </Box>
+            <iframe
+              width="100%"
+              height="100%"
+              src="https://www.youtube.com/embed/cAJ2OoIWhiQ?autoplay=1&mute=1&loop=1&playlist=cAJ2OoIWhiQ&controls=0&modestbranding=1&rel=0&disablekb=1&fs=0"
+              title="YouTube video player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen={false}
+              style={{
+                objectFit: "cover",
+                pointerEvents: "none",
+              }}
+            />
           )}
 
           <AnimatePresence initial={false} custom={currentPage}>
@@ -244,7 +183,6 @@ export function HeroSection({ slideContents }: HeroSectionProps) {
                   justify="center"
                   height="100%"
                   maxW="3xl"
-                  px={{ base: 4, md: 8 }}
                 >
                   {slideContents[currentPage]?.header && (
                     <Text
