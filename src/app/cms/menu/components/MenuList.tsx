@@ -287,9 +287,6 @@ export function MenuList({
     displayPosition: "HEADER",
   };
 
-  console.log("MenuList - All Menus:", menus);
-  console.log("MenuList - Root Menu:", rootMenu);
-
   if (menus.length === 0) {
     return (
       <Flex justify="center" align="center" h="200px">

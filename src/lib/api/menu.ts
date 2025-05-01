@@ -99,6 +99,13 @@ export const menuApi = {
     const sortedMenus = sortMenus(response.data.data);
     return sortedMenus;
   },
+  getMenusByType: async (type: string) => {
+    const response = await api.private.get<ApiResponse<Menu[]>>(
+      `/cms/menu/type/${type}`
+    );
+    const sortedMenus = sortMenus(response.data.data);
+    return sortedMenus;
+  },
   getMenu: async (id: number) => {
     const response = await api.private.get<ApiResponse<Menu>>(
       `/cms/menu/${id}`
@@ -149,6 +156,7 @@ export const menuKeys = {
   all: ["menus"] as const,
   lists: () => [...menuKeys.all, "list"] as const,
   list: (filters: string) => [...menuKeys.lists(), { filters }] as const,
+  byType: (type: string) => [...menuKeys.all, "type", type] as const,
   details: () => [...menuKeys.all, "detail"] as const,
   detail: (id: number) => [...menuKeys.details(), id] as const,
 };
