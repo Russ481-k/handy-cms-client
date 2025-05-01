@@ -502,7 +502,7 @@ export const MenuItem = ({
         {menu.children && menu.children.length > 0 && (
           <Box
             style={{
-              maxHeight: expanded ? "1000px" : "0",
+              maxHeight: expanded ? "1000vh" : "0",
               overflow: "hidden",
               opacity: expanded ? 1 : 0,
               transform: expanded ? "translateY(0)" : "translateY(-10px)",

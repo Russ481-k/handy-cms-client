@@ -37,7 +37,7 @@ export async function middleware(request: NextRequest) {
     const token = request.cookies.get(TOKEN_KEY)?.value;
     console.log("Middleware - Token found:", !!token);
 
-    if (!token) {
+    if (!token && pathname !== "/cms/login") {
       console.log("Middleware - No token, redirecting to login");
       const url = new URL("/cms/login", request.url);
       return NextResponse.redirect(url);

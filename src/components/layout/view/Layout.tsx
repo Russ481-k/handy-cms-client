@@ -5,13 +5,13 @@ import { Header } from "./Header";
 import { Footer } from "@/components/layout/view/Footer";
 import { memo, Suspense } from "react";
 import { useColors } from "@/styles/theme";
-import { Menu } from "@/app/cms/menu/page";
+import { Menu } from "@/types/api";
 
 interface LayoutProps {
   children: React.ReactNode;
   currentPage?: string;
   isPreview?: boolean;
-  menus: Menu[];
+  menus?: Menu[];
 }
 
 // Header를 메모이제이션하여 props가 변경되지 않으면 리렌더링되지 않도록 함

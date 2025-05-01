@@ -49,8 +49,12 @@ export const boardApi = {
       });
     }
     return api.private.get<{
-      data: Post[];
-      pagination: { page: number; size: number; total: number };
+      content: Post[];
+      pageable: {
+        pageNumber: number;
+        pageSize: number;
+        totalElements: number;
+      };
     }>(`/cms/bbs/${bbsId}?${queryString.toString()}`);
   },
 

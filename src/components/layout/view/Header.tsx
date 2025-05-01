@@ -22,7 +22,7 @@ import { usePathname } from "next/navigation";
 
 interface HeaderProps {
   currentPage: string;
-  menus: Menu[];
+  menus?: Menu[];
   isPreview?: boolean;
 }
 

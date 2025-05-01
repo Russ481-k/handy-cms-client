@@ -16,6 +16,9 @@ import {
   Template,
   TemplateVersion,
   TemplateListResponse,
+  BoardMaster,
+  BoardMasterResponse,
+  BoardMasterApiResponse,
 } from "@/types/api";
 
 // Java 백엔드 서버 주소 설정
@@ -78,7 +81,6 @@ const createApiClient = (isPrivate: boolean): AxiosInstance => {
         } catch (refreshError) {
           console.error("Token refresh failed:", refreshError);
           removeToken();
-          window.location.href = "/cms/login";
           return Promise.reject(refreshError);
         }
       }
@@ -130,7 +132,7 @@ export interface ApiResponse<T> {
 }
 
 // API 요청 함수 타입 정의
-export type ApiRequestFunction<T> = () => Promise<ApiResponse<T>>;
+export type ApiRequestFunction<T> = () => Promise<T>;
 
 // API 요청 함수 생성 헬퍼
 export const createApiRequest = <T, D = unknown>(
@@ -149,20 +151,11 @@ export const createApiRequest = <T, D = unknown>(
 
       // Java API 서버의 응답 구조에 맞게 수정
       if (response.data && typeof response.data === "object") {
-        const apiResponse = {
-          data: response.data,
-          message: response.data.message || "",
-          status: response.status,
-        };
-        return apiResponse;
+        return response.data;
       }
 
       console.warn("Unexpected response structure:", response.data);
-      return {
-        data: response.data as T,
-        message: "",
-        status: response.status,
-      };
+      return response.data as T;
     } catch (error) {
       console.error("API Error:", error);
       if (axios.isAxiosError(error)) {
@@ -229,6 +222,8 @@ export const api = {
       getMenus: () => createApiRequest<Menu[]>(privateApi, "/cms/menu")(),
       getMenu: (id: string) =>
         createApiRequest<Menu>(privateApi, `/cms/menu/${id}`)(),
+      getMenusByType: (type: string) =>
+        createApiRequest<Menu[]>(privateApi, `/cms/menu/type/${type}`)(),
       createMenu: (data: MenuData) =>
         createApiRequest<Menu>(privateApi, "/cms/menu", "POST", data)(),
       updateMenu: (id: string, data: MenuData) =>
@@ -302,6 +297,11 @@ export const api = {
     // CMS 게시판 관리
     board: {
       getBoards: () => createApiRequest<Board[]>(privateApi, "/cms/board")(),
+      getBoardMasters: () =>
+        createApiRequest<BoardMasterApiResponse>(
+          privateApi,
+          "/cms/bbs/master"
+        )(),
       createBoard: (data: BoardData) =>
         createApiRequest<Board>(privateApi, "/cms/board", "POST", data)(),
       updateBoard: (id: string, data: BoardData) =>

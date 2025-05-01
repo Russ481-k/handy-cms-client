@@ -254,7 +254,7 @@ export function MenuList({
           <Box
             pl={6}
             style={{
-              maxHeight: isExpanded ? "1000px" : "0",
+              maxHeight: isExpanded ? "1000vh" : "0",
               overflow: "hidden",
               opacity: isExpanded ? 1 : 0,
               transform: isExpanded ? "translateY(0)" : "translateY(-10px)",

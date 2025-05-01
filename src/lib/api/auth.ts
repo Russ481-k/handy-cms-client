@@ -23,13 +23,13 @@ export interface AuthApi {
 export const authApi: AuthApi = {
   login: async (credentials: LoginCredentials) => {
     const response = await api.public.auth.login(credentials);
-    return response.data;
+    return response;
   },
   logout: async () => {
     await api.private.auth.logout();
   },
   verifyToken: async () => {
     const response = await api.private.auth.verifyToken();
-    return response.data;
+    return response;
   },
 };

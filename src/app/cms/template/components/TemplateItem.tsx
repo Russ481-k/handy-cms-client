@@ -133,19 +133,30 @@ export const TemplateItem = ({
   const queryClient = useQueryClient();
 
   const updateTemplateMutation = useMutation({
-    mutationFn: (data: { id: number; name: string }) =>
+    mutationFn: (data: {
+      id: number;
+      name: string;
+      description: string;
+      type: string;
+      displayPosition: string;
+      published: boolean;
+    }) =>
       templateApi.updateTemplate(data.id.toString(), {
         templateName: data.name,
-        templateType: template.type,
+        templateType: data.type,
+        description: data.description,
+        published: data.published,
         layout: [
           {
-            blockId: "1",
+            id: "1",
+            name: "Header Block",
+            type: "HEADER",
             x: 0,
             y: 0,
-            w: 12,
-            h: 1,
+            width: 12,
+            height: 1,
             widget: {
-              type: template.displayPosition,
+              type: data.displayPosition,
             },
           },
         ],
@@ -178,6 +189,10 @@ export const TemplateItem = ({
         await updateTemplateMutation.mutateAsync({
           id: template.id,
           name: newName,
+          description: template.description,
+          type: template.type,
+          displayPosition: template.displayPosition,
+          published: template.published,
         });
         setEditedName(newName);
       } finally {
@@ -485,7 +500,7 @@ export const TemplateItem = ({
         {template.children && template.children.length > 0 && (
           <Box
             style={{
-              maxHeight: expanded ? "1000px" : "0",
+              maxHeight: expanded ? "1000vh" : "0",
               overflow: "hidden",
               opacity: expanded ? 1 : 0,
               transform: expanded ? "translateY(0)" : "translateY(-10px)",

@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loginMutation = useMutation({
     mutationFn: authApi.login,
     onSuccess: (data) => {
-      if (data?.data?.accessToken) {
+      if (data?.success && data?.data?.accessToken) {
         console.log("Login successful, setting token:", data.data.accessToken);
         setToken(
           data.data.accessToken,

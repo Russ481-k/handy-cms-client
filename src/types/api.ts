@@ -260,3 +260,85 @@ export interface TemplateSaveDto {
   layout: TemplateBlock[];
   published?: boolean;
 }
+
+export interface BoardMaster {
+  bbsId: number;
+  bbsName: string;
+  skinType: "BASIC" | "FAQ" | "QNA" | "PRESS" | "FORM";
+  readAuth: string;
+  writeAuth: string;
+}
+
+export interface BoardMasterResponse {
+  content: Array<{
+    bbsId: number;
+    bbsName: string;
+    skinType: "BASIC" | "FAQ" | "QNA" | "PRESS" | "FORM";
+    readAuth: string;
+    writeAuth: string;
+  }>;
+  empty: boolean;
+  first: boolean;
+  last: boolean;
+  number: number;
+  numberOfElements: number;
+  pageable: {
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    offset: number;
+    pageNumber: number;
+    pageSize: number;
+    paged: boolean;
+  };
+  size: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  totalElements: number;
+  totalPages: number;
+}
+
+export interface BoardMasterApiResponse {
+  success: boolean;
+  message: string;
+  data: {
+    content: Array<{
+      bbsId: number;
+      bbsName: string;
+      skinType: "BASIC" | "FAQ" | "QNA" | "PRESS" | "FORM";
+      readAuth: string;
+      writeAuth: string;
+    }>;
+    empty: boolean;
+    first: boolean;
+    last: boolean;
+    number: number;
+    numberOfElements: number;
+    pageable: {
+      sort: {
+        empty: boolean;
+        sorted: boolean;
+        unsorted: boolean;
+      };
+      offset: number;
+      pageNumber: number;
+      pageSize: number;
+      paged: boolean;
+    };
+    size: number;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    totalElements: number;
+    totalPages: number;
+  };
+  errorCode: string | null;
+  stackTrace: string | null;
+}

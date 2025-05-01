@@ -40,10 +40,11 @@ export default function MenuManagementPage() {
     queryKey: menuKeys.list(""),
     queryFn: async () => {
       const response = await api.private.menu.getMenus();
-      return response;
+      return {
+        data: response,
+        status: 200,
+      };
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 
   const menus = React.useMemo(() => {

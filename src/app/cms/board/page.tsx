@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Box, Flex, Heading, Badge, Text, Spinner } from "@chakra-ui/react";
 import { Button } from "@/components/ui/button";
 import { BoardList } from "./components/BoardList";
@@ -12,43 +12,16 @@ import { toaster } from "@/components/ui/toaster";
 import { BoardPreview } from "./components/BoardPreview";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { boardApi, boardKeys } from "@/lib/api/board";
-import { Board } from "@/types/api";
+import { Board, Menu, BoardMasterApiResponse } from "@/types/api";
 import { PlusIcon } from "lucide-react";
-import { getToken } from "@/lib/auth-utils";
-
-interface BoardMenu {
-  id: number;
-  name: string;
-  type: "BOARD";
-  url: string;
-  targetId: number;
-  displayPosition: "HEADER" | "FOOTER";
-  visible: boolean;
-  sortOrder: number;
-  parentId: number | null;
-}
-
-interface BoardMaster {
-  id: number;
-  name: string;
-  slug: string;
-  type: string;
-  useCategory: boolean;
-  allowComment: boolean;
-  useAttachment: boolean;
-  postsPerPage: number;
-  createdAt: string;
-  updatedAt: string;
-}
+import { api } from "@/lib/api-client";
 
 export default function BoardManagementPage() {
   const colors = useColors();
   const [selectedBoard, setSelectedBoard] = useState<Board | null>(null);
   const [tempBoard, setTempBoard] = useState<Board | null>(null);
   const [loadingBoardId, setLoadingBoardId] = useState<number | null>(null);
-  const [boardMenus, setBoardMenus] = useState<BoardMenu[]>([]);
-  const [boardMasters, setBoardMasters] = useState<BoardMaster[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
 
   const bg = useColorModeValue(colors.bg, colors.darkBg);
   const headingColor = useColorModeValue(
@@ -71,15 +44,13 @@ export default function BoardManagementPage() {
 
   const queryClient = useQueryClient();
 
-  const { data: apiResponse, isLoading: isBoardsLoading } = useQuery({
+  const { data: apiResponse, isLoading: isBoardsLoading } = useQuery<Board[]>({
     queryKey: boardKeys.all,
     queryFn: boardApi.getBoards,
   });
 
-  const boards = Array.isArray(apiResponse)
-    ? apiResponse
-    : apiResponse?.data || [];
-
+  const boards = apiResponse || [];
+  console.log(boards);
   const saveBoardMutation = useMutation({
     mutationFn: boardApi.saveBoard,
     onSuccess: () => {
@@ -119,45 +90,75 @@ export default function BoardManagementPage() {
     },
   });
 
+  // 게시판 메뉴 조회
+  const { data: boardMenusResponse, isLoading: isBoardMenusLoading } = useQuery<
+    Menu[]
+  >({
+    queryKey: ["boardMenus"],
+    queryFn: async () => {
+      const response = await api.private.menu.getMenusByType("BOARD");
+      return (response as any).content;
+    },
+  });
+
+  // 게시판 마스터 조회
+  const { data: boardMastersResponse, isLoading: isBoardMastersLoading } =
+    useQuery<BoardMasterApiResponse>({
+      queryKey: ["boardMasters"],
+      queryFn: () => api.private.board.getBoardMasters(),
+    });
+
+  // 매칭된 데이터
+  const matchedBoards: Board[] = boardMastersResponse?.data?.content
+    ? boardMastersResponse.data.content.map(
+        (master: {
+          bbsId: number;
+          bbsName: string;
+          skinType: "BASIC" | "FAQ" | "QNA" | "PRESS" | "FORM";
+          readAuth: string;
+          writeAuth: string;
+        }) => ({
+          id: master.bbsId,
+          bbsName: master.bbsName,
+          skinType: master.skinType,
+          manager: {
+            name: "",
+            email: "",
+          },
+          alarm: {
+            mail: false,
+            kakao: false,
+            internal: false,
+          },
+          topContent: "",
+          bottomContent: "",
+          auth: {
+            read: master.readAuth,
+            write: master.writeAuth,
+            admin: "ADMIN",
+          },
+          displayYn: true,
+          sortOrder: 0,
+          extraSchema: {
+            attachmentLimit: 5,
+            category: false,
+            formDownloadYn: false,
+            customFields: [],
+          },
+          createdAt: "",
+          updatedAt: "",
+        })
+      )
+    : [];
+
   const handleAddBoard = () => {
-    const newBoard: Board = {
-      id: Date.now(),
-      bbsName: "새 게시판",
-      skinType: "BASIC",
-      manager: {
-        name: "",
-        email: "",
-      },
-      alarm: {
-        mail: false,
-        kakao: false,
-        internal: false,
-      },
-      topContent: "",
-      bottomContent: "",
-      auth: {
-        read: "PUBLIC",
-        write: "STAFF",
-        admin: "ADMIN",
-      },
-      displayYn: true,
-      sortOrder: 0,
-      extraSchema: {
-        attachmentLimit: 0,
-        category: false,
-        formDownloadYn: false,
-        customFields: [],
-      },
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    setTempBoard(newBoard);
-    setSelectedBoard(newBoard);
+    setSelectedBoard(null);
+    setIsEditorOpen(true);
   };
 
   const handleEditBoard = (board: Board) => {
     setSelectedBoard(board);
-    setTempBoard(null);
+    setIsEditorOpen(true);
   };
 
   const handleDeleteBoard = async (boardId: number) => {
@@ -189,6 +190,11 @@ export default function BoardManagementPage() {
     } finally {
       setLoadingBoardId(null);
     }
+  };
+
+  const handleCloseEditor = () => {
+    setSelectedBoard(null);
+    setIsEditorOpen(false);
   };
 
   const boardLayout = [
@@ -230,56 +236,20 @@ export default function BoardManagementPage() {
     },
   ];
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-
-        // 게시판 메뉴 조회
-        const menuResponse = await fetch("/api/v1/cms/menu/type/BOARD", {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-          },
-        });
-        const menuData = await menuResponse.json();
-        setBoardMenus(menuData);
-        console.log("Board Menus:", menuData);
-
-        // 게시판 마스터 조회
-        const masterResponse = await fetch("/api/v1/cms/bbs/master", {
-          headers: {
-            Authorization: `Bearer ${getToken()}`,
-          },
-        });
-        const masterData = await masterResponse.json();
-        setBoardMasters(masterData);
-        console.log("Board Masters:", masterData);
-
-        // 매칭된 데이터 출력
-        const matchedData = menuData.map((menu: BoardMenu) => {
-          const master = masterData.find(
-            (m: BoardMaster) => m.id === menu.targetId
-          );
-          return {
-            menu,
-            master,
-          };
-        });
-        console.log("Matched Board Data:", matchedData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+  // 모든 데이터 로딩이 완료되었는지 확인
+  const isLoading =
+    isBoardsLoading || isBoardMenusLoading || isBoardMastersLoading;
 
   if (isLoading) {
     return (
-      <Box p={4}>
-        <Spinner />
+      <Box
+        p={4}
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minH="100vh"
+      >
+        <Spinner size="xl" color={colors.primary.default} />
       </Box>
     );
   }
@@ -324,17 +294,39 @@ export default function BoardManagementPage() {
           </Flex>
 
           <Box>
-            <Text mb={2}>게시판 메뉴 수: {boardMenus.length}</Text>
-            <Text mb={2}>게시판 마스터 수: {boardMasters.length}</Text>
+            <Text mb={2}>
+              게시판 수: {boardMastersResponse?.data?.content?.length || 0}
+            </Text>
+          </Box>
+
+          <Box>
+            <Text mb={2}>게시판 메뉴 목록:</Text>
+            {boardMenusResponse?.map((menu: Menu) => (
+              <Box
+                key={menu.id}
+                p={2}
+                borderWidth="1px"
+                borderRadius="md"
+                mb={2}
+              >
+                <Text fontWeight="bold">{menu.name}</Text>
+                <Text fontSize="sm" color="gray.500">
+                  URL: {menu.url}
+                </Text>
+                <Text fontSize="sm" color="gray.500">
+                  표시 위치: {menu.displayPosition}
+                </Text>
+              </Box>
+            ))}
           </Box>
 
           <Box>
             <BoardList
-              boards={boards}
+              boards={matchedBoards}
               onAddBoard={handleAddBoard}
               onEditBoard={handleEditBoard}
               onDeleteBoard={handleDeleteBoard}
-              isLoading={isBoardsLoading}
+              isLoading={isBoardMastersLoading}
               selectedBoardId={selectedBoard?.id}
               loadingBoardId={loadingBoardId}
             />

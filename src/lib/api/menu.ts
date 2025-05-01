@@ -53,11 +53,11 @@ export function sortMenus(menus: Menu[]): Menu[] {
 // 메뉴 목록을 가져오는 API 함수
 export async function fetchMenus(): Promise<Menu[]> {
   try {
-    const response = await api.private.get<ApiResponse<Menu[]>>("/cms/menu");
-    if (!response.data.data) {
+    const response = await api.private.get<Menu[]>("/cms/menu");
+    if (!response) {
       throw new Error("Failed to fetch menus");
     }
-    const sortedMenus = sortMenus(response.data.data);
+    const sortedMenus = sortMenus(response);
     return sortedMenus;
   } catch (error) {
     console.error("Error fetching menus:", error);
@@ -95,39 +95,36 @@ export interface UpdateMenuOrderRequest {
 // 메뉴 API 구현
 export const menuApi = {
   getMenus: async () => {
-    const response = await api.private.get<ApiResponse<Menu[]>>("/cms/menu");
-    const sortedMenus = sortMenus(response.data.data);
-    return sortedMenus;
+    const response = await api.private.get<{
+      data: Menu[];
+      status: number;
+    }>("/cms/menu");
+    return response;
   },
   getMenusByType: async (type: string) => {
-    const response = await api.private.get<ApiResponse<Menu[]>>(
-      `/cms/menu/type/${type}`
-    );
-    const sortedMenus = sortMenus(response.data.data);
-    return sortedMenus;
+    const response = await api.private.get<{
+      content: Menu[];
+      pageable: any;
+      totalElements: number;
+      totalPages: number;
+      last: boolean;
+    }>(`/cms/menu/type/${type}`);
+    return response;
   },
   getMenu: async (id: number) => {
-    const response = await api.private.get<ApiResponse<Menu>>(
-      `/cms/menu/${id}`
-    );
-    return response.data.data;
+    const response = await api.private.get<Menu>(`/cms/menu/${id}`);
+    return response;
   },
   createMenu: async (data: Omit<Menu, "id" | "createdAt" | "updatedAt">) => {
-    const response = await api.private.post<ApiResponse<Menu>>(
-      "/cms/menu",
-      data
-    );
-    return response.data.data;
+    const response = await api.private.post<Menu>("/cms/menu", data);
+    return response;
   },
   updateMenu: async (
     id: number,
     data: Omit<Menu, "id" | "createdAt" | "updatedAt">
   ) => {
-    const response = await api.private.put<ApiResponse<Menu>>(
-      `/cms/menu/${id}`,
-      data
-    );
-    return response.data.data;
+    const response = await api.private.put<Menu>(`/cms/menu/${id}`, data);
+    return response;
   },
   deleteMenu: async (id: number) => {
     await api.private.delete(`/cms/menu/${id}`);
@@ -139,15 +136,8 @@ export const menuApi = {
       position: "before" | "after" | "inside";
     }>
   ) => {
-    const response = await api.private.put<ApiResponse<Menu[]>>(
-      "/cms/menu/order",
-      orders.map((order) => ({
-        id: order.id,
-        targetId: order.targetId,
-        position: order.position,
-      }))
-    );
-    return response.data.data;
+    const response = await api.private.put<Menu[]>("/cms/menu/order", orders);
+    return response;
   },
 };
 

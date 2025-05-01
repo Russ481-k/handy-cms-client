@@ -95,7 +95,7 @@ export function MenuItem({
       <Box
         position="static"
         overflow="hidden"
-        maxHeight={isNavHovered && hasChildren ? "1000px" : "0"}
+        maxHeight={isNavHovered && hasChildren ? "1000vh" : "0"}
         opacity={isNavHovered && hasChildren ? 1 : 0}
         transform={`translateY(${isNavHovered && hasChildren ? "0" : "-10px"})`}
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
