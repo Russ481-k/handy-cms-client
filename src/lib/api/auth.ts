@@ -3,13 +3,13 @@ import {
   AuthResponse,
   VerifyTokenResponse,
 } from "@/types/api";
-import { api } from "@/lib/api-client";
+import { publicApi, privateApi } from "./client";
 
 // React Query 키 정의
 export const authKeys = {
   all: ["auth"] as const,
-  current: () => [...authKeys.all, "current"] as const,
-  login: () => [...authKeys.all, "login"] as const,
+  user: () => [...authKeys.all, "user"] as const,
+  token: () => [...authKeys.all, "token"] as const,
 };
 
 // 인증 관련 API 타입 정의
@@ -20,16 +20,23 @@ export interface AuthApi {
 }
 
 // 인증 API 구현
-export const authApi: AuthApi = {
+export const authApi = {
   login: async (credentials: LoginCredentials) => {
-    const response = await api.public.auth.login(credentials);
+    const response = await publicApi.post<AuthResponse>(
+      "/auth/login",
+      credentials
+    );
+    console.log("login response:", response);
+
     return response;
   },
+
   logout: async () => {
-    await api.private.auth.logout();
+    await publicApi.post<void>("/auth/logout");
   },
+
   verifyToken: async () => {
-    const response = await api.private.auth.verifyToken();
+    const response = await privateApi.get<VerifyTokenResponse>("/auth/verify");
     return response;
   },
 };

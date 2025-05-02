@@ -1,10 +1,7 @@
 import React, { createContext, useContext } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Menu } from "@/types/api";
-import { menuApi, sortMenus } from "@/lib/api/menu";
-import { api } from "@/lib/api-client";
-import { useAuth } from "@/lib/AuthContext";
-import { MenuSquare } from "lucide-react";
+import { menuApi } from "@/lib/api/menu";
 
 interface MenuContextType {
   menus: Menu[];
@@ -22,8 +19,8 @@ export function MenuProvider({ children }: { children: React.ReactNode }) {
   } = useQuery<Menu[]>({
     queryKey: ["menus"],
     queryFn: async () => {
-      const publicResponse = await api.public.menu.getMenus();
-      return (publicResponse as any).data;
+      const publicResponse = await menuApi.getMenus();
+      return publicResponse.data;
     },
   });
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { privateApi } from "@/lib/api-client";
+import { privateApi } from "@/lib/api/client";
 import { TOKEN_KEY } from "@/lib/auth-utils";
 
 // 공개 경로 목록
@@ -45,12 +45,15 @@ export async function middleware(request: NextRequest) {
 
     try {
       console.log("Middleware - Verifying token...");
-      const response = await privateApi.get("/auth/verify", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      console.log("Middleware - Token verification response:", response.data);
+      const response = await privateApi.get<{ success: boolean }>(
+        "/auth/verify",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("Middleware - Token verification response:", response);
 
       // 토큰 인증 성공 시 리다이렉트 없이 진행
       console.log("Middleware - Token verified, proceeding to requested page");

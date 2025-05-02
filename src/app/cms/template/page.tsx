@@ -35,7 +35,7 @@ export default function TemplateManagementPage() {
     ApiResponse<TemplateListResponse>
   >({
     queryKey: ["templates"],
-    queryFn: () => api.private.template.getTemplates(),
+    queryFn: () => privateApi.template.getTemplates(),
   });
 
   const templates = React.useMemo(() => {
@@ -99,8 +99,8 @@ export default function TemplateManagementPage() {
         ],
       };
       return data.id
-        ? api.private.template.updateTemplate(data.id, mappedData)
-        : api.private.template.createTemplate(mappedData);
+        ? privateApi.template.updateTemplate(data.id, mappedData)
+        : privateApi.template.createTemplate(mappedData);
     },
     onSuccess: (savedTemplate) => {
       queryClient.invalidateQueries({ queryKey: ["templates"] });

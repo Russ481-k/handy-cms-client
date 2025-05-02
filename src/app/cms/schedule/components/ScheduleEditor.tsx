@@ -26,7 +26,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { CustomSelect } from "@/components/CustomSelect";
 import { useQuery } from "@tanstack/react-query";
 
-interface MenuEditorProps {
+interface ScheduleEditorProps {
   menu: Menu | null;
   onClose: () => void;
   onDelete: (id: number) => void;
@@ -39,11 +39,11 @@ interface MenuEditorProps {
   isDeleting?: boolean;
 }
 
-// 메뉴 스키마 정의
+// 일정 스키마 정의
 const createMenuSchema = (currentMenu: Menu | null, existingMenus: Menu[]) =>
   z
     .object({
-      name: z.string().min(1, "메뉴 이름을 입력해주세요."),
+      name: z.string().min(1, "일정 이름을 입력해주세요."),
       type: z.enum(["LINK", "FOLDER", "BOARD", "CONTENT"]),
       url: z.string().optional(),
       targetId: z.number().optional(),
@@ -61,7 +61,7 @@ const createMenuSchema = (currentMenu: Menu | null, existingMenus: Menu[]) =>
         return true;
       },
       {
-        message: "링크 타입의 메뉴는 URL을 입력해야 합니다.",
+        message: "링크 타입의 일정는 URL을 입력해야 합니다.",
         path: ["url"],
       }
     )
@@ -109,7 +109,7 @@ interface ContentResponse {
   updatedAt: string;
 }
 
-export function MenuEditor({
+export function ScheduleEditor({
   menu,
   onClose,
   onDelete,
@@ -119,7 +119,7 @@ export function MenuEditor({
   existingMenus,
   isTempMenu,
   isDeleting,
-}: MenuEditorProps) {
+}: ScheduleEditorProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localIsDeleting, setLocalIsDeleting] = useState(false);
@@ -173,7 +173,7 @@ export function MenuEditor({
     }
   }, [menu, reset, parentId]);
 
-  // 새 메뉴가 생성되면 이름 입력 필드에 포커스
+  // 새 일정가 생성되면 이름 입력 필드에 포커스
   useEffect(() => {
     if (menu && isTempMenu) {
       // 약간의 지연을 두어 DOM이 업데이트된 후에 포커스
@@ -296,7 +296,7 @@ export function MenuEditor({
     } catch (error) {
       console.error("Error submitting form:", error);
       toaster.error({
-        title: "메뉴 저장에 실패했습니다.",
+        title: "일정 저장에 실패했습니다.",
         duration: 3000,
       });
     } finally {
@@ -312,7 +312,7 @@ export function MenuEditor({
             <Box>
               <Flex mb={1}>
                 <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                  메뉴명
+                  일정명
                 </Text>
                 <Text fontSize="sm" color={errorColor} ml={1}>
                   *
@@ -341,7 +341,7 @@ export function MenuEditor({
             <Box>
               <Flex mb={1}>
                 <Text fontSize="sm" fontWeight="medium" color={textColor}>
-                  메뉴 유형
+                  일정 유형
                 </Text>
                 <Text fontSize="sm" color={errorColor} ml={1}>
                   *
@@ -486,7 +486,7 @@ export function MenuEditor({
                     </Checkbox.Control>
                     <Checkbox.Label>
                       <Text fontWeight="medium" color={textColor}>
-                        메뉴 노출
+                        일정 노출
                       </Text>
                     </Checkbox.Label>
                   </Checkbox.Root>
@@ -535,7 +535,7 @@ export function MenuEditor({
                     variant="outline"
                     colorScheme="blue"
                   >
-                    <PlusIcon /> 메뉴
+                    <PlusIcon /> 일정
                   </Button>
                 )}
                 <Button
@@ -564,8 +564,8 @@ export function MenuEditor({
         isOpen={isDeleteDialogOpen}
         onClose={handleDeleteCancel}
         onConfirm={handleDeleteConfirm}
-        title="메뉴 삭제"
-        description="정말로 이 메뉴를 삭제하시겠습니까?"
+        title="일정 삭제"
+        description="정말로 이 일정를 삭제하시겠습니까?"
         confirmText="삭제"
         cancelText="취소"
         backdrop="rgba(0, 0, 0, 0.5)"

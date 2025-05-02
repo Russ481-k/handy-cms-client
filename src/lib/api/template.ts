@@ -1,48 +1,54 @@
-import { api } from "@/lib/api-client";
-import { TemplateSaveDto } from "@/types/api";
+import { Template, TemplateData, TemplateVersion } from "@/types/api";
+import { privateApi } from "./client";
+
+export const templateKeys = {
+  all: ["template"] as const,
+  lists: () => [...templateKeys.all, "list"] as const,
+  list: (filters: string) => [...templateKeys.lists(), { filters }] as const,
+  details: () => [...templateKeys.all, "detail"] as const,
+  detail: (id: string) => [...templateKeys.details(), id] as const,
+};
 
 export const templateApi = {
-  getTemplates: async () => {
-    const response = await api.private.template.getTemplates();
-    return response;
+  getTemplates: (type?: string) => {
+    return privateApi.get<Template[]>(
+      type ? `/cms/template?type=${type}` : "/cms/template"
+    );
   },
 
-  getTemplate: async (id: string) => {
-    const response = await api.private.template.getTemplate(id);
-    return response;
+  getTemplate: (id: string) => {
+    return privateApi.get<Template>(`/cms/template/${id}`);
   },
 
-  createTemplate: async (data: TemplateSaveDto) => {
-    const response = await api.private.template.createTemplate(data);
-    return response;
+  createTemplate: (data: TemplateData) => {
+    return privateApi.post<Template>("/cms/template", data);
   },
 
-  updateTemplate: async (id: string, data: TemplateSaveDto) => {
-    const response = await api.private.template.updateTemplate(id, data);
-    return response;
+  updateTemplate: (id: string, data: TemplateData) => {
+    return privateApi.put<Template>(`/cms/template/${id}`, data);
   },
 
-  deleteTemplate: async (id: string) => {
-    await api.private.template.deleteTemplate(id);
+  deleteTemplate: (id: string) => {
+    return privateApi.delete<void>(`/cms/template/${id}`);
   },
 
-  togglePublish: async (id: string, published: boolean) => {
-    const response = await api.private.template.togglePublish(id, published);
-    return response;
+  togglePublish: (id: string, published: boolean) => {
+    return privateApi.patch<Template>(`/cms/template/${id}/publish`, {
+      published,
+    });
   },
 
-  getVersions: async (id: string) => {
-    const response = await api.private.template.getVersions(id);
-    return response;
+  getVersions: (id: string) => {
+    return privateApi.get<TemplateVersion[]>(`/cms/template/${id}/versions`);
   },
 
-  rollbackVersion: async (id: string, versionNo: number) => {
-    const response = await api.private.template.rollbackVersion(id, versionNo);
-    return response;
+  rollbackVersion: (id: string, versionNo: number) => {
+    return privateApi.post<Template>(`/cms/template/${id}/rollback`, {
+      versionNo,
+    });
   },
 
-  previewTemplate: async (data: TemplateSaveDto) => {
-    const response = await api.private.template.preview(data);
-    return response;
+  preview: (data: TemplateData) => {
+    return privateApi.post<Template>("/cms/template/preview", data);
   },
 };

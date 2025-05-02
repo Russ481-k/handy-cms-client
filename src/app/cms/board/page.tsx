@@ -14,7 +14,8 @@ import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { boardApi, boardKeys } from "@/lib/api/board";
 import { Board, Menu, BoardMasterApiResponse } from "@/types/api";
 import { PlusIcon } from "lucide-react";
-import { api } from "@/lib/api-client";
+import { privateApi } from "@/lib/api/client";
+import { menuApi } from "@/lib/api/menu";
 
 export default function BoardManagementPage() {
   const colors = useColors();
@@ -96,7 +97,7 @@ export default function BoardManagementPage() {
   >({
     queryKey: ["boardMenus"],
     queryFn: async () => {
-      const response = await api.private.menu.getMenusByType("BOARD");
+      const response = await menuApi.getMenusByType("BOARD");
       return (response as any).content;
     },
   });
@@ -105,7 +106,7 @@ export default function BoardManagementPage() {
   const { data: boardMastersResponse, isLoading: isBoardMastersLoading } =
     useQuery<BoardMasterApiResponse>({
       queryKey: ["boardMasters"],
-      queryFn: () => api.private.board.getBoardMasters(),
+      queryFn: () => boardApi.getBoardMasters(),
     });
 
   // 매칭된 데이터

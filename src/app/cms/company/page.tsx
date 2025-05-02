@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { Box, Flex, Heading, Badge } from "@chakra-ui/react";
-import { MenuList } from "./components/MenuList";
-import { MenuEditor } from "./components/MenuEditor";
+import { CompanyList } from "./components/CompanyList";
+import { CompanyEditor } from "./components/CompanyEditor";
 import { GridSection } from "@/components/ui/grid-section";
 import { useColors } from "@/styles/theme";
 import { DndProvider } from "react-dnd";
@@ -32,7 +32,7 @@ export default function MenuManagementPage() {
   );
   const colors = useColors();
 
-  // 메뉴 목록 가져오기
+  // 입주기업 목록 가져오기
   const { data: menuResponse, isLoading: isMenusLoading } = useQuery<Menu[]>({
     queryKey: menuKeys.list(""),
     queryFn: async () => {
@@ -63,46 +63,46 @@ export default function MenuManagementPage() {
     }
   }, [menuResponse]);
 
-  // 메뉴 순서 업데이트 뮤테이션
+  // 입주기업 순서 업데이트 뮤테이션
   const updateOrderMutation = useMutation({
     mutationFn: menuApi.updateMenuOrder,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: menuKeys.lists() });
       toaster.create({
-        title: "메뉴 순서가 변경되었습니다.",
+        title: "입주기업 순서가 변경되었습니다.",
         type: "success",
       });
     },
     onError: (error) => {
       console.error("Error updating menu order:", error);
       toaster.create({
-        title: "메뉴 순서 변경에 실패했습니다.",
+        title: "입주기업 순서 변경에 실패했습니다.",
         type: "error",
       });
     },
   });
 
-  // 메뉴 삭제 뮤테이션
+  // 입주기업 삭제 뮤테이션
   const deleteMutation = useMutation({
     mutationFn: menuApi.deleteMenu,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: menuKeys.lists() });
       setSelectedMenu(null);
       toaster.create({
-        title: "메뉴가 삭제되었습니다.",
+        title: "입주기업가 삭제되었습니다.",
         type: "success",
       });
     },
     onError: (error) => {
       console.error("Error deleting menu:", error);
       toaster.create({
-        title: "메뉴 삭제에 실패했습니다.",
+        title: "입주기업 삭제에 실패했습니다.",
         type: "error",
       });
     },
   });
 
-  // 메뉴 저장/업데이트 뮤테이션
+  // 입주기업 저장/업데이트 뮤테이션
   const saveMenuMutation = useMutation({
     mutationFn: (data: {
       id?: number;
@@ -118,7 +118,9 @@ export default function MenuManagementPage() {
       setParentMenuId(savedMenu.parentId || null);
       setTempMenu(null);
       toaster.create({
-        title: tempMenu ? "메뉴가 생성되었습니다." : "메뉴가 수정되었습니다.",
+        title: tempMenu
+          ? "입주기업가 생성되었습니다."
+          : "입주기업가 수정되었습니다.",
         type: "success",
       });
     },
@@ -126,8 +128,8 @@ export default function MenuManagementPage() {
       console.error("Error saving menu:", error);
       toaster.create({
         title: tempMenu
-          ? "메뉴 생성에 실패했습니다."
-          : "메뉴 수정에 실패했습니다.",
+          ? "입주기업 생성에 실패했습니다."
+          : "입주기업 수정에 실패했습니다.",
         type: "error",
       });
     },
@@ -198,7 +200,7 @@ export default function MenuManagementPage() {
     [saveMenuMutation, selectedMenu, tempMenu]
   );
 
-  // 메뉴 목록에 새 메뉴 추가하는 함수
+  // 입주기업 목록에 새 입주기업 추가하는 함수
   const addMenuToList = useCallback(
     (newMenu: Menu, targetMenu: Menu | null = null) => {
       if (!targetMenu) {
@@ -230,12 +232,12 @@ export default function MenuManagementPage() {
     [menus]
   );
 
-  // 임시 메뉴 생성 함수
+  // 임시 입주기업 생성 함수
   const handleAddMenu = useCallback(
     (parentMenu: Menu) => {
       const newTempMenu: Menu = {
         id: Date.now(), // 임시 ID
-        name: "새 메뉴",
+        name: "새 입주기업",
         type: "LINK",
         displayPosition: parentMenu.displayPosition,
         visible: true,
@@ -250,13 +252,13 @@ export default function MenuManagementPage() {
       setSelectedMenu(newTempMenu);
       setParentMenuId(parentMenu.id);
 
-      // 임시 메뉴를 메뉴 목록에 추가
+      // 임시 입주기업를 입주기업 목록에 추가
       const updatedMenus = [...(menus || [])];
       if (parentMenu.id === -1) {
-        // 최상위 메뉴에 추가
+        // 최상위 입주기업에 추가
         updatedMenus.push(newTempMenu);
       } else {
-        // 부모 메뉴의 children에 추가
+        // 부모 입주기업의 children에 추가
         const parentIndex = updatedMenus.findIndex(
           (m) => m.id === parentMenu.id
         );
@@ -278,9 +280,11 @@ export default function MenuManagementPage() {
   const handleEditMenu = useCallback(
     (menu: Menu) => {
       if (tempMenu) {
-        // 임시 메뉴 수정 중인 경우 경고 모달 표시
-        if (window.confirm("새 메뉴 추가가 취소됩니다. 취소하시겠습니까?")) {
-          // 임시 메뉴를 메뉴 목록에서 제거
+        // 임시 입주기업 수정 중인 경우 경고 모달 표시
+        if (
+          window.confirm("새 입주기업 추가가 취소됩니다. 취소하시겠습니까?")
+        ) {
+          // 임시 입주기업를 입주기업 목록에서 제거
           const updatedMenus =
             menus?.filter((m: Menu) => m.id !== tempMenu.id) || [];
           queryClient.setQueryData(menuKeys.lists(), updatedMenus);
@@ -299,7 +303,7 @@ export default function MenuManagementPage() {
 
   const handleCloseEditor = useCallback(() => {
     if (tempMenu) {
-      // 임시 메뉴인 경우 삭제
+      // 임시 입주기업인 경우 삭제
       const updatedMenus =
         menus?.filter((m: Menu) => m.id !== tempMenu.id) || [];
       queryClient.setQueryData(menuKeys.lists(), updatedMenus);
@@ -307,7 +311,7 @@ export default function MenuManagementPage() {
       setTempMenu(null);
       setSelectedMenu(menus?.[0] || null);
     } else {
-      // 기존 메뉴 편집 중 취소
+      // 기존 입주기업 편집 중 취소
       setSelectedMenu(null);
     }
   }, [menus, queryClient, tempMenu]);
@@ -324,7 +328,7 @@ export default function MenuManagementPage() {
 
   const findParentMenu = useCallback(
     (menus: Menu[], targetId: number): Menu | null => {
-      // 전체 메뉴인 경우
+      // 전체 입주기업인 경우
       if (targetId === -1) {
         return {
           id: -1,
@@ -355,7 +359,7 @@ export default function MenuManagementPage() {
     []
   );
 
-  // 메뉴 관리 페이지 레이아웃 정의
+  // 입주기업 관리 페이지 레이아웃 정의
   const menuLayout = [
     {
       id: "header",
@@ -372,8 +376,8 @@ export default function MenuManagementPage() {
       y: 1,
       w: 3,
       h: 5,
-      title: "메뉴 목록",
-      subtitle: "드래그 앤 드롭으로 메뉴 순서를 변경할 수 있습니다.",
+      title: "입주기업 목록",
+      subtitle: "드래그 앤 드롭으로 입주기업 순서를 변경할 수 있습니다.",
     },
     {
       id: "menuEditor",
@@ -381,8 +385,8 @@ export default function MenuManagementPage() {
       y: 6,
       w: 3,
       h: 6,
-      title: "메뉴 편집",
-      subtitle: "메뉴의 상세 정보를 수정할 수 있습니다.",
+      title: "입주기업 편집",
+      subtitle: "입주기업의 상세 정보를 수정할 수 있습니다.",
     },
     {
       id: "preview",
@@ -391,18 +395,18 @@ export default function MenuManagementPage() {
       w: 9,
       h: 11,
       title: "미리보기",
-      subtitle: "메뉴 구조의 실시간 미리보기입니다.",
+      subtitle: "입주기업 구조의 실시간 미리보기입니다.",
     },
   ];
 
-  // 메뉴 목록이 업데이트될 때 선택된 메뉴를 동기화
+  // 입주기업 목록이 업데이트될 때 선택된 입주기업를 동기화
   useEffect(() => {
     if (menus?.length > 0) {
-      // 임시 메뉴가 없는 경우에만 초기 메뉴 선택
+      // 임시 입주기업가 없는 경우에만 초기 입주기업 선택
       if (!tempMenu && !selectedMenu) {
         setSelectedMenu(menus[0]);
       }
-      // 임시 메뉴가 있는 경우, 해당 메뉴를 계속 선택 상태로 유지
+      // 임시 입주기업가 있는 경우, 해당 입주기업를 계속 선택 상태로 유지
       else if (tempMenu) {
         setSelectedMenu(tempMenu);
       }
@@ -420,7 +424,7 @@ export default function MenuManagementPage() {
                 color={colors.text.primary}
                 letterSpacing="tight"
               >
-                메뉴 관리
+                입주기업 관리
               </Heading>
               <Badge
                 bg={colors.secondary.light}
@@ -438,7 +442,7 @@ export default function MenuManagementPage() {
 
           <Box>
             <DndProvider backend={HTML5Backend}>
-              <MenuList
+              <CompanyList
                 menus={menus}
                 onAddMenu={handleAddMenu}
                 onEditMenu={handleEditMenu}
@@ -453,7 +457,7 @@ export default function MenuManagementPage() {
           </Box>
 
           <Box>
-            <MenuEditor
+            <CompanyEditor
               menu={selectedMenu}
               onClose={handleCloseEditor}
               onDelete={handleDeleteMenu}
@@ -498,8 +502,8 @@ export default function MenuManagementPage() {
         isOpen={false}
         onClose={handleCancelCancel}
         onConfirm={handleCancelConfirm}
-        title="메뉴 추가 취소"
-        description="새 메뉴 추가가 취소됩니다. 취소하시겠습니까?"
+        title="입주기업 추가 취소"
+        description="새 입주기업 추가가 취소됩니다. 취소하시겠습니까?"
         confirmText="취소"
         cancelText="계속"
         backdrop="rgba(0, 0, 0, 0.5)"

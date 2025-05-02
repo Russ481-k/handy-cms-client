@@ -13,7 +13,7 @@ const MenuContext = createContext<MenuContextType | null>(null);
 export const MenuProvider = ({ children }: { children: React.ReactNode }) => {
   const { data: menus = [], isLoading } = useQuery({
     queryKey: ["menus"],
-    queryFn: () => api.public.menu.getMenus().then((response) => response.data),
+    queryFn: () => publicApi.menu.getMenus().then((response) => response.data),
   });
 
   const value = {
