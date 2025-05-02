@@ -1,5 +1,6 @@
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { COLORS } from "./theme-tokens";
+import { STYLES } from "./theme-tokens";
 
 export interface Colors {
   bg: string;
@@ -76,6 +77,10 @@ export interface Colors {
 }
 
 export interface Styles {
+  fonts: {
+    body: string;
+    heading: string;
+  };
   container: {
     maxW: {
       base: string;
@@ -558,3 +563,23 @@ export function useStyles(colors: Colors): Styles {
     },
   };
 }
+
+export function useUserStyles(styles: Styles): Styles {
+  return {
+    ...styles,
+    fonts: {
+      body: '"SCoreDream", -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif',
+      heading:
+        '"SCoreDream", -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif',
+    },
+    breakpoints: {
+      sm: "360px",
+      md: "768px",
+      lg: "1000px",
+      xl: "1200px",
+      "2xl": "1600px",
+    },
+  };
+}
+
+
