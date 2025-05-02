@@ -5,7 +5,7 @@ import {
   ScheduleResponse,
   ScheduleListParams,
 } from "@/app/cms/schedule/types";
-import { privateApi } from "./client";
+import { privateApi, publicApi } from "./client";
 
 export const scheduleKeys = {
   all: ["schedules"] as const,
@@ -30,8 +30,8 @@ export const scheduleApi = {
     if (params.size) queryParams.append("size", params.size.toString());
     if (params.sort) queryParams.append("sort", params.sort);
 
-    const response = await privateApi.get<ScheduleListResponse>(
-      `/schedule?${queryParams}`
+    const response = await publicApi.get<ScheduleListResponse>(
+      `/cms/schedule?${queryParams}`
     );
     return response;
   },
@@ -41,21 +41,30 @@ export const scheduleApi = {
     dateFrom: string,
     dateTo: string
   ): Promise<ScheduleListResponse> => {
-    const response = await privateApi.get<ScheduleListResponse>(
-      `/schedule?dateFrom=${dateFrom}&dateTo=${dateTo}`
+    const queryParams = new URLSearchParams();
+    queryParams.append("dateFrom", dateFrom);
+    queryParams.append("dateTo", dateTo);
+
+    const response = await publicApi.get<ScheduleListResponse>(
+      `/cms/schedule?${queryParams}`
     );
     return response;
   },
 
   // Get a single schedule
   getSchedule: async (id: number): Promise<ScheduleResponse> => {
-    const response = await privateApi.get<ScheduleResponse>(`/schedule/${id}`);
+    const response = await publicApi.get<ScheduleResponse>(
+      `/cms/schedule/${id}`
+    );
     return response;
   },
 
   // Create a new schedule
   createSchedule: async (data: ScheduleFormData): Promise<ScheduleResponse> => {
-    const response = await privateApi.post<ScheduleResponse>("/schedule", data);
+    const response = await privateApi.post<ScheduleResponse>(
+      "/cms/schedule",
+      data
+    );
     return response;
   },
 
@@ -65,7 +74,7 @@ export const scheduleApi = {
     data: Partial<ScheduleFormData>
   ): Promise<ScheduleResponse> => {
     const response = await privateApi.put<ScheduleResponse>(
-      `/schedule/${id}`,
+      `/cms/schedule/${id}`,
       data
     );
     return response;
@@ -73,6 +82,6 @@ export const scheduleApi = {
 
   // Delete a schedule
   deleteSchedule: async (id: number): Promise<void> => {
-    await privateApi.delete<void>(`/schedule/${id}`);
+    await privateApi.delete<void>(`/cms/schedule/${id}`);
   },
 };

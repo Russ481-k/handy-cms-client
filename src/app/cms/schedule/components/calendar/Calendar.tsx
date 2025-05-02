@@ -250,6 +250,7 @@ export const Calendar: React.FC<CalendarProps> = ({
 
           const dayCell = (
             <Box
+              key={dateStr}
               borderColor={borderColor}
               p={2}
               bg={

@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { Box, Flex, Heading, Badge } from "@chakra-ui/react";
-import { ScheduleList } from "./components/admin/ScheduleList";
-import { ScheduleForm } from "./components/admin/ScheduleForm";
 import { GridSection } from "@/components/ui/grid-section";
 import { useColors } from "@/styles/theme";
 import { toaster, Toaster } from "@/components/ui/toaster";
@@ -18,6 +16,8 @@ import {
   ScheduleResponse,
 } from "./types";
 import { scheduleApi } from "@/lib/api/schedule";
+import { ScheduleForm } from "./components/ScheduleForm";
+import { ScheduleList } from "./components/ScheduleList";
 
 export default function ScheduleManagementPage() {
   const queryClient = useQueryClient();
@@ -153,31 +153,32 @@ export default function ScheduleManagementPage() {
       isHeader: true,
     },
     {
-      id: "calendar",
+      id: "scheduleList",
       x: 0,
       y: 1,
-      w: 9,
-      h: 6,
-      title: "캘린더",
-      subtitle: "월간 일정을 확인할 수 있습니다.",
-    },
-    {
-      id: "scheduleList",
-      x: 9,
-      y: 1,
       w: 3,
-      h: 6,
+      h: 5,
       title: "일정 목록",
       subtitle: "전체 일정을 관리할 수 있습니다.",
     },
+
     {
       id: "scheduleForm",
       x: 0,
-      y: 7,
-      w: 12,
-      h: 5,
+      y: 6,
+      w: 3,
+      h: 6,
       title: "일정 편집",
       subtitle: "일정을 등록하거나 수정할 수 있습니다.",
+    },
+    {
+      id: "calendar",
+      x: 3,
+      y: 1,
+      w: 9,
+      h: 11,
+      title: "캘린더",
+      subtitle: "월간 일정을 확인할 수 있습니다.",
     },
   ];
 
@@ -209,15 +210,6 @@ export default function ScheduleManagementPage() {
           </Flex>
 
           <Box>
-            <Calendar
-              currentDate={currentDate}
-              schedules={schedulesResponse?.data || []}
-              onDateChange={handleDateChange}
-              onScheduleClick={handleScheduleClick}
-            />
-          </Box>
-
-          <Box>
             <ScheduleList
               schedules={schedulesResponse?.data || []}
               onEdit={handleEditSchedule}
@@ -236,8 +228,20 @@ export default function ScheduleManagementPage() {
                 schedule={selectedSchedule || undefined}
                 onSubmit={handleSubmit}
                 onCancel={() => setSelectedSchedule(null)}
+                isSubmitting={
+                  createScheduleMutation.isPending ||
+                  updateScheduleMutation.isPending
+                }
               />
             )}
+          </Box>
+          <Box>
+            <Calendar
+              currentDate={currentDate}
+              schedules={schedulesResponse?.data || []}
+              onDateChange={handleDateChange}
+              onScheduleClick={handleScheduleClick}
+            />
           </Box>
         </GridSection>
       </Box>
