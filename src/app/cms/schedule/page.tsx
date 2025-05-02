@@ -25,6 +25,7 @@ export default function ScheduleManagementPage() {
 
   // State
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule | null>(
     null
   );
@@ -43,11 +44,9 @@ export default function ScheduleManagementPage() {
         scheduleApi.getSchedules({
           year: currentDate.getFullYear(),
           month: currentDate.getMonth() + 1,
-          page: 1,
-          size: 100,
         }),
     });
-
+  console.log(schedulesResponse);
   // Mutations
   const createScheduleMutation = useMutation({
     mutationFn: (data: ScheduleFormData) => scheduleApi.createSchedule(data),
@@ -62,8 +61,10 @@ export default function ScheduleManagementPage() {
   });
 
   const updateScheduleMutation = useMutation({
-    mutationFn: (data: { id: number; schedule: Partial<ScheduleFormData> }) =>
-      scheduleApi.updateSchedule(data.id, data.schedule),
+    mutationFn: (data: {
+      scheduleId: number;
+      schedule: Partial<ScheduleFormData>;
+    }) => scheduleApi.updateSchedule(data.scheduleId, data.schedule),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["schedules"] });
       toaster.create({
@@ -87,7 +88,7 @@ export default function ScheduleManagementPage() {
 
   const toggleDisplayMutation = useMutation({
     mutationFn: (schedule: Schedule) =>
-      scheduleApi.updateSchedule(schedule.id!, {
+      scheduleApi.updateSchedule(schedule.scheduleId, {
         ...schedule,
         displayYn: !schedule.displayYn,
       }),
@@ -100,9 +101,29 @@ export default function ScheduleManagementPage() {
     },
   });
 
+  // Filter schedules by selected date
+  const filteredSchedules = React.useMemo(() => {
+    if (!selectedDate || !schedulesResponse?.data?.schedules) {
+      return schedulesResponse?.data?.schedules || [];
+    }
+    return schedulesResponse.data.schedules.filter((schedule) => {
+      const scheduleDate = new Date(schedule.startDateTime);
+      return (
+        scheduleDate.getFullYear() === selectedDate.getFullYear() &&
+        scheduleDate.getMonth() === selectedDate.getMonth() &&
+        scheduleDate.getDate() === selectedDate.getDate()
+      );
+    });
+  }, [selectedDate, schedulesResponse?.data?.schedules]);
+
   // Handlers
   const handleDateChange = (date: Date) => {
     setCurrentDate(date);
+  };
+
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(date);
+    setSelectedSchedule(null);
   };
 
   const handleScheduleClick = (schedule: Schedule) => {
@@ -131,9 +152,9 @@ export default function ScheduleManagementPage() {
   };
 
   const handleSubmit = async (data: ScheduleFormData) => {
-    if (selectedSchedule?.id) {
+    if (selectedSchedule?.scheduleId) {
       await updateScheduleMutation.mutateAsync({
-        id: selectedSchedule.id,
+        scheduleId: selectedSchedule.scheduleId,
         schedule: data,
       });
     } else {
@@ -154,7 +175,7 @@ export default function ScheduleManagementPage() {
     },
     {
       id: "scheduleList",
-      x: 0,
+      x: 9,
       y: 1,
       w: 3,
       h: 5,
@@ -164,7 +185,7 @@ export default function ScheduleManagementPage() {
 
     {
       id: "scheduleForm",
-      x: 0,
+      x: 9,
       y: 6,
       w: 3,
       h: 6,
@@ -173,7 +194,7 @@ export default function ScheduleManagementPage() {
     },
     {
       id: "calendar",
-      x: 3,
+      x: 0,
       y: 1,
       w: 9,
       h: 11,
@@ -211,7 +232,7 @@ export default function ScheduleManagementPage() {
 
           <Box>
             <ScheduleList
-              schedules={schedulesResponse?.data || []}
+              schedules={filteredSchedules}
               onEdit={handleEditSchedule}
               onDelete={handleDeleteSchedule}
               onToggleDisplay={handleToggleDisplay}
@@ -223,7 +244,8 @@ export default function ScheduleManagementPage() {
           </Box>
 
           <Box>
-            {(selectedSchedule || !schedulesResponse?.data?.length) && (
+            {(selectedSchedule ||
+              !schedulesResponse?.data?.schedules?.length) && (
               <ScheduleForm
                 schedule={selectedSchedule || undefined}
                 onSubmit={handleSubmit}
@@ -238,8 +260,9 @@ export default function ScheduleManagementPage() {
           <Box>
             <Calendar
               currentDate={currentDate}
-              schedules={schedulesResponse?.data || []}
+              schedules={schedulesResponse?.data?.schedules || []}
               onDateChange={handleDateChange}
+              onDateSelect={handleDateSelect}
               onScheduleClick={handleScheduleClick}
             />
           </Box>

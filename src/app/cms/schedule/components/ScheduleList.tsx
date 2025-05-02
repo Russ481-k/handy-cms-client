@@ -1,24 +1,22 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Box, Flex, Text, Spinner, VStack } from "@chakra-ui/react";
-import { Schedule } from "../types";
-import { ListItem } from "@/components/ui/list-item";
+import { useState } from "react";
 import {
-  LuFolder,
-  LuFolderOpen,
-  LuLink,
-  LuLayoutList,
-  LuFileText,
-  LuEyeOff,
-} from "react-icons/lu";
+  Box,
+  Table,
+  IconButton,
+  Text,
+  Badge,
+  VStack,
+  Flex,
+  HStack,
+  Stack,
+} from "@chakra-ui/react";
+import { Schedule, ScheduleStatus } from "../types";
 import { useColors } from "@/styles/theme";
-import { useColorModeValue } from "@/components/ui/color-mode";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import { DropZone } from "@/components/ui/drop-zone";
+import { LuEyeOff, LuTrash2 } from "react-icons/lu";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { ScheduleSkeleton } from "./ScheduleSkeleton";
+import { formatDate } from "../utils";
 
 interface ScheduleListProps {
   schedules: Schedule[];
@@ -31,15 +29,24 @@ interface ScheduleListProps {
   totalPages: number;
 }
 
+const StatusBadge: React.FC<{ status: ScheduleStatus }> = ({ status }) => {
+  const statusProps = {
+    UPCOMING: { colorScheme: "blue", label: "예정" },
+    ONGOING: { colorScheme: "green", label: "진행중" },
+    ENDED: { colorScheme: "gray", label: "종료" },
+    HIDDEN: { colorScheme: "red", label: "숨김" },
+  }[status];
+
+  return (
+    <Badge colorScheme={statusProps.colorScheme}>{statusProps.label}</Badge>
+  );
+};
+
 export function ScheduleList({
   schedules,
   onEdit,
   onDelete,
   onToggleDisplay,
-  onPageChange,
-  onSortChange,
-  currentPage,
-  totalPages,
 }: ScheduleListProps) {
   const [scheduleToDelete, setScheduleToDelete] = useState<Schedule | null>(
     null
@@ -51,8 +58,8 @@ export function ScheduleList({
   };
 
   const handleDeleteConfirm = () => {
-    if (scheduleToDelete) {
-      onDelete(scheduleToDelete.id!);
+    if (scheduleToDelete?.scheduleId) {
+      onDelete(scheduleToDelete.scheduleId);
       setScheduleToDelete(null);
     }
   };
@@ -62,29 +69,63 @@ export function ScheduleList({
   };
 
   return (
-    <VStack gap={4} align="stretch">
-      {schedules.map((schedule) => (
-        <ListItem
-          key={schedule.id}
-          id={schedule.id!}
-          name={schedule.title}
-          icon={
-            <Box color={schedule.color || colors.primary.default}>
-              <LuFileText />
-            </Box>
-          }
-          isSelected={false}
-          onDelete={() => handleDeleteClick(schedule)}
-          renderBadges={() =>
-            !schedule.displayYn && (
-              <Flex align="center" justify="center" width={10} height={10}>
-                <LuEyeOff size={12} color={colors.text.secondary} />
-              </Flex>
-            )
-          }
-          onClick={() => onEdit(schedule)}
-        />
-      ))}
+    <Box>
+      <Stack direction="column" gap={2}>
+        {schedules.map((schedule) => (
+          <Box
+            key={schedule.scheduleId}
+            p={3}
+            borderWidth="1px"
+            borderColor={colors.border}
+            borderRadius="md"
+            cursor="pointer"
+            _hover={{ bg: "gray.100" }}
+            onClick={() => onEdit(schedule)}
+          >
+            <Flex justify="space-between" align="center">
+              <Box flex={1}>
+                <Text fontWeight="medium">{schedule.title}</Text>
+                <Text fontSize="sm" color={colors.text.secondary}>
+                  {formatDate(schedule.startDateTime)}
+                  {" - "}
+                  {formatDate(schedule.endDateTime)}
+                </Text>
+              </Box>
+              <Stack direction="row" gap={2}>
+                <IconButton
+                  aria-label="Toggle display"
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleDisplay(schedule);
+                  }}
+                  color={
+                    schedule.displayYn
+                      ? colors.text.primary
+                      : colors.text.secondary
+                  }
+                >
+                  <LuEyeOff />
+                </IconButton>
+                <IconButton
+                  aria-label="Delete schedule"
+                  variant="ghost"
+                  size="sm"
+                  colorScheme="red"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteClick(schedule);
+                  }}
+                >
+                  <LuTrash2 />
+                </IconButton>
+              </Stack>
+            </Flex>
+          </Box>
+        ))}
+      </Stack>
+
       <ConfirmDialog
         isOpen={!!scheduleToDelete}
         onClose={handleDeleteCancel}
@@ -94,6 +135,6 @@ export function ScheduleList({
         confirmText="삭제"
         cancelText="취소"
       />
-    </VStack>
+    </Box>
   );
 }

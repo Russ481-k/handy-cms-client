@@ -7,16 +7,23 @@ import {
   Textarea,
   Field as ChakraField,
   Switch as ChakraSwitch,
+  VStack,
+  Flex,
+  Text,
+  Spinner,
+  Checkbox,
 } from "@chakra-ui/react";
 import { Schedule, ScheduleFormData } from "../types";
 import { useForm } from "react-hook-form";
 import { useColors } from "@/styles/theme";
+import { CheckIcon, DeleteIcon } from "lucide-react";
 
 interface ScheduleFormProps {
   schedule?: Schedule;
   onSubmit: (data: ScheduleFormData) => void;
   isSubmitting: boolean;
   onCancel: () => void;
+  onDelete?: (id: number) => void;
 }
 
 export const ScheduleForm: React.FC<ScheduleFormProps> = ({
@@ -24,6 +31,7 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({
   onSubmit,
   isSubmitting,
   onCancel,
+  onDelete,
 }) => {
   const colors = useColors();
   const {
@@ -35,161 +43,210 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({
     defaultValues: schedule
       ? {
           title: schedule.title,
-          descriptionHtml: schedule.descriptionHtml,
-          startTime: schedule.startTime.slice(0, 16), // YYYY-MM-DDTHH:mm
-          endTime: schedule.endTime.slice(0, 16),
-          place: schedule.place,
+          content: schedule.content,
+          startDateTime: schedule.startDateTime,
+          endDateTime: schedule.endDateTime,
           displayYn: schedule.displayYn,
-          color: schedule.color,
-          extra: schedule.extra,
         }
       : {
           displayYn: true,
         },
   });
 
+  const handleFormSubmit = async (data: ScheduleFormData) => {
+    try {
+      await onSubmit(data);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    }
+  };
+
   return (
-    <Box as="form" onSubmit={handleSubmit(onSubmit)}>
-      <Stack direction="column" gap={4}>
-        <ChakraField.Root invalid={!!errors.title}>
-          <ChakraField.Label>제목</ChakraField.Label>
-          <Input
-            {...register("title", { required: "제목을 입력해주세요" })}
-            placeholder="일정 제목"
-          />
-          {errors.title && (
-            <ChakraField.ErrorText>
-              {errors.title.message}
-            </ChakraField.ErrorText>
-          )}
-        </ChakraField.Root>
-
-        <ChakraField.Root>
-          <ChakraField.Label>상세 내용</ChakraField.Label>
-          <Textarea
-            {...register("descriptionHtml")}
-            placeholder="일정 상세 내용"
-            rows={5}
-          />
-        </ChakraField.Root>
-
-        <Stack direction="row" gap={4}>
-          <ChakraField.Root invalid={!!errors.startTime}>
-            <ChakraField.Label>시작 시간</ChakraField.Label>
+    <Box>
+      <form onSubmit={handleSubmit(handleFormSubmit)}>
+        <VStack gap={3} align="stretch">
+          <Box>
+            <Flex mb={1}>
+              <Text
+                fontSize="sm"
+                fontWeight="medium"
+                color={colors.text.primary}
+              >
+                제목
+              </Text>
+              <Text fontSize="sm" color="red.500" ml={1}>
+                *
+              </Text>
+            </Flex>
             <Input
-              {...register("startTime", {
+              {...register("title", { required: "제목을 입력해주세요" })}
+              placeholder="일정 제목"
+              borderColor={errors.title ? "red.500" : colors.border}
+              color={colors.text.primary}
+              bg="transparent"
+            />
+            {errors.title && (
+              <Text color="red.500" fontSize="sm" mt={1}>
+                {errors.title.message}
+              </Text>
+            )}
+          </Box>
+
+          <Box>
+            <Flex mb={1}>
+              <Text
+                fontSize="sm"
+                fontWeight="medium"
+                color={colors.text.primary}
+              >
+                상세 내용
+              </Text>
+            </Flex>
+            <Textarea
+              {...register("content")}
+              placeholder="일정 상세 내용"
+              rows={5}
+              borderColor={errors.content ? "red.500" : colors.border}
+              color={colors.text.primary}
+              bg="transparent"
+            />
+          </Box>
+
+          <Box>
+            <Flex mb={1}>
+              <Text
+                fontSize="sm"
+                fontWeight="medium"
+                color={colors.text.primary}
+              >
+                시작 시간
+              </Text>
+              <Text fontSize="sm" color="red.500" ml={1}>
+                *
+              </Text>
+            </Flex>
+            <Input
+              {...register("startDateTime", {
                 required: "시작 시간을 선택해주세요",
               })}
               type="datetime-local"
+              borderColor={errors.startDateTime ? "red.500" : colors.border}
+              color={colors.text.primary}
+              bg="transparent"
             />
-            {errors.startTime && (
-              <ChakraField.ErrorText>
-                {errors.startTime.message}
-              </ChakraField.ErrorText>
+            {errors.startDateTime && (
+              <Text color="red.500" fontSize="sm" mt={1}>
+                {errors.startDateTime.message}
+              </Text>
             )}
-          </ChakraField.Root>
+          </Box>
 
-          <ChakraField.Root invalid={!!errors.endTime}>
-            <ChakraField.Label>종료 시간</ChakraField.Label>
+          <Box>
+            <Flex mb={1}>
+              <Text
+                fontSize="sm"
+                fontWeight="medium"
+                color={colors.text.primary}
+              >
+                종료 시간
+              </Text>
+              <Text fontSize="sm" color="red.500" ml={1}>
+                *
+              </Text>
+            </Flex>
             <Input
-              {...register("endTime", { required: "종료 시간을 선택해주세요" })}
+              {...register("endDateTime", {
+                required: "종료 시간을 선택해주세요",
+              })}
               type="datetime-local"
+              borderColor={errors.endDateTime ? "red.500" : colors.border}
+              color={colors.text.primary}
+              bg="transparent"
             />
-            {errors.endTime && (
-              <ChakraField.ErrorText>
-                {errors.endTime.message}
-              </ChakraField.ErrorText>
+            {errors.endDateTime && (
+              <Text color="red.500" fontSize="sm" mt={1}>
+                {errors.endDateTime.message}
+              </Text>
             )}
-          </ChakraField.Root>
-        </Stack>
+          </Box>
 
-        <ChakraField.Root>
-          <ChakraField.Label>장소</ChakraField.Label>
-          <Input {...register("place")} placeholder="장소" />
-        </ChakraField.Root>
+          <Flex alignItems="center">
+            <Checkbox.Root
+              {...register("displayYn")}
+              defaultChecked
+              colorPalette="blue"
+              size="sm"
+            >
+              <Checkbox.HiddenInput />
+              <Checkbox.Control
+                borderColor={colors.border}
+                bg={colors.bg}
+                _checked={{
+                  borderColor: "transparent",
+                  bgGradient: colors.gradient.primary,
+                  color: "white",
+                  _hover: {
+                    opacity: 0.8,
+                  },
+                }}
+              >
+                <Checkbox.Indicator>
+                  <CheckIcon />
+                </Checkbox.Indicator>
+              </Checkbox.Control>
+              <Checkbox.Label>
+                <Text fontWeight="medium" color={colors.text.primary}>
+                  일정 노출
+                </Text>
+              </Checkbox.Label>
+            </Checkbox.Root>
+          </Flex>
 
-        <ChakraField.Root>
-          <ChakraField.Label>색상</ChakraField.Label>
-          <Input {...register("color")} type="color" w="100px" h="40px" p={1} />
-        </ChakraField.Root>
-
-        <ChakraField.Root>
-          <ChakraField.Label>공개 여부</ChakraField.Label>
-          <ChakraSwitch.Root {...register("displayYn")} defaultChecked>
-            <ChakraSwitch.HiddenInput />
-            <ChakraSwitch.Control>
-              <ChakraSwitch.Thumb />
-            </ChakraSwitch.Control>
-          </ChakraSwitch.Root>
-        </ChakraField.Root>
-
-        <Box
-          borderWidth="1px"
-          borderColor={colors.border}
-          p={4}
-          borderRadius="md"
-        >
-          <ChakraField.Root>
-            <ChakraField.Label>추가 정보</ChakraField.Label>
-            <Stack direction="column" gap={4}>
-              <Stack direction="row" gap={4}>
-                <ChakraField.Root>
-                  <ChakraField.Label>담당자 이름</ChakraField.Label>
-                  <Input
-                    {...register("extra.manager.name")}
-                    placeholder="담당자 이름"
-                    size="sm"
-                  />
-                </ChakraField.Root>
-                <ChakraField.Root>
-                  <ChakraField.Label>담당자 연락처</ChakraField.Label>
-                  <Input
-                    {...register("extra.manager.tel")}
-                    placeholder="담당자 연락처"
-                    size="sm"
-                  />
-                </ChakraField.Root>
-              </Stack>
-
-              <Stack direction="row" gap={4}>
-                <ChakraField.Root>
-                  <ChakraField.Label>참가비</ChakraField.Label>
-                  <Input
-                    {...register("extra.fee", {
-                      setValueAs: (v) =>
-                        v === "" ? undefined : parseInt(v, 10),
-                    })}
-                    type="number"
-                    placeholder="참가비"
-                    size="sm"
-                  />
-                </ChakraField.Root>
-                <ChakraField.Root>
-                  <ChakraField.Label>카테고리</ChakraField.Label>
-                  <Input
-                    {...register("extra.category")}
-                    placeholder="카테고리"
-                    size="sm"
-                  />
-                </ChakraField.Root>
-              </Stack>
-            </Stack>
-          </ChakraField.Root>
-        </Box>
-
-        <Button
-          mt={4}
-          colorScheme="blue"
-          loading={isSubmitting}
-          type="submit"
-          size="lg"
-        >
-          {schedule ? "일정 수정" : "일정 등록"}
-        </Button>
-        <Button mt={4} variant="outline" onClick={onCancel} size="lg">
-          취소
-        </Button>
-      </Stack>
+          <Flex justify="space-between" gap={2} mt={4}>
+            {schedule && onDelete ? (
+              <Button
+                borderColor={colors.accent.delete.default}
+                color={colors.accent.delete.default}
+                onClick={() => onDelete(schedule.scheduleId)}
+                variant="outline"
+                _hover={{
+                  bg: colors.accent.delete.bg,
+                  borderColor: colors.accent.delete.hover,
+                  color: colors.accent.delete.hover,
+                  transform: "translateY(-1px)",
+                }}
+                _active={{ transform: "translateY(0)" }}
+                transition="all 0.2s ease"
+                disabled={isSubmitting}
+              >
+                <Box display="flex" alignItems="center" gap={2} w={4}>
+                  <DeleteIcon />
+                </Box>
+                <Text>삭제</Text>
+              </Button>
+            ) : (
+              <Box />
+            )}
+            <Flex gap={2}>
+              <Button onClick={onCancel} variant="outline" colorScheme="gray">
+                취소
+              </Button>
+              <Button
+                type="submit"
+                bg={colors.primary.default}
+                color="white"
+                _hover={{ bg: colors.primary.hover }}
+                disabled={isSubmitting}
+              >
+                <Box display="flex" alignItems="center" gap={2} w={4}>
+                  {isSubmitting ? <Spinner size="sm" /> : <CheckIcon />}
+                </Box>
+                <Text>저장</Text>
+              </Button>
+            </Flex>
+          </Flex>
+        </VStack>
+      </form>
     </Box>
   );
 };

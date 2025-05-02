@@ -1,10 +1,11 @@
+import { ko } from "date-fns/locale";
 import { Schedule, ScheduleStatus } from "./types";
-import { format, isAfter, isBefore, isWithinInterval } from "date-fns";
+import { format, isAfter, isBefore, isValid, isWithinInterval } from "date-fns";
 
 export const calculateScheduleStatus = (schedule: Schedule): ScheduleStatus => {
   const now = new Date();
-  const startTime = new Date(schedule.startTime);
-  const endTime = new Date(schedule.endTime);
+  const startTime = new Date(schedule.startDateTime);
+  const endTime = new Date(schedule.endDateTime);
 
   if (!schedule.displayYn) return "HIDDEN";
   if (isBefore(now, startTime)) return "UPCOMING";
@@ -49,7 +50,7 @@ export const getStatusText = (status: ScheduleStatus): string => {
 
 export const groupSchedulesByDate = (schedules: Schedule[]) => {
   return schedules.reduce((acc, schedule) => {
-    const date = format(new Date(schedule.startTime), "yyyy-MM-dd");
+    const date = formatDate(schedule.startDateTime);
     if (!acc[date]) {
       acc[date] = [];
     }
@@ -60,6 +61,14 @@ export const groupSchedulesByDate = (schedules: Schedule[]) => {
 
 export const sortSchedulesByTime = (schedules: Schedule[]) => {
   return [...schedules].sort(
-    (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+    (a, b) =>
+      new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime()
   );
+};
+
+export const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return isValid(date)
+    ? format(date, "MM.dd HH:mm", { locale: ko })
+    : dateString;
 };

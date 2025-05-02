@@ -8,6 +8,8 @@ import {
   Button,
   IconButton,
   Portal,
+  Stack,
+  Flex,
 } from "@chakra-ui/react";
 import {
   startOfMonth,
@@ -52,6 +54,7 @@ interface CalendarProps {
   currentDate: Date;
   schedules: Schedule[];
   onDateChange: (date: Date) => void;
+  onDateSelect: (date: Date) => void;
   onScheduleClick: (schedule: Schedule) => void;
   minDate?: Date;
   maxDate?: Date;
@@ -61,6 +64,7 @@ export const Calendar: React.FC<CalendarProps> = ({
   currentDate,
   schedules,
   onDateChange,
+  onDateSelect,
   onScheduleClick,
   minDate,
   maxDate,
@@ -109,10 +113,28 @@ export const Calendar: React.FC<CalendarProps> = ({
   }, [currentDate, startDate, endDate]);
 
   // 일정 그룹화
-  const schedulesMap = useMemo(
-    () => groupSchedulesByDate(schedules),
-    [schedules]
-  );
+  const schedulesMap = useMemo(() => {
+    const map: Record<string, Schedule[]> = {};
+    schedules.forEach((schedule) => {
+      const date = new Date(schedule.startDateTime);
+      const dateStr = format(date, "yyyy-MM-dd");
+      if (!map[dateStr]) {
+        map[dateStr] = [];
+      }
+      map[dateStr].push(schedule);
+    });
+    return map;
+  }, [schedules]);
+
+  // 일정 정렬
+  const sortSchedulesByTime = (schedules: Schedule[]) => {
+    return [...schedules].sort((a, b) => {
+      return (
+        new Date(a.startDateTime).getTime() -
+        new Date(b.startDateTime).getTime()
+      );
+    });
+  };
 
   // 이전 달로 이동
   const handlePrevMonth = () => {
@@ -144,58 +166,23 @@ export const Calendar: React.FC<CalendarProps> = ({
 
   // 날짜 클릭 핸들러
   const handleDateClick = (date: Date) => {
-    if (validateDate(date)) {
-      setSelectedDate(date);
-      onDateChange(date);
-    }
+    if (!validateDate(date)) return;
+    setSelectedDate(date);
+    onDateSelect(date);
   };
 
   // 일정 클릭 핸들러
-  const handleScheduleClick = (schedule: Schedule) => {
-    try {
-      onScheduleClick(schedule);
-    } catch (error) {
-      console.error("Error handling schedule click:", error);
-      toaster.error({
-        title: "일정 클릭 처리 중 오류가 발생했습니다.",
-        duration: 3000,
-      });
-    }
+  const handleScheduleClick = (schedule: Schedule, date: Date) => {
+    setSelectedDate(date);
+    onDateSelect(date);
+    onScheduleClick(schedule);
   };
 
   const weekDays = ["일", "월", "화", "수", "목", "금", "토"];
 
-  const renderScheduleButton = (schedule: Schedule) => (
-    <Button
-      key={schedule.id}
-      size="xs"
-      bg={schedule.color || scheduleBgColor}
-      color={scheduleTextColor}
-      onClick={() => handleScheduleClick(schedule)}
-      whiteSpace="nowrap"
-      overflow="hidden"
-      textOverflow="ellipsis"
-      width="100%"
-      justifyContent="flex-start"
-      fontWeight="normal"
-      role="button"
-      aria-label={`${schedule.title} - ${format(
-        new Date(schedule.startTime),
-        "HH:mm"
-      )}`}
-      _hover={{
-        transform: "scale(1.02)",
-        boxShadow: "sm",
-      }}
-      transition="all 0.2s"
-    >
-      {format(new Date(schedule.startTime), "HH:mm")} {schedule.title}
-    </Button>
-  );
-
   return (
     <Box bg={bgColor} p={0}>
-      <HStack justify="space-between" mb={4} gap={4}>
+      <HStack justify="space-between" mb="-12" gap={4}>
         <IconButton
           aria-label="이전 달로 이동"
           onClick={handlePrevMonth}
@@ -224,7 +211,15 @@ export const Calendar: React.FC<CalendarProps> = ({
         templateRows="repeat(6, 1fr)"
       >
         {weekDays.map((day) => (
-          <Box key={day} textAlign="center" py={2} fontWeight="bold">
+          <Box
+            key={day}
+            textAlign="center"
+            display="flex"
+            alignItems="end"
+            justifyContent="center"
+            py={2}
+            fontWeight="bold"
+          >
             <Text
               color={
                 day === "일"
@@ -247,89 +242,100 @@ export const Calendar: React.FC<CalendarProps> = ({
           const isDisabled = !validateDate(date);
           const dayOfWeek = format(date, "E");
           const isSelected = selectedDate && isSameDay(date, selectedDate);
+          const isTodayDate = isToday(date);
 
-          const dayCell = (
+          return (
             <Box
               key={dateStr}
-              borderColor={borderColor}
               p={2}
-              bg={
-                isToday(date)
-                  ? todayBgColor
-                  : isSelected
-                  ? "gray.100"
-                  : undefined
-              }
-              minH="102px"
-              maxH="102px"
+              bg={isTodayDate ? "blue.50" : isSelected ? "blue.100" : undefined}
+              minH="112px"
+              maxH="112px"
               role="gridcell"
               aria-label={format(date, "yyyy년 M월 d일 EEEE", { locale: ko })}
               opacity={isCurrentMonth ? 1 : 0.5}
               cursor={isDisabled ? "not-allowed" : "pointer"}
-              onClick={() => !isDisabled && handleDateClick(date)}
+              onClick={() => handleDateClick(date)}
               overflow="hidden"
               _hover={{
-                bg: isDisabled ? undefined : "gray.50",
-                transform: "scale(1.02)",
+                bg: isDisabled
+                  ? undefined
+                  : isSelected
+                  ? "blue.200"
+                  : "gray.50",
+                transform: isSelected ? "scale(1.02)" : "translateX(2px)",
                 boxShadow: "sm",
                 zIndex: 1,
               }}
-              transition="all 0.2s"
+              transition="all 0.2s ease-out"
               position="relative"
               borderWidth="1px"
               borderStyle="solid"
+              borderColor={
+                isSelected ? "blue.500" : isTodayDate ? "blue.300" : borderColor
+              }
+              boxShadow={isSelected ? "0 0 0 2px blue.500" : "none"}
             >
-              <Text
-                fontSize="sm"
-                color={
-                  !isCurrentMonth
-                    ? colors.text.muted
-                    : dayOfWeek === "일"
-                    ? "red.500"
-                    : dayOfWeek === "토"
-                    ? "blue.500"
-                    : colors.text.primary
-                }
-              >
-                {format(date, "d")}
-              </Text>
-              <VStack
-                align="stretch"
-                mt={1}
-                gap={1}
-                maxH="90px"
-                overflow="auto"
-              >
-                {sortedSchedules.slice(0, 5).map(renderScheduleButton)}
-                {sortedSchedules.length > 5 && (
-                  <PopoverRoot>
-                    <PopoverTrigger>
-                      <Text
-                        fontSize="xs"
-                        color={colors.text.secondary}
-                        textAlign="right"
-                        cursor="pointer"
-                        _hover={{ textDecoration: "underline" }}
-                      >
-                        +{sortedSchedules.length - 5}개 더보기
+              <Flex direction="column" gap={1}>
+                <Text
+                  fontSize="sm"
+                  fontWeight="bold"
+                  color={
+                    isSelected
+                      ? "blue.700"
+                      : !isCurrentMonth
+                      ? colors.text.muted
+                      : dayOfWeek === "일"
+                      ? "red.500"
+                      : dayOfWeek === "토"
+                      ? "blue.500"
+                      : colors.text.primary
+                  }
+                >
+                  {format(date, "d")}
+                </Text>
+                <Stack direction="column" gap={1} maxH="90px" overflow="auto">
+                  {sortedSchedules.slice(0, 5).map((schedule) => (
+                    <Box
+                      key={schedule.scheduleId}
+                      p={1}
+                      bg={schedule.displayYn ? "blue.50" : "gray.100"}
+                      color={schedule.displayYn ? "blue.700" : "gray.500"}
+                      borderRadius="sm"
+                      cursor="pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleScheduleClick(schedule, date);
+                      }}
+                      _hover={{
+                        bg: schedule.displayYn ? "blue.100" : "gray.200",
+                      }}
+                    >
+                      <Text fontSize="xs" truncate>
+                        {format(new Date(schedule.startDateTime), "HH:mm")}{" "}
+                        {schedule.title}
                       </Text>
-                    </PopoverTrigger>
-                    <Portal>
-                      <PopoverContent width="300px">
-                        <PopoverBody>
-                          <VStack align="stretch" gap={1}>
-                            {sortedSchedules.slice(5).map(renderScheduleButton)}
-                          </VStack>
-                        </PopoverBody>
-                      </PopoverContent>
-                    </Portal>
-                  </PopoverRoot>
-                )}
-              </VStack>
+                    </Box>
+                  ))}
+                  {sortedSchedules.length > 5 && (
+                    <Text
+                      fontSize="xs"
+                      color="gray.500"
+                      textAlign="right"
+                      cursor="pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDateClick(date);
+                      }}
+                      _hover={{ textDecoration: "underline" }}
+                    >
+                      +{sortedSchedules.length - 5}개 더보기
+                    </Text>
+                  )}
+                </Stack>
+              </Flex>
             </Box>
           );
-
-          return dayCell;
         })}
       </Grid>
     </Box>

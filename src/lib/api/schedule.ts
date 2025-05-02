@@ -21,17 +21,8 @@ export const scheduleApi = {
   getSchedules: async (
     params: ScheduleListParams
   ): Promise<ScheduleListResponse> => {
-    const queryParams = new URLSearchParams();
-    if (params.year) queryParams.append("year", params.year.toString());
-    if (params.month) queryParams.append("month", params.month.toString());
-    if (params.dateFrom) queryParams.append("dateFrom", params.dateFrom);
-    if (params.dateTo) queryParams.append("dateTo", params.dateTo);
-    if (params.page) queryParams.append("page", params.page.toString());
-    if (params.size) queryParams.append("size", params.size.toString());
-    if (params.sort) queryParams.append("sort", params.sort);
-
     const response = await publicApi.get<ScheduleListResponse>(
-      `/cms/schedule?${queryParams}`
+      `/cms/schedule/${params.year}/${params.month}`
     );
     return response;
   },
@@ -41,12 +32,8 @@ export const scheduleApi = {
     dateFrom: string,
     dateTo: string
   ): Promise<ScheduleListResponse> => {
-    const queryParams = new URLSearchParams();
-    queryParams.append("dateFrom", dateFrom);
-    queryParams.append("dateTo", dateTo);
-
     const response = await publicApi.get<ScheduleListResponse>(
-      `/cms/schedule?${queryParams}`
+      `/cms/schedule/range/${dateFrom}/${dateTo}`
     );
     return response;
   },

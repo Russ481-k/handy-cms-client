@@ -63,42 +63,25 @@ export interface ScheduleExtra {
 }
 
 export interface Schedule {
-  id?: number;
+  scheduleId: number;
   title: string;
-  descriptionHtml?: string;
-  startTime: string;
-  endTime: string;
-  place?: string;
+  content: string;
+  startDateTime: string;
+  endDateTime: string;
   displayYn: boolean;
-  color?: string;
-  extra?: ScheduleExtra;
-  status?: ScheduleStatus;
-
-  // Audit fields
-  createdBy?: string;
-  createdIp?: string;
-  createdAt?: string;
-  updatedBy?: string;
-  updatedIp?: string;
-  updatedAt?: string;
+  status: ScheduleStatus;
+  createdBy: string | null;
+  createdDate: string;
+  updatedBy: string | null;
+  updatedDate: string;
 }
 
 export interface ScheduleFormData {
   title: string;
-  descriptionHtml: string;
-  startTime: string;
-  endTime: string;
-  place: string;
+  content: string;
+  startDateTime: string;
+  endDateTime: string;
   displayYn: boolean;
-  color?: string;
-  extra?: {
-    manager?: {
-      name: string;
-      tel: string;
-    };
-    fee?: number;
-    category?: string;
-  };
 }
 
 export interface PaginationResponse {
@@ -129,13 +112,14 @@ export const DEFAULT_SCHEDULE_COLOR = {
 };
 
 export interface ScheduleListResponse {
-  status: number;
-  data: Schedule[];
-  pagination: {
-    page: number;
-    size: number;
-    total: number;
+  success: boolean;
+  message: string | null;
+  data: {
+    schedules: Schedule[];
+    totalCount: number;
   };
+  errorCode: string | null;
+  stackTrace: string | null;
 }
 
 export interface ScheduleResponse {
