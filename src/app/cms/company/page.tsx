@@ -1,14 +1,15 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Box, Flex, Heading, Badge, Button, Table } from "@chakra-ui/react";
-import { CompanyList } from "@/components/companies/CompanyList";
+import { Box, Flex, Heading, Badge } from "@chakra-ui/react";
+import { CompanyList } from "./components/CompanyList";
 import { CompanyEditor } from "./components/CompanyEditor";
 import { GridSection } from "@/components/ui/grid-section";
 import { useColors } from "@/styles/theme";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { toaster, Toaster } from "@/components/ui/toaster";
+import { Main } from "@/components/layout/view/Main";
 
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
@@ -16,13 +17,8 @@ import { menuApi, menuKeys, UpdateMenuOrderRequest } from "@/lib/api/menu";
 
 import { sortMenus } from "@/lib/api/menu";
 import { Menu } from "@/types/api";
-import { useCompanies, useDeleteCompany } from "@/lib/hooks/useCompany";
-import { Building2, Pencil, Trash2 } from "lucide-react";
-import { CompanyForm } from "./components/CompanyForm";
-import { CompanyList as MenuCompanyList } from "./components/CompanyList";
-import { Company } from "@/types/api/company";
 
-export default function CompanyManagementPage() {
+export default function MenuManagementPage() {
   const renderCount = React.useRef(0);
   renderCount.current += 1;
 
@@ -35,15 +31,6 @@ export default function CompanyManagementPage() {
     null
   );
   const colors = useColors();
-  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-
-  const { data, isLoading } = useCompanies({
-    page: 1,
-    size: 20,
-  });
-
-  const deleteMutation = useDeleteCompany();
 
   // 입주기업 목록 가져오기
   const { data: menuResponse, isLoading: isMenusLoading } = useQuery<Menu[]>({
@@ -96,7 +83,7 @@ export default function CompanyManagementPage() {
   });
 
   // 입주기업 삭제 뮤테이션
-  const deleteMutationMenu = useMutation({
+  const deleteMutation = useMutation({
     mutationFn: menuApi.deleteMenu,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: menuKeys.lists() });
@@ -176,7 +163,7 @@ export default function CompanyManagementPage() {
         if (tempMenu && tempMenu.id === menuId) {
           setTempMenu(null);
         } else {
-          await deleteMutationMenu.mutateAsync(menuId);
+          await deleteMutation.mutateAsync(menuId);
         }
         const parentMenu = findParentMenu(menus, menuId);
         if (parentMenu) {
@@ -190,7 +177,7 @@ export default function CompanyManagementPage() {
         setLoadingMenuId(null);
       }
     },
-    [deleteMutationMenu, menus, tempMenu]
+    [deleteMutation, menus, tempMenu]
   );
 
   const handleSubmit = useCallback(
@@ -426,22 +413,6 @@ export default function CompanyManagementPage() {
     }
   }, [menus, tempMenu, selectedMenu]);
 
-  const handleEditCompany = (company: Company) => {
-    setSelectedCompany(company);
-    setIsFormOpen(true);
-  };
-
-  const handleDeleteCompany = async (id: number) => {
-    if (window.confirm("정말 삭제하시겠습니까?")) {
-      await deleteMutation.mutateAsync(id);
-    }
-  };
-
-  const handleFormClose = () => {
-    setSelectedCompany(null);
-    setIsFormOpen(false);
-  };
-
   return (
     <Box bg={colors.bg} minH="100vh" w="full" position="relative">
       <Box w="full">
@@ -471,7 +442,7 @@ export default function CompanyManagementPage() {
 
           <Box>
             <DndProvider backend={HTML5Backend}>
-              <MenuCompanyList
+              <CompanyList
                 menus={menus}
                 onAddMenu={handleAddMenu}
                 onEditMenu={handleEditMenu}
@@ -523,11 +494,7 @@ export default function CompanyManagementPage() {
           </Box>
 
           <Box>
-            <CompanyList
-              companies={data?.data || []}
-              loading={isLoading}
-              onCompanyClick={handleEditCompany}
-            />
+            <Main menus={menus} isPreview={true} />
           </Box>
         </GridSection>
       </Box>
@@ -542,108 +509,6 @@ export default function CompanyManagementPage() {
         backdrop="rgba(0, 0, 0, 0.5)"
       />
       <Toaster />
-
-      <Box className="container mx-auto px-4 py-8">
-        <Box className="flex justify-between items-center mb-8">
-          <Heading size="lg" color={colors.text.primary}>
-            입주기업 관리
-          </Heading>
-          <Button onClick={() => setIsFormOpen(true)} colorScheme="blue">
-            새 기업 등록
-          </Button>
-        </Box>
-
-        <Box className="bg-white rounded-lg shadow overflow-hidden">
-          <Table.Root size="sm" variant="outline">
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeader>로고</Table.ColumnHeader>
-                <Table.ColumnHeader>기업명</Table.ColumnHeader>
-                <Table.ColumnHeader>연도</Table.ColumnHeader>
-                <Table.ColumnHeader>상태</Table.ColumnHeader>
-                <Table.ColumnHeader textAlign="end">관리</Table.ColumnHeader>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {isLoading ? (
-                <Table.Row>
-                  <Table.Cell colSpan={5} textAlign="center">
-                    로딩중...
-                  </Table.Cell>
-                </Table.Row>
-              ) : data?.data.length === 0 ? (
-                <Table.Row>
-                  <Table.Cell colSpan={5} textAlign="center">
-                    등록된 기업이 없습니다.
-                  </Table.Cell>
-                </Table.Row>
-              ) : (
-                data?.data.map((company: Company) => (
-                  <Table.Row key={company.companyId}>
-                    <Table.Cell>
-                      <Box className="w-10 h-10 relative">
-                        {company.logoFileId ? (
-                          <img
-                            src={`/api/v1/file/${company.logoFileId}`}
-                            alt={company.companyName}
-                            className="w-full h-full object-contain"
-                          />
-                        ) : (
-                          <Box className="w-full h-full flex items-center justify-center bg-gray-100 rounded">
-                            <Building2 size={20} className="text-gray-400" />
-                          </Box>
-                        )}
-                      </Box>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <Box>
-                        <Box className="font-medium">{company.companyName}</Box>
-                        {company.tagline && (
-                          <Box className="text-sm text-gray-500">
-                            {company.tagline}
-                          </Box>
-                        )}
-                      </Box>
-                    </Table.Cell>
-                    <Table.Cell>{company.residentYear}년</Table.Cell>
-                    <Table.Cell>
-                      <Badge colorScheme={company.displayYn ? "green" : "gray"}>
-                        {company.displayYn ? "노출" : "비노출"}
-                      </Badge>
-                    </Table.Cell>
-                    <Table.Cell textAlign="end">
-                      <Flex justify="end" gap={2}>
-                        <Button
-                          onClick={() => handleEditCompany(company)}
-                          variant="ghost"
-                          colorScheme="blue"
-                          size="sm"
-                        >
-                          <Pencil size={20} />
-                        </Button>
-                        <Button
-                          onClick={() =>
-                            handleDeleteCompany(company.companyId!)
-                          }
-                          variant="ghost"
-                          colorScheme="red"
-                          size="sm"
-                        >
-                          <Trash2 size={20} />
-                        </Button>
-                      </Flex>
-                    </Table.Cell>
-                  </Table.Row>
-                ))
-              )}
-            </Table.Body>
-          </Table.Root>
-        </Box>
-
-        {isFormOpen && (
-          <CompanyForm company={selectedCompany} onClose={handleFormClose} />
-        )}
-      </Box>
     </Box>
   );
 }

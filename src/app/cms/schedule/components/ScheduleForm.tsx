@@ -16,12 +16,14 @@ interface ScheduleFormProps {
   schedule?: Schedule;
   onSubmit: (data: ScheduleFormData) => void;
   isSubmitting: boolean;
+  onCancel: () => void;
 }
 
 export const ScheduleForm: React.FC<ScheduleFormProps> = ({
   schedule,
   onSubmit,
   isSubmitting,
+  onCancel,
 }) => {
   const colors = useColors();
   const {
@@ -183,6 +185,9 @@ export const ScheduleForm: React.FC<ScheduleFormProps> = ({
           size="lg"
         >
           {schedule ? "일정 수정" : "일정 등록"}
+        </Button>
+        <Button mt={4} variant="outline" onClick={onCancel} size="lg">
+          취소
         </Button>
       </Stack>
     </Box>
