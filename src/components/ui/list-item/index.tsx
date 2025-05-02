@@ -71,7 +71,7 @@ export function ListItem({
             aria-label="Add"
             size="sm"
             variant="ghost"
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
               e.stopPropagation();
               onAdd();
             }}
@@ -84,7 +84,7 @@ export function ListItem({
             aria-label="Delete"
             size="sm"
             variant="ghost"
-            onClick={(e) => {
+            onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
               e.stopPropagation();
               onDelete();
             }}

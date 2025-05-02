@@ -342,3 +342,47 @@ export interface BoardMasterApiResponse {
   errorCode: string | null;
   stackTrace: string | null;
 }
+
+export interface Company {
+  companyId?: number;
+  companyName: string;
+  tagline?: string;
+  residentYear: number;
+  logoFileId?: number;
+  homepageUrl?: string;
+  summaryHtml?: string;
+  ceoName?: string;
+  foundedDate?: string;
+  industry?: string;
+  location?: string;
+  displayYn: boolean;
+  sortOrder?: number;
+  extra?: Record<string, any>;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CompanyQueryParams {
+  year?: number;
+  category?: string;
+  search?: string;
+  page?: number;
+  size?: number;
+  sort?: string;
+  displayYn?: boolean;
+}
+
+export interface CompanyListResponse {
+  status: number;
+  data: Company[];
+  pagination: {
+    page: number;
+    size: number;
+    total: number;
+  };
+}
+
+export interface CompanyResponse {
+  status: number;
+  data: Company;
+}
