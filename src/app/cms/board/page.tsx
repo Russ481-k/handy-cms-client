@@ -295,13 +295,16 @@ export default function BoardManagementPage() {
           </Flex>
 
           <Box>
-            <Text mb={2}>
-              게시판 수: {boardMastersResponse?.data?.content?.length || 0}
-            </Text>
-          </Box>
-
-          <Box>
-            <Text mb={2}>게시판 메뉴 목록:</Text>
+            <BoardList
+              boards={matchedBoards}
+              onAddBoard={handleAddBoard}
+              onEditBoard={handleEditBoard}
+              onDeleteBoard={handleDeleteBoard}
+              isLoading={isBoardMastersLoading}
+              selectedBoardId={selectedBoard?.id}
+              loadingBoardId={loadingBoardId}
+            />
+                      <Text mb={2}>게시판 메뉴 목록:</Text>
             {boardMenusResponse?.map((menu: Menu) => (
               <Box
                 key={menu.id}
@@ -320,30 +323,17 @@ export default function BoardManagementPage() {
               </Box>
             ))}
           </Box>
-
           <Box>
-            <BoardList
-              boards={matchedBoards}
-              onAddBoard={handleAddBoard}
-              onEditBoard={handleEditBoard}
-              onDeleteBoard={handleDeleteBoard}
-              isLoading={isBoardMastersLoading}
-              selectedBoardId={selectedBoard?.id}
-              loadingBoardId={loadingBoardId}
-            />
-          </Box>
-
-          <Box>
-            <BoardEditor
+          <BoardEditor
               board={selectedBoard}
               onSubmit={handleSubmit}
               isLoading={loadingBoardId !== null}
             />
           </Box>
-
           <Box>
             <BoardPreview board={selectedBoard} />
           </Box>
+
         </GridSection>
       </Box>
     </Box>

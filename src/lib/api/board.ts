@@ -7,7 +7,8 @@ export const boardKeys = {
   list: (filters: string) => [...boardKeys.lists(), { filters }] as const,
   details: () => [...boardKeys.all, "detail"] as const,
   detail: (id: number) => [...boardKeys.details(), id] as const,
-};
+  posts: (boardId: number) => [...boardKeys.details(), boardId, "posts"] as const,
+} as const;
 
 export const boardApi = {
   // Board Master APIs

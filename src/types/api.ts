@@ -63,17 +63,33 @@ export interface Board {
   updatedAt: string;
 }
 
-export interface Post {
+export interface Attachment {
   id: number;
+  fileName: string;
+  fileSize: number;
+  fileType: string;
+  downloadUrl: string;
+  createdAt: string;
+}
+
+export interface Post {
+  nttId: number;
   bbsId: number;
-  title: string;
-  contentHtml: string;
+  parentNttId: number | null;
+  threadDepth: number;
   writer: string;
+  title: string;
+  content: string;
+  noticeState: 'Y' | 'N' | 'P';
+  noticeStartDt: string;
+  noticeEndDt: string;
+  publishState: 'Y' | 'N' | 'P';
   publishStartDt: string;
-  attachments: number[];
-  categories: string[];
-  custom: Record<string, string>;
-  parentNttId?: number;
+  publishEndDt: string | null;
+  externalLink: string | null;
+  hits: number;
+  categories?: string[];
+  attachments?: Attachment[];
   createdAt: string;
   updatedAt: string;
 }
@@ -385,4 +401,23 @@ export interface CompanyListResponse {
 export interface CompanyResponse {
   status: number;
   data: Company;
+}
+
+export interface PostData {
+  bbsId: number;
+  title: string;
+  content: string;
+  writer: string;
+  publishStartDt: string;
+  noticeState: 'Y' | 'N' | 'P';
+  noticeStartDt: string;
+  noticeEndDt: string;
+  publishState: 'Y' | 'N' | 'P';
+  publishEndDt: string | null;
+  externalLink: string | null;
+  parentNttId: number | null;
+  categories?: string[];
+  nttId: number;
+  threadDepth: number;
+  hits: number;
 }
