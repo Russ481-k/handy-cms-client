@@ -11,6 +11,7 @@ import { useColorMode } from "@/components/ui/color-mode";
 import { useMenu } from "@/lib/hooks/useMenu";
 import { sortMenus } from "@/lib/api/menu";
 import { useMemo } from "react";
+import { STYLES } from "@/styles/theme-tokens";
 
 export default function Home() {
   const { colorMode } = useColorMode();
@@ -38,7 +39,7 @@ export default function Home() {
     }
   }, [menus]);
 
-  const styles = useUserStyles();
+  const styles = useUserStyles(STYLES);
 
   return (
     <Layout currentPage="홈" menus={treeMenus}>

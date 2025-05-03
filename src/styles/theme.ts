@@ -233,6 +233,13 @@ export interface Styles {
     right: string;
     zIndex: number;
   };
+  breakpoints: {
+    sm: string;
+    md: string;
+    lg: string;
+    xl: string;
+    "2xl": string;
+  };
 }
 
 export function useColors(): Colors {
@@ -564,19 +571,18 @@ export function useStyles(colors: Colors): Styles {
   };
 }
 
-export function useUserStyles(styles: Styles): Styles {
+export function useUserStyles(styles: Partial<Styles>): Styles {
   return {
     ...styles,
     fonts: {
-      body: '"SCoreDream", -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif',
-      heading:
-        '"SCoreDream", -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif',
+      body: '"SCoreDream", sans-serif',
+      heading: '"SCoreDream", sans-serif',
     },
     breakpoints: {
-      sm: "360px",
+      sm: "480px",
       md: "768px",
-      lg: "1000px",
-      xl: "1200px",
+      lg: "1024px",
+      xl: "1280px",
       "2xl": "1600px",
     },
   };
