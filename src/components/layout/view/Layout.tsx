@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Flex } from "@chakra-ui/react";
+import { Box, Flex, Container } from "@chakra-ui/react";
 import { Header } from "./Header";
 import { Footer } from "@/components/layout/view/Footer";
 import { memo, Suspense } from "react";
@@ -54,22 +54,16 @@ export default function Layout({
 }: LayoutProps) {
   const colors = useColors();
   return (
-    <Flex
-      width="100%"
-      direction="column"
-      bg={colors.bg}
-      position="relative"
-      minHeight="100vh"
-    >
+    <Box bg={colors.bg} minHeight="100vh" fontFamily="SCoreDream, sans-serif">
       <MemoizedHeader
         currentPage={currentPage}
         menus={menus}
         isPreview={isPreview}
       />
-      <Box flex="1" position="relative">
+      <Box>
         <Suspense fallback={<LoadingFallback />}>{children}</Suspense>
       </Box>
       <MemoizedFooter />
-    </Flex>
+    </Box>
   );
 }

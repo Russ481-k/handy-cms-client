@@ -1,5 +1,6 @@
 import { useColorModeValue } from "@/components/ui/color-mode";
 import { COLORS } from "./theme-tokens";
+import { STYLES } from "./theme-tokens";
 
 export interface Colors {
   bg: string;
@@ -76,6 +77,10 @@ export interface Colors {
 }
 
 export interface Styles {
+  fonts: {
+    body: string;
+    heading: string;
+  };
   container: {
     maxW: {
       base: string;
@@ -227,6 +232,13 @@ export interface Styles {
     bottom: string;
     right: string;
     zIndex: number;
+  };
+  breakpoints: {
+    sm: string;
+    md: string;
+    lg: string;
+    xl: string;
+    "2xl": string;
   };
 }
 
@@ -558,3 +570,22 @@ export function useStyles(colors: Colors): Styles {
     },
   };
 }
+
+export function useUserStyles(styles: Partial<Styles>): Styles {
+  return {
+    ...styles,
+    fonts: {
+      body: '"SCoreDream", sans-serif',
+      heading: '"SCoreDream", sans-serif',
+    },
+    breakpoints: {
+      sm: "480px",
+      md: "768px",
+      lg: "1024px",
+      xl: "1280px",
+      "2xl": "1600px",
+    },
+  };
+}
+
+
